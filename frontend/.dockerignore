@@ -1,0 +1,30 @@
+# Ignore node_modules - these should be installed in the container
+node_modules
+npm-debug.log
+yarn-error.log
+.pnpm-debug.log
+
+# Ignore local environment files
+.env
+.env.local
+.env.*.local
+
+# Ignore any local testing or build files
+dist
+.vite
+coverage
+
+# Ignore configuration files for specific tools
+.vscode
+.idea
+.DS_Store
+*.swp
+*.swo
+*.tmp
+
+# Ignore logs
+logs
+*.log
+
+# Ignore build cache
+.cache

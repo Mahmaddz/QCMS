@@ -1,0 +1,4 @@
+# docker*.yaml
+# docker*.yml
+# Dockerfile
+.husky/
