@@ -1,0 +1,77 @@
+=======================
+npm
+=======================
+https://www.npmjs.com/package/limestone
+https://www.npmjs.com/package/sphinxql
+https://www.npmjs.com/package/sphinxapi?activeTab=dependents
+https://www.npmjs.com/package/sphinx-run?activeTab=readme
+
+=================================
+sphinx
+=================================
+https://sphinxsearch.com/blog/2014/08/26/query-sphinx-with-node-js/
+https://sphinxsearch.com/docs/sphinx3.html#running-queries-from-php-python-etc
+
+========
+docker 
+========
+https://hub.docker.com/r/sphinxdoc/sphinx
+
+==============
+youtube
+==============
+https://www.youtube.com/watch?v=Zka96YQ15Sc
+https://www.youtube.com/watch?v=OP0c26k_iQc
+
+
+=====================
+sphinx installation
+=====================
+sudo add-apt-repository ppa:builds/sphinxsearch-beta && sudo apt-get update && sudo apt-get install sphinxsearch
+cd /etc/sphinxsearch
+	 (source example, index example, searchd)
+indexer --all
+indexer --rotate --all
+searchd --stop
+searchd
+sudo /usr/bin/indexer example (for specific file)
+mysql -h127.0.0.1 -P9306
+mysql -u root -P9306
+{in mysql => SELECT * FROM example WHERE MATCH('the*');}
+cd /var/www/html
+
+=======================
+sphinx docker 
+========================
+https://github.com/tutumcloud/mysql
+https://github.com/stefobark/sphinxdocker
+
+cd /var/www/html/sphinx
+sudo docker.io pull stefobark/sphinxdocker
+
+
+===============================
+auto complete (suggestions)
+===============================
+tar -xzvf suggest.tar.gz
+tar -xzvf docs.tar.gz
+sudo mysql testing < suggest.sql
+sudo mysql testing < docs.sql
+cd /var/www/auto/scripts
+sudo /usr/bin/indexer -c /var/www/html/auto/scripts/sphinx.conf --all
+
+{نوح, الله, قدیر, حمد}
+
+
+========================
+sphinx docker (github)
+========================
+sudo systemctl status docker
+sudo systemctl start docker
+docker run -it --rm -v /home/nofil/Desktop/sphinx_github:/docs sphinxdoc/sphinx sphinx-quickstart
+
+
+sudo docker.io build -t sphinx . 
+sudo docker run -p 9311:9306 -v /etc/sphinxsearch:/etc/sphinxsearch -v /var/lib/sphinxsearch:/var/lib/sphinx -d sphinx ./indexandsearch.sh
+
+
