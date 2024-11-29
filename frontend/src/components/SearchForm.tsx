@@ -72,7 +72,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
         
         if(!(chkbox.isAya || chkbox.isQurana || chkbox.isQurany || chkbox.isTag)) {
             const response = await searchAyats(search);
-            setSuggestions(response.suggestions || []);
+            // setSuggestions(response.suggestions || []);
             setRelatedSearch(response.searchedFor);
             handleResultantResponse(response.data);
         }
