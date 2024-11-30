@@ -22,7 +22,24 @@ services:
       - app-network
     depends_on:
       - backend
+  
+  sphinx:
+    build:
+      context: ./sphinx
+      dockerfile: Dockerfile
+    container_name: sphinx
+    environment:
+      - SPHINX_CONFIG_FILE=/opt/sphinx/conf/sphinx_mushaf.conf
+      # - SPHINX_CONFIG_FILE=/opt/sphinx/conf/sphinx.conf
+    ports:
+      - "127.0.0.1:36307:36307"
+    volumes:
+      - ./sphinx/data:/opt/sphinx/indexes
+      - ./sphinx/sphinx_mushaf.conf:/opt/sphinx/conf/sphinx_mushaf.conf
+      # - ./sphinx/sphinx.conf:/opt/sphinx/conf/sphinx.conf
 
+    mem_limit: 512m # match indexer.value from sphinx.conf
+    
 networks:
   app-network:
     driver: bridge
