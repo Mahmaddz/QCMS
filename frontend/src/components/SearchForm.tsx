@@ -13,7 +13,7 @@ import CheckboxesTags from './CheckboxesTags';
 const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam) => {
 
     const [selectedKeywords, setSelectedKeywords] = useState<string[]>([]);
-    const [suggestions, setSuggestions] = useState<string[]>([]);
+    const [suggestions, setSuggestions] = useState<string[]>(['أوحينا', 'وأوحينا', 'ووحينا', 'فأوحينا']);
 
     const handleSelectionChange = (newSelection: string[]) => {
         setSelectedKeywords(newSelection);
@@ -21,7 +21,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
 
     const [loading, setLoading] = useState(false);
     const [filter, setFilter] = useState<FilterStateParams>({ surah: 0, aya: 0 });
-    const [search, setSearch] = useState<string>("");
+    const [search, setSearch] = useState<string>("حينا");
     const [chkbox, setChkBox] = useState({
         isAya: false,
         isTag: false,
@@ -72,7 +72,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
         
         if(!(chkbox.isAya || chkbox.isQurana || chkbox.isQurany || chkbox.isTag)) {
             const response = await searchAyats(search);
-            // setSuggestions(response.suggestions || []);
+            setSuggestions(response.suggestions || []);
             setRelatedSearch(response.searchedFor);
             handleResultantResponse(response.data);
         }
@@ -137,6 +137,11 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
                         padding: '20px',
                     },
                 }}
+                onKeyDown={async (e) => {
+                    if (e.key === 'Enter') {
+                        await getResult();
+                    }
+                }}
             >
                 {/* First Box: Search and Filters */}
                 <Box 
@@ -158,6 +163,12 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
                         sx={{
                             '& .MuiOutlinedInput-root': {
                                 backgroundColor: '#ffffff',
+                            },
+                            '& .MuiInputBase-input': {
+                                fontSize: '20px',
+                            },
+                            '& .MuiInputLabel-root': {
+                                fontSize: '16px',
                             },
                         }}
                     />
@@ -303,58 +314,87 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
             </Box>
 
             {
-  suggestions.length > 0 && (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '80%',
-        margin: '20px auto',
-        padding: '20px',
-        backgroundColor: '#f9f9f9',
-        borderRadius: '12px',
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-        textAlign: 'center',
-      }}
-    >
-      <Typography
-        sx={{
-          fontSize: '18px',
-          fontWeight: 'bold',
-          color: 'primary.main',
-          marginBottom: '12px',
-        }}
-      >
-        No Results for "{search}"
-      </Typography>
-      <Typography
-        sx={{
-          fontSize: '16px',
-          fontWeight: '500',
-          color: '#555',
-          marginBottom: '8px',
-        }}
-      >
-        Did you mean:
-      </Typography>
-      <Typography
-        sx={{
-          fontSize: '16px',
-          color: 'secondary.main',
-          backgroundColor: '#e6f7ff',
-          padding: '8px 12px',
-          borderRadius: '8px',
-          display: 'inline-block',
-          fontWeight: 'bold',
-        }}
-      >
-        {suggestions.join(', ')}
-      </Typography>
-    </Box>
-  )
+    suggestions.length > 0 && (
+        <Box
+            sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '80%',
+                margin: '20px auto',
+                padding: '20px',
+                backgroundColor: '#f9f9f9',
+                borderRadius: '12px',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                textAlign: 'center',
+            }}
+        >
+            <Typography
+                sx={{
+                    fontSize: '18px',
+                    fontWeight: 'bold',
+                    color: 'primary.main',
+                    marginBottom: '12px',
+                }}
+            >
+                No Results for "{search}"
+            </Typography>
+            <Typography
+                sx={{
+                    fontSize: '16px',
+                    fontWeight: '500',
+                    color: '#555',
+                    marginBottom: '8px',
+                }}
+            >
+                Did you mean:
+            </Typography>
+            <Box
+                sx={{
+                    display: 'flex',
+                    gap: '8px',
+                    flexWrap: 'wrap',
+                    justifyContent: 'center',
+                }}
+            >
+                {
+                    suggestions.map((sug, index) =>
+                        <Button
+                            key={index}
+                            onClick={() => setSearch(sug)}
+                            sx={{
+                                textTransform: 'none',
+                                padding: '6px 12px',
+                                fontSize: '14px',
+                                backgroundColor: '#e0f7fa',
+                                color: 'primary.main',
+                                borderRadius: '8px',
+                                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                                '&:hover': {
+                                    backgroundColor: '#b2ebf2',
+                                },
+                            }}
+                        >
+                            <Typography
+                                sx={{
+                                    fontSize: '20px',
+                                    fontWeight: '500',
+                                    color: 'text.primary',
+                                    textAlign: 'center',
+                                }}
+                            >
+                                {sug}
+                            </Typography>
+
+                        </Button>
+                    )
+                }
+            </Box>
+        </Box>
+    )
 }
+
 
 
             {
@@ -385,7 +425,14 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
                                 Searched For
                             </Typography>
 
-                            <Box sx={{display: 'flex', flexDirection: 'row'}}>
+                            <Box 
+                                sx={{display: 'flex', flexDirection: 'row'}} 
+                                onKeyDown={async (e) => {
+                                    if (e.key === 'Enter') {
+                                        await getResultBasedOnSuggestedWords();
+                                    }
+                                }}
+                            >
                                 <CheckboxesTags
                                     options={relatedSearch}
                                     currentValue={selectedKeywords}

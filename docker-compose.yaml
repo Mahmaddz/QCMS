@@ -11,6 +11,8 @@ services:
       - NODE_ENV=production
     networks:
       - app-network
+    depends_on:
+    - sphinx
 
   frontend:
     build:
@@ -22,7 +24,22 @@ services:
       - app-network
     depends_on:
       - backend
-
+  
+  sphinx:
+    build:
+      context: ./sphinx
+      dockerfile: Dockerfile
+    container_name: sphinx
+    environment:
+      - SPHINX_CONFIG_FILE=/opt/sphinx/conf/sphinx_mushaf.conf
+    ports:
+      - 9306:9306
+    volumes:
+      - ./sphinx/data:/opt/sphinx/indexes
+      - ./sphinx/sphinx_mushaf.conf:/opt/sphinx/conf/sphinx_mushaf.conf
+    networks:
+      - app-network
+    
 networks:
   app-network:
     driver: bridge

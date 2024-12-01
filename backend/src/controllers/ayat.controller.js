@@ -26,7 +26,7 @@ const searchAyat = catchAsync(async (req, res) => {
     const updatedTerm = ArabicServices.removeTashkeel(term);
     result = await ayatServices.getSuraAndAyaFromMushafUsingTerm(updatedTerm);
     if (result.lemmaNotFound[0] && result.lemmaNotFound.length > 0) {
-      suggestions = ['حيا', 'حسنا ', 'حزنا', 'فأحيينا']; // await wordsServices.getSuggestedWords(result.lemmaNotFound);
+      suggestions = await wordsServices.getSuggestedWords(result.lemmaNotFound);
     }
   } else {
     const wordArr = wordsServices.splitCommaSeparated(words);
