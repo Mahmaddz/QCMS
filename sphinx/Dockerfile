@@ -21,7 +21,7 @@ RUN indexer -v
 RUN ln -sv /dev/stdout /opt/sphinx/logs/query.log \
     	&& ln -sv /dev/stdout /opt/sphinx/logs/searchd.log
 
-EXPOSE 36307
+EXPOSE 9306
 VOLUME /opt/sphinx/conf
 
 # allow custom config file to be passed
