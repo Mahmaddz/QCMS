@@ -1,31 +1,33 @@
-FROM phusion/baseimage:0.11
 
-# Update package lists and install necessary dependencies
-RUN apt-get update && \
-    apt-get install -y wget build-essential software-properties-common \
-    libmysqlclient-dev mysql-client && \
-    apt-get clean
+FROM --platform=linux/amd64 alpine:3.19
 
-# Download and build Sphinx from source
-RUN wget https://sphinxsearch.com/files/sphinx-2.2.11-release.tar.gz && \
-    tar -xzf sphinx-2.2.11-release.tar.gz && \
-    cd sphinx-2.2.11-release && \
-    ./configure --with-mysql && \
-    make && \
-    make install && \
-    cd .. && \
-    rm -rf sphinx-2.2.11-release sphinx-2.2.11-release.tar.gz
+ENV SPHINX_VERSION 3.7.1-da9f8a4
 
-# Create necessary directories for Sphinx
-RUN mkdir -p /var/lib/sphinx/data /var/log/sphinx /var/run/sphinx
+# install dependencies
+RUN apk add --no-cache mariadb-connector-c-dev \
+	postgresql-dev \
+	wget
 
-# Add and set permissions for scripts
-ADD indexandsearch.sh /
-RUN chmod a+x /indexandsearch.sh
+RUN mkdir -pv /opt/sphinx/logs /opt/sphinx/indexes
+VOLUME /opt/sphinx/indexes
 
-ADD searchd.sh /
-RUN chmod a+x /searchd.sh
+RUN wget http://sphinxsearch.com/files/sphinx-${SPHINX_VERSION}-linux-amd64-musl.tar.gz -O /tmp/sphinxsearch.tar.gz \
+	&& cd /opt/sphinx && tar -xf /tmp/sphinxsearch.tar.gz \
+	&& rm /tmp/sphinxsearch.tar.gz
 
-ADD lordsearchd.sh /
-RUN chmod a+x /lordsearchd.sh
+ENV PATH "${PATH}:/opt/sphinx/sphinx-3.7.1/bin"
+RUN indexer -v
 
+RUN ln -sv /dev/stdout /opt/sphinx/logs/query.log \
+    	&& ln -sv /dev/stdout /opt/sphinx/logs/searchd.log
+
+EXPOSE 36307
+VOLUME /opt/sphinx/conf
+
+# allow custom config file to be passed
+ARG SPHINX_CONFIG_FILE=/opt/sphinx/conf/sphinx.conf
+ENV SPHINX_CONFIG_FILE ${SPHINX_CONFIG_FILE}
+
+RUN echo "exec searchd --nodetach --config \${SPHINX_CONFIG_FILE}" > /opt/sphinx/start.sh
+
+CMD sh /opt/sphinx/start.sh
