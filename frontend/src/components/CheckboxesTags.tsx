@@ -9,9 +9,9 @@ const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
 const checkedIcon = <CheckBoxIcon fontSize="small" />;
 
 interface CheckboxesTagsProps {
-  options: string[];
-  currentValue: string[];
-  onChange: (selected: string[]) => void;
+  options?: string[];
+  currentValue?: string[];
+  onChange?: (selected: string[]) => void;
 }
 
 const CheckboxesTags: React.FC<CheckboxesTagsProps> = ({ options, currentValue, onChange }) => {
@@ -19,9 +19,13 @@ const CheckboxesTags: React.FC<CheckboxesTagsProps> = ({ options, currentValue, 
     <Autocomplete
       multiple
       id="checkboxes-tags-demo"
-      options={options}
+      options={options || []}
       value={currentValue}
       disableCloseOnSelect
+      disableClearable
+      disableListWrap
+      disabledItemsFocusable
+      disablePortal
       getOptionLabel={(option) => option}
       sx={{
         borderColor: 'primary.main',
@@ -30,7 +34,7 @@ const CheckboxesTags: React.FC<CheckboxesTagsProps> = ({ options, currentValue, 
         padding: '6px 12px',
         borderRadius: '16px',
         width: '100%',
-        maxWidth: 500,
+        maxWidth: '100%',
         minWidth: { md: 400, xs: 300 },
         marginLeft: { xs: 3 },
         '& .MuiChip-deleteIcon': {
@@ -47,7 +51,8 @@ const CheckboxesTags: React.FC<CheckboxesTagsProps> = ({ options, currentValue, 
         },
       }}
       onChange={(_event, value) => {
-        onChange(value as string[]);
+        if (onChange)
+          onChange(value as string[]);
       }}
       renderOption={(props, option, { selected }) => {
         const { key, ...optionProps } = props;

@@ -1,27 +1,30 @@
-import { Box, Button, Checkbox, Divider, FormControlLabel, InputAdornment, TextField, Tooltip, Typography, CircularProgress } from '@mui/material';
-import FilterAltIcon from '@mui/icons-material/FilterAlt';
+import { Box, Button, Checkbox, Divider, FormControlLabel, InputAdornment, TextField, Tooltip, Typography, CircularProgress, Chip } from '@mui/material';
 import { useState } from 'react';
 import { FilterStateParams, SearchFormParam } from '../interfaces/SearchForm';
 import { getQuranaInfo } from '../services/Search/getQuranaInfo.service';
 import Toaster from '../utils/helper/Toaster';
 import { getAyatInfo } from '../services/Search/getAyatInfo.service';
 import { searchAyats } from '../services/Search/getAyats.service';
-import CheckboxesTags from './CheckboxesTags';
+// import CheckboxesTags from './CheckboxesTags';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import FilterAltIcon from '@mui/icons-material/FilterAlt';
+// import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 // import CloseIcon from "@mui/icons-material/Close";
 
 
 const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam) => {
 
     const [selectedKeywords, setSelectedKeywords] = useState<string[]>([]);
-    const [suggestions, setSuggestions] = useState<string[]>(['أوحينا', 'وأوحينا', 'ووحينا', 'فأوحينا']);
+    const [suggestions, setSuggestions] = useState<string[]>([]);
 
-    const handleSelectionChange = (newSelection: string[]) => {
-        setSelectedKeywords(newSelection);
-    };
+    // const handleSelectionChange = (newSelection: string[]) => {
+    //     setSelectedKeywords(newSelection);
+    // };
 
     const [loading, setLoading] = useState(false);
     const [filter, setFilter] = useState<FilterStateParams>({ surah: 0, aya: 0 });
-    const [search, setSearch] = useState<string>("حينا");
+    const [search, setSearch] = useState<string>("");
     const [chkbox, setChkBox] = useState({
         isAya: false,
         isTag: false,
@@ -105,6 +108,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
     }
 
     const getResultBasedOnSuggestedWords = async () => {
+        window.scrollTo({ top: 0, behavior: 'smooth', left: 10 });
         if(!(chkbox.isAya || chkbox.isQurana || chkbox.isQurany || chkbox.isTag)) {
             setLoading(true);
             setSearchedResult([]);
@@ -119,6 +123,16 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
             }
         }
     }
+
+    const handleToggle = (item: string) => {
+        setSelectedKeywords((prevSelectedWords) => {
+            if (prevSelectedWords.includes(item)) {
+                return prevSelectedWords.filter((word) => word !== item);
+            } else {
+                return [...prevSelectedWords, item];
+            }
+        });
+    };
 
     return (
         <>
@@ -314,90 +328,90 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
             </Box>
 
             {
-    suggestions.length > 0 && (
-        <Box
-            sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '80%',
-                margin: '20px auto',
-                padding: '20px',
-                backgroundColor: '#f9f9f9',
-                borderRadius: '12px',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                textAlign: 'center',
-            }}
-        >
-            <Typography
-                sx={{
-                    fontSize: '18px',
-                    fontWeight: 'bold',
-                    color: 'primary.main',
-                    marginBottom: '12px',
-                }}
-            >
-                No Results for "{search}"
-            </Typography>
-            <Typography
-                sx={{
-                    fontSize: '16px',
-                    fontWeight: '500',
-                    color: '#555',
-                    marginBottom: '8px',
-                }}
-            >
-                Did you mean:
-            </Typography>
-            <Box
-                sx={{
-                    display: 'flex',
-                    gap: '8px',
-                    flexWrap: 'wrap',
-                    justifyContent: 'center',
-                }}
-            >
-                {
-                    suggestions.map((sug, index) =>
-                        <Button
-                            key={index}
-                            onClick={() => setSearch(sug)}
+                suggestions.length > 0 && (
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            width: '80%',
+                            margin: '20px auto',
+                            padding: '20px',
+                            backgroundColor: '#f9f9f9',
+                            borderRadius: '12px',
+                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                            textAlign: 'center',
+                        }}
+                    >
+                        <Typography
                             sx={{
-                                textTransform: 'none',
-                                padding: '6px 12px',
-                                fontSize: '14px',
-                                backgroundColor: '#e0f7fa',
+                                fontSize: '18px',
+                                fontWeight: 'bold',
                                 color: 'primary.main',
-                                borderRadius: '8px',
-                                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-                                '&:hover': {
-                                    backgroundColor: '#b2ebf2',
-                                },
+                                marginBottom: '12px',
                             }}
                         >
-                            <Typography
-                                sx={{
-                                    fontSize: '20px',
-                                    fontWeight: '500',
-                                    color: 'text.primary',
-                                    textAlign: 'center',
-                                }}
-                            >
-                                {sug}
-                            </Typography>
+                            No Results for "{search}"
+                        </Typography>
+                        <Typography
+                            sx={{
+                                fontSize: '16px',
+                                fontWeight: '500',
+                                color: '#555',
+                                marginBottom: '8px',
+                            }}
+                        >
+                            Did you mean:
+                        </Typography>
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                gap: '8px',
+                                flexWrap: 'wrap',
+                                justifyContent: 'center',
+                            }}
+                        >
+                            {
+                                suggestions.map((sug, index) =>
+                                    <Button
+                                        key={index}
+                                        onClick={() => setSearch(sug)}
+                                        sx={{
+                                            textTransform: 'none',
+                                            padding: '6px 12px',
+                                            fontSize: '14px',
+                                            backgroundColor: '#e0f7fa',
+                                            color: 'primary.main',
+                                            borderRadius: '8px',
+                                            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                                            '&:hover': {
+                                                backgroundColor: '#b2ebf2',
+                                            },
+                                        }}
+                                    >
+                                        <Typography
+                                            sx={{
+                                                fontSize: '20px',
+                                                fontWeight: '500',
+                                                color: 'text.primary',
+                                                textAlign: 'center',
+                                            }}
+                                        >
+                                            {sug}
+                                        </Typography>
 
-                        </Button>
-                    )
-                }
-            </Box>
-        </Box>
-    )
-}
+                                    </Button>
+                                )
+                            }
+                        </Box>
+                    </Box>
+                )
+            }
 
 
 
-            {
+            {/* {
                 relatedSearch?.length > 0 && (
                     <Box
                         sx={{
@@ -458,7 +472,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
 
                             <Box marginLeft={3}/>
 
-                            {/* <Tooltip title='Remove Searched For Area' arrow>
+                            <Tooltip title='Remove Searched For Area' arrow>
                                 <CloseIcon
                                     color='error'
                                     fontSize='medium'
@@ -473,12 +487,135 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
                                     }}
                                     onClick={()=> { setRelatedSearch([]); setSelectedKeywords([]) }}
                                 />
-                            </Tooltip> */}
+                            </Tooltip>
+                        </Box>
+                    </Box>
+                )
+            } */}
+
+            {
+                relatedSearch?.length > 0 && (
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            width: '75%',
+                            margin: '0 auto',
+                            padding: '20px',
+                            backgroundColor: '#f9f9f9',
+                            borderRadius: '12px',
+                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                        }}
+                    >
+                        <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                            <Typography
+                                sx={{
+                                    fontWeight: 'bold',
+                                    fontSize: '18px',
+                                    color: 'primary.main',
+                                    marginBottom: '12px',
+                                }}
+                            >
+                                Searched For
+                            </Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, marginTop: '12px', justifyContent: { xs: 'flex-start', sm: 'space-between' },  }}>
+                            {relatedSearch.map((item) => (
+                                <Chip
+                                    key={item}
+                                    label={item}
+                                    onClick={() => handleToggle(item)}
+                                    icon={
+                                        selectedKeywords.includes(item) ? (
+                                            <CheckCircleIcon color='inherit' />
+                                        ) : (
+                                            <CheckCircleOutlineIcon  />
+                                        )
+                                    }
+                                    sx={{
+                                        backgroundColor: '#CCCCFF',
+                                        color: 'primary.main',
+                                        fontSize: '17px',
+                                        padding: '6px 12px',
+                                        borderRadius: '16px',
+                                        '& .MuiChip-deleteIcon': {
+                                            color: 'primary.main',
+                                            '&:hover': {
+                                                color: 'primary.dark',
+                                            },
+                                        },
+                                    }}
+                                />
+                            ))}
+                        </Box>                     
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                            <Box
+                                sx={{
+                                display: 'flex',
+                                flexWrap: 'wrap',
+                                gap: 1,
+                                marginTop: '30px',
+                                justifyContent: { xs: 'center', sm: 'flex-start' },
+                                border: '2px solid #CCCCFF',
+                                padding: '10px',
+                                borderRadius: '8px',
+                                width: '95%',
+                                boxSizing: 'border-box',
+                                }}
+                            >
+                                <Typography
+                                    sx={{
+                                        fontWeight: 'bold',
+                                        fontSize: '18px',
+                                        color: 'primary.main',
+                                        marginBottom: '12px',
+                                        width: '100%',
+                                        textAlign: { xs: 'center', sm: 'left' },
+                                    }}
+                                >
+                                    Selected Keywords:
+                                </Typography>
+
+                                {selectedKeywords.map((item, index) => (
+                                    <Chip
+                                        key={index}
+                                        label={item}
+                                        sx={{
+                                        backgroundColor: '#CCCCFF',
+                                        color: 'primary.main',
+                                        fontSize: '14px',
+                                        padding: '6px 12px',
+                                        borderRadius: '16px',
+                                        border: '1px solid #A5A5A5',
+                                        marginBottom: '6px',
+                                        }}
+                                    />
+                                ))}
+                            </Box>
+
+                            <Tooltip title="Hit Filter" arrow>
+                                <FilterAltIcon
+                                    color="primary"
+                                    fontSize="large"
+                                    sx={{
+                                        cursor: 'pointer',
+                                        '&:hover': {
+                                            transform: 'scale(1.1)',
+                                            color: 'action.dark',
+                                            transition: 'transform 0.3s ease, color 0.3s ease',
+                                        },
+                                        transition: 'color 0.3s ease',
+                                        marginLeft: '16px',
+                                    }}
+                                    onClick={getResultBasedOnSuggestedWords}
+                                />
+                            </Tooltip>
                         </Box>
                     </Box>
                 )
             }
-
 
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', padding: '10px', width: '85%', gap: 3 }}>
                 <Typography variant="body2" sx={{ color: 'primary.main' }}>
@@ -493,7 +630,6 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
             </Box>
 
             <Divider sx={{ width: '80%', margin: '20px auto', height: '2px', backgroundColor: 'primary.main' }} />
-
         </>
     )
 }
