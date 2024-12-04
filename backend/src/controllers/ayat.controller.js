@@ -1,8 +1,10 @@
+/* eslint-disable no-console */
 const httpStatus = require('http-status');
 const { ArabicServices } = require('arabic-services');
-const { ayatServices, wordsServices } = require('../services');
+const { ayatServices, wordsServices, arabicCustomServices } = require('../services');
 const catchAsync = require('../utils/catchAsync');
 const ApiError = require('../utils/ApiError');
+const { logger } = require('../config/logger');
 
 const getAyatInfo = catchAsync(async (req, res) => {
   const { ayatText, ayaNo, suraNo } = req.query;
@@ -41,7 +43,30 @@ const searchAyat = catchAsync(async (req, res) => {
   });
 });
 
+const getAyatUsingLemmaApi = catchAsync(async (req, res) => {
+  const { term, words } = req.query;
+
+  if (!term && !words) {
+    throw new ApiError(httpStatus.BAD_REQUEST, `Empty Query`);
+  }
+
+  let result = 0;
+  if (!words) {
+    result = await arabicCustomServices.getLemmaUsingAlKhalil(term);
+    // console.log(await arabicCustomServices.getLemo(term));
+    console.log(result);
+  } else {
+    logger.info(result);
+  }
+
+  res.status(httpStatus.OK).json({
+    success: true,
+    result,
+  });
+});
+
 module.exports = {
   getAyatInfo,
   searchAyat,
+  getAyatUsingLemmaApi,
 };
