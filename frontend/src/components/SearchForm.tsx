@@ -1,15 +1,15 @@
-import { Box, Button, Checkbox, Divider, FormControlLabel, InputAdornment, TextField, Tooltip, Typography, CircularProgress, Chip } from '@mui/material';
+import { Box, Button, Checkbox, Divider, FormControlLabel, InputAdornment, TextField, Tooltip, Typography, CircularProgress, Chip, Switch } from '@mui/material';
 import { useState } from 'react';
 import { FilterStateParams, SearchFormParam } from '../interfaces/SearchForm';
 import { getQuranaInfo } from '../services/Search/getQuranaInfo.service';
 import Toaster from '../utils/helper/Toaster';
 import { getAyatInfo } from '../services/Search/getAyatInfo.service';
 import { searchAyats } from '../services/Search/getAyats.service';
-// import CheckboxesTags from './CheckboxesTags';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
-// import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+// import SelectAllIcon from '@mui/icons-material/SelectAll';
+// import DeselectIcon from '@mui/icons-material/Deselect';
 // import CloseIcon from "@mui/icons-material/Close";
 
 
@@ -17,26 +17,28 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
 
     const [selectedKeywords, setSelectedKeywords] = useState<string[]>([]);
     const [suggestions, setSuggestions] = useState<string[]>([]);
-
-    // const handleSelectionChange = (newSelection: string[]) => {
-    //     setSelectedKeywords(newSelection);
-    // };
-
+    const [relatedSearch, setRelatedSearch] = useState<string[]>([]);
+    const [searchedCount, setSearchedCount] = useState<number>(-1);
+    const [checked, setChecked] = useState(true);
     const [loading, setLoading] = useState(false);
     const [filter, setFilter] = useState<FilterStateParams>({ surah: 0, aya: 0 });
     const [search, setSearch] = useState<string>("");
     const [chkbox, setChkBox] = useState({
-        isAya: false,
+        isLemma: false,
         isTag: false,
         isQurana: false,
         isQurany: false
     }); 
-    const [searchedCount, setSearchedCount] = useState<number>(-1);
 
-    const [relatedSearch, setRelatedSearch] = useState<string[]>([]);
-    // const handleDelete = (item: string) => {
-    //     setRelatedSearch((prev) => prev?.filter((search) => search !== item));
-    // };
+    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setChecked(event.target.checked);
+        if (checked) {
+            setSelectedKeywords([])
+        }
+        else {
+            setSelectedKeywords([...relatedSearch])
+        }
+    };
 
     const handleChangeSearch = (value: string) => setSearch(value);
 
@@ -73,10 +75,11 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
         setSelectedKeywords([]);
         setRelatedSearch([]);
         
-        if(!(chkbox.isAya || chkbox.isQurana || chkbox.isQurany || chkbox.isTag)) {
+        if(!(chkbox.isLemma || chkbox.isQurana || chkbox.isQurany || chkbox.isTag)) {
             const response = await searchAyats(search);
             setSuggestions(response.suggestions || []);
             setRelatedSearch(response.searchedFor);
+            setSelectedKeywords(response.searchedFor);
             handleResultantResponse(response.data);
         }
         if (chkbox.isQurana) {
@@ -88,7 +91,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
                 setLoading(false);
             }
         }
-        if (chkbox.isAya) {
+        if (chkbox.isLemma) {
             const response = await getAyatInfo(search, filter.aya as string || null, filter.surah as string || null);
             if (response.success) {
                 handleResultantResponse(response.data);
@@ -109,7 +112,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
 
     const getResultBasedOnSuggestedWords = async () => {
         window.scrollTo({ top: 0, behavior: 'smooth', left: 10 });
-        if(!(chkbox.isAya || chkbox.isQurana || chkbox.isQurany || chkbox.isTag)) {
+        if(!(chkbox.isLemma || chkbox.isQurana || chkbox.isQurany || chkbox.isTag)) {
             setLoading(true);
             setSearchedResult([]);
             setSearchedCount(0);
@@ -252,10 +255,10 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
                     <Box sx={{ display: 'flex', flexDirection: {xs: 'row', sm: 'column'}, gap: '5px' }}>
                         <FormControlLabel
                             control={<Checkbox />}
-                            name='isAya'
-                            checked={chkbox.isAya}
+                            name='isLemma'
+                            checked={chkbox.isLemma}
                             onChange={handleChangeCheckBoxes}
-                            label="Aya"
+                            label="Lemma"
                             sx={{ '& .MuiFormControlLabel-label': { fontWeight: '500' } }}
                         />
                         <FormControlLabel
@@ -409,90 +412,6 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
                 )
             }
 
-
-
-            {/* {
-                relatedSearch?.length > 0 && (
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            width: '80%',
-                            margin: '0 auto',
-                            padding: '20px',
-                            backgroundColor: '#f9f9f9',
-                            borderRadius: '12px',
-                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                        }}
-                    >
-                        <Box sx={{ display: 'flex', flexDirection: { md: 'row', xs: 'column' }, alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                            <Typography
-                                sx={{
-                                    fontWeight: 'bold',
-                                    fontSize: '18px',
-                                    color: 'primary.main',
-                                    marginBottom: '12px',
-                                }}
-                            >
-                                Searched For
-                            </Typography>
-
-                            <Box 
-                                sx={{display: 'flex', flexDirection: 'row'}} 
-                                onKeyDown={async (e) => {
-                                    if (e.key === 'Enter') {
-                                        await getResultBasedOnSuggestedWords();
-                                    }
-                                }}
-                            >
-                                <CheckboxesTags
-                                    options={relatedSearch}
-                                    currentValue={selectedKeywords}
-                                    onChange={handleSelectionChange}
-                                />
-                                <Tooltip title='Hit Filter' arrow>
-                                    <FilterAltIcon
-                                        color='primary'
-                                        fontSize='large'
-                                        sx={{
-                                            cursor: 'pointer',
-                                            '&:hover': {
-                                                transform: 'scale(1.1)',
-                                                color: 'action.dark',
-                                                transition: 'transform 0.3s ease, color 0.3s ease',
-                                            },
-                                            transition: 'color 0.3s ease',
-                                        }}
-                                        onClick={getResultBasedOnSuggestedWords}
-                                    />
-                                </Tooltip>
-                            </Box>
-
-                            <Box marginLeft={3}/>
-
-                            <Tooltip title='Remove Searched For Area' arrow>
-                                <CloseIcon
-                                    color='error'
-                                    fontSize='medium'
-                                    sx={{
-                                        cursor: 'pointer',
-                                        '&:hover': {
-                                            transform: 'scale(1.1)',
-                                            color: 'error.dark',
-                                            transition: 'transform 0.3s ease, color 0.3s ease',
-                                        },
-                                        transition: 'color 0.3s ease',
-                                    }}
-                                    onClick={()=> { setRelatedSearch([]); setSelectedKeywords([]) }}
-                                />
-                            </Tooltip>
-                        </Box>
-                    </Box>
-                )
-            } */}
-
             {
                 relatedSearch?.length > 0 && (
                     <Box
@@ -513,13 +432,29 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
                             <Typography
                                 sx={{
                                     fontWeight: 'bold',
-                                    fontSize: '18px',
+                                    fontSize: '20px',
                                     color: 'primary.main',
                                     marginBottom: '12px',
+                                    flex: 1
                                 }}
                             >
                                 Searched For
                             </Typography>
+                            <Box 
+                                sx={{ 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    gap: '8px' 
+                                }}
+                            >
+                                <Tooltip title='Select All' arrow>
+                                    <Switch
+                                        checked={checked}
+                                        onChange={handleChange}
+                                        inputProps={{ 'aria-label': 'controlled' }}
+                                    />
+                                </Tooltip>
+                            </Box>
                         </Box>
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, marginTop: '12px', justifyContent: { xs: 'flex-start', sm: 'space-between' },  }}>
                             {relatedSearch.map((item) => (
@@ -537,7 +472,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
                                     sx={{
                                         backgroundColor: '#CCCCFF',
                                         color: 'primary.main',
-                                        fontSize: '17px',
+                                        fontSize: '19px',
                                         padding: '6px 12px',
                                         borderRadius: '16px',
                                         '& .MuiChip-deleteIcon': {
@@ -553,16 +488,16 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
                             <Box
                                 sx={{
-                                display: 'flex',
-                                flexWrap: 'wrap',
-                                gap: 1,
-                                marginTop: '30px',
-                                justifyContent: { xs: 'center', sm: 'flex-start' },
-                                border: '2px solid #CCCCFF',
-                                padding: '10px',
-                                borderRadius: '8px',
-                                width: '95%',
-                                boxSizing: 'border-box',
+                                    display: 'flex',
+                                    flexWrap: 'wrap',
+                                    gap: 1,
+                                    marginTop: '30px',
+                                    justifyContent: { xs: 'center', sm: 'flex-start' },
+                                    border: '2px solid #CCCCFF',
+                                    padding: '10px',
+                                    borderRadius: '8px',
+                                    width: '95%',
+                                    boxSizing: 'border-box',
                                 }}
                             >
                                 <Typography
@@ -583,13 +518,13 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
                                         key={index}
                                         label={item}
                                         sx={{
-                                        backgroundColor: '#CCCCFF',
-                                        color: 'primary.main',
-                                        fontSize: '14px',
-                                        padding: '6px 12px',
-                                        borderRadius: '16px',
-                                        border: '1px solid #A5A5A5',
-                                        marginBottom: '6px',
+                                            backgroundColor: '#CCCCFF',
+                                            color: 'primary.main',
+                                            fontSize: '19px',
+                                            padding: '6px 12px',
+                                            borderRadius: '16px',
+                                            border: '1px solid #A5A5A5',
+                                            marginBottom: '6px',
                                         }}
                                     />
                                 ))}
