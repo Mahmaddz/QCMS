@@ -8,3 +8,4 @@ module.exports.quranaServices = require('./qurana.service');
 module.exports.ayatServices = require('./ayat.service');
 module.exports.tagsServices = require('./tags.service');
 module.exports.wordsServices = require('./words.service');
+module.exports.arabicCustomServices = require('./arabic.service');
