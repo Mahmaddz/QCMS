@@ -37,6 +37,7 @@ services:
     volumes:
       - ./sphinx/data:/opt/sphinx/indexes
       - ./sphinx/sphinx_mushaf.conf:/opt/sphinx/conf/sphinx_mushaf.conf
+      - ./sphinx/stopwords.txt:/opt/sphinx/conf/stopwords.txt
     networks:
       - app-network
     
