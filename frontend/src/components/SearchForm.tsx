@@ -1,5 +1,5 @@
 import { Box, Button, Checkbox, Divider, FormControlLabel, InputAdornment, TextField, Tooltip, Typography, CircularProgress, Chip, Switch } from '@mui/material';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FilterStateParams, SearchFormParam } from '../interfaces/SearchForm';
 import { getQuranaInfo } from '../services/Search/getQuranaInfo.service';
 import Toaster from '../utils/helper/Toaster';
@@ -15,11 +15,11 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
 const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam) => {
 
+    const [relatedSearch, setRelatedSearch] = useState<{word: string, isSelected: boolean}[]>([]);
     const [selectedKeywords, setSelectedKeywords] = useState<string[]>([]);
     const [suggestions, setSuggestions] = useState<string[]>([]);
-    const [relatedSearch, setRelatedSearch] = useState<string[]>([]);
     const [searchedCount, setSearchedCount] = useState<number>(-1);
-    const [checked, setChecked] = useState(true);
+    const [checked, setChecked] = useState({allSelect: true, firstRender: true});
     const [loading, setLoading] = useState(false);
     const [filter, setFilter] = useState<FilterStateParams>({ surah: 0, aya: 0 });
     const [search, setSearch] = useState<string>("");
@@ -31,13 +31,15 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
     }); 
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setChecked(event.target.checked);
-        if (checked) {
-            setSelectedKeywords([])
-        }
-        else {
-            setSelectedKeywords([...relatedSearch])
-        }
+        const isChecked = event.target.checked;
+        setChecked((prev) => ({
+            ...prev,
+            allSelect: isChecked,
+        }));
+        setRelatedSearch((prev) =>
+            prev.map((item) => ({ ...item, isSelected: isChecked }))
+        );
+        setSelectedKeywords(isChecked ? relatedSearch.map((rs) => rs.word) : []);
     };
 
     const handleChangeSearch = (value: string) => setSearch(value);
@@ -64,6 +66,10 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
         setSearchedCount((prev) => (prev ? uniqueData?.length + prev : uniqueData?.length));
         setSearchedResult((prev) => { return prev ? [ ...prev, ...uniqueData] : [...uniqueData]});
         setLoading(false);
+        setChecked((prev) => ({
+            ...prev,
+            firstRender: false
+        }))
     }
 
     const getResult = async () => {
@@ -74,13 +80,20 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
         setSearchedCount(0);
         setSelectedKeywords([]);
         setRelatedSearch([]);
+
+        setChecked((prev) => ({
+            ...prev,
+            firstRender: true,
+        }))
         
         if(!(chkbox.isLemma || chkbox.isQurana || chkbox.isQurany || chkbox.isTag)) {
             const response = await searchAyats(search);
-            setSuggestions(response.suggestions || []);
-            setRelatedSearch(response.searchedFor);
-            setSelectedKeywords(response.searchedFor);
-            handleResultantResponse(response.data);
+            if (response.success) {
+                setSuggestions(response.suggestions || []);
+                setRelatedSearch(response.searchedFor.map((word) => ({ word, isSelected: true })));
+                // setSelectedKeywords(response.searchedFor);
+                handleResultantResponse(response.data);
+            }
         }
         if (chkbox.isQurana) {
             const resposne = await getQuranaInfo(search, filter.aya as string || '0', filter.surah as string || '0');
@@ -127,13 +140,30 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
         }
     }
 
-    const handleToggle = (item: string) => {
-        setSelectedKeywords((prevSelectedWords) => {
-            if (prevSelectedWords.includes(item)) {
-                return prevSelectedWords.filter((word) => word !== item);
-            } else {
-                return [...prevSelectedWords, item];
-            }
+    useEffect(() => {
+        if (checked.firstRender) {
+            return;
+        }
+        const timeId = setTimeout(() => {
+            getResultBasedOnSuggestedWords();
+        }, 1000);
+    
+        return () => clearTimeout(timeId);
+    }, [selectedKeywords]);
+
+    const handleToggle = async (value: string) => {
+        setRelatedSearch((prev) => {
+            const updatedSearch = prev.map((item) =>
+                item.word === value ? { ...item, isSelected: !item.isSelected } : item
+            );
+            const allSelected = updatedSearch.every((item) => item.isSelected);
+            setChecked((prevChecked) => ({
+                ...prevChecked,
+                allSelect: allSelected,
+            }));
+            const newSelectedKeywords = updatedSearch.filter((rs) => rs.isSelected).map((rs) => rs.word);
+            setSelectedKeywords(newSelectedKeywords);
+            return updatedSearch;
         });
     };
 
@@ -449,7 +479,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
                             >
                                 <Tooltip title='Select All' arrow>
                                     <Switch
-                                        checked={checked}
+                                        checked={checked.allSelect}
                                         onChange={handleChange}
                                         inputProps={{ 'aria-label': 'controlled' }}
                                     />
@@ -459,11 +489,11 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, marginTop: '12px', justifyContent: { xs: 'flex-start', sm: 'space-between' },  }}>
                             {relatedSearch.map((item) => (
                                 <Chip
-                                    key={item}
-                                    label={item}
-                                    onClick={() => handleToggle(item)}
+                                    key={item.word}
+                                    label={item.word}
+                                    onClick={() => handleToggle(item.word)}
                                     icon={
-                                        selectedKeywords.includes(item) ? (
+                                        item.isSelected ? (
                                             <CheckCircleIcon color='inherit' />
                                         ) : (
                                             <CheckCircleOutlineIcon  />
@@ -513,10 +543,10 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
                                     Selected Keywords:
                                 </Typography>
 
-                                {selectedKeywords.map((item, index) => (
-                                    <Chip
+                                {relatedSearch.map((item, index) => (
+                                    item.isSelected && <Chip
                                         key={index}
-                                        label={item}
+                                        label={item.word}
                                         sx={{
                                             backgroundColor: '#CCCCFF',
                                             color: 'primary.main',
@@ -530,7 +560,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
                                 ))}
                             </Box>
 
-                            <Tooltip title="Hit Filter" arrow>
+                            {/*<Tooltip title="Hit Filter" arrow>
                                 <FilterAltIcon
                                     color="primary"
                                     fontSize="large"
@@ -546,7 +576,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
                                     }}
                                     onClick={getResultBasedOnSuggestedWords}
                                 />
-                            </Tooltip>
+                            </Tooltip>*/}
                         </Box>
                     </Box>
                 )

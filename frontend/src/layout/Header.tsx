@@ -57,6 +57,7 @@ function Header() {
             localStorage.removeItem('userRole');
             setUserRole(USER.PUBLIC);
             navigate('/');
+            window.location.reload();
         } else {
             switch (setting) {
                 case 'Login':
