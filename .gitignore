@@ -2,3 +2,4 @@
 # docker*.yml
 # Dockerfile
 .husky/
+sphinx/data/
