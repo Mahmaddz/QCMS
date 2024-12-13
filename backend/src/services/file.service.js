@@ -1,5 +1,6 @@
+/* eslint-disable no-await-in-loop */
+/* eslint-disable no-console */
 const xlsx = require('xlsx');
-const { ArabicServices } = require('arabic-services');
 const httpStatus = require('http-status');
 const ApiError = require('../utils/ApiError');
 const { logger } = require('../config/logger');
@@ -19,6 +20,7 @@ const quranaInsertBulk = async (data) => {
     await Qurana.destroy({ truncate: true });
     await Qurana.bulkCreate(mappedData);
   } catch (error) {
+    console.log(error);
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, `QURANA ERROR OCCURED`);
   }
 };
@@ -37,9 +39,13 @@ const verseInsertBulk = async (data) => {
       emlaeyTextDiacritics: d['Emlaey-Text-diacritics'],
       englishTranslation: d['English-Translation1 (Y Ali)'],
     }));
-    await Verse.destroy({ truncate: true });
-    await Verse.bulkCreate(mappedData);
+    await Verse.sequelize.query('TRUNCATE "Verses" CASCADE');
+    // await Verse.destroy({ truncate: true });
+    for (let i = 0; i < mappedData.length; i += BATCH_SIZE) {
+      await Verse.bulkCreate(mappedData.slice(i, i + BATCH_SIZE));
+    }
   } catch (error) {
+    console.log(error);
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, `VERSE ERROR OCCURED`);
   }
 };
@@ -56,6 +62,7 @@ const wordInsertBulk = async (data) => {
     await Word.destroy({ truncate: true });
     await Word.bulkCreate(mappedData);
   } catch (error) {
+    console.log(error);
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, `WORDS ERROR OCCURED`);
   }
 };
@@ -87,33 +94,66 @@ const khadijaInsertBulk = async (data) => {
     await Khadija.destroy({ truncate: true });
     await Khadija.bulkCreate(mappedData);
   } catch (error) {
+    console.log(error);
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, `KHADIJA ERROR OCCURED`);
   }
 };
 
 const mushafInsertBulk = async (data) => {
+  for (let i = 0; i < 10; i += 1) {
+    console.log(data[i].word);
+    console.log('count ->', i);
+  }
   try {
     const mappedData = data.map((d) => ({
       is_chapter_name: d.is_chapter_name,
       is_basmalla: d.is_basmalla,
       Chapter: d['Chapter number'],
       Verse: d['Verse number'],
-      word: ArabicServices.removeTashkeel(d.word),
-      Stem: ArabicServices.removeTashkeel(d.Stem),
+      word: d.word,
+      Stem: d.Stem,
       Stem_pattern: d['Stem pattern'],
       PoS_tags: d['PoS tags'],
-      Lemma: ArabicServices.removeTashkeel(d.Lemma),
+      Lemma: d.Lemma,
       lemma_pattern: d['lemma pattern'],
       Root: d.Root,
+      firstRoot: d.first_root,
+      wordUndiacritizedWithHamza: d.word_undiacritized_withhamza,
+      wordUndiacritizedNoHamza: d.word_undiacritized_nohamza,
+      firstUndiacWithHamza: d.first_undiac_withhamza,
+      wawRemove: d.waw_remove,
+      revise: d.revise,
+      lastYaa: d.last_yaa,
+      wordLastLetterUndiacritizedWithHamza: d['word_last letter_undiacritized_withhamza'],
+      wordLastLetterUndiacritizedNoHamza: d['word_last letter_undiacritized_nohamza'],
+      wordNowaw: d.word__nowaw,
+      wordUndiacritizedWithHamzaNowaw: d.word_undiacritized_withhamza_nowaw,
+      wordUndiacritizedNoHamzaNowaw: d.word_undiacritized_nohamza_nowaw,
+      wordLastLetterUndiacritizedWithHamzaNowaw: d['word_last letter_undiacritized_withhamza_nowaw'],
+      wordLastLetterUndiacritizedNoHamzaNowaw: d['word_last letter_undiacritized_nohamza_nowaw'],
+      wordNoyaa: d.word__noyaa,
+      wordUndiacritizedWithHamzaNoyaa: d.word_undiacritized_withhamza_noyaa,
+      wordUndiacritizedNoHamzaNoyaa: d.word_undiacritized_nohamza_noyaa,
+      wordLastLetterUndiacritizedWithHamzaNoyaa: d['word_last letter_undiacritized_withhamza_noyaa'],
+      wordLastLetterUndiacritizedNoHamzaNoyaa: d['word_last letter_undiacritized_nohamza_noyaa'],
+      camelLemma: d.camel_lemma,
+      camelRoot: d.camel_root,
+      camelStem: d.camel_stem,
+      camelPos: d.camel_pos,
+      camelGloss: d.camel_gloss,
+      camelDiac: d.camel_diac,
+      camelPattern: d.camel_pattern,
+      tashaphyneStem: d.tashaphyne_stem,
+      tStemVsKhStem: d['T stem vs kh stem'],
+      tashaphyneRoot: d.tashaphyne_root,
+      sameStartWord: d['same_start word'],
     }));
-
-    await Mushaf.destroy({ truncate: true });
-
+    await Mushaf.sequelize.query('TRUNCATE TABLE "Mushaf" RESTART IDENTITY CASCADE');
     for (let i = 0; i < mappedData.length; i += BATCH_SIZE) {
-      // eslint-disable-next-line no-await-in-loop
       await Mushaf.bulkCreate(mappedData.slice(i, i + BATCH_SIZE));
     }
   } catch (error) {
+    console.log(error);
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, `MUSHAF ERROR OCCURED`);
   }
 };
@@ -160,7 +200,7 @@ const getRequiredColumns = (sheetName) => {
       'person',
       // 'chapter_type',
     ],
-    Mushaf: [
+    mushaf: [
       'is_chapter_name',
       'is_basmalla',
       'Chapter number',
@@ -172,6 +212,36 @@ const getRequiredColumns = (sheetName) => {
       'Lemma',
       'lemma pattern',
       'Root',
+      'first_root',
+      'word_undiacritized_withhamza',
+      'word_undiacritized_nohamza',
+      'first_undiac_withhamza',
+      'waw_remove',
+      'revise',
+      'last_yaa',
+      'word_last letter_undiacritized_withhamza',
+      'word_last letter_undiacritized_nohamza',
+      'word__nowaw',
+      'word_undiacritized_withhamza_nowaw',
+      'word_undiacritized_nohamza_nowaw',
+      'word_last letter_undiacritized_withhamza_nowaw',
+      'word_last letter_undiacritized_nohamza_nowaw',
+      'word__noyaa',
+      'word_undiacritized_withhamza_noyaa',
+      'word_undiacritized_nohamza_noyaa',
+      'word_last letter_undiacritized_withhamza_noyaa',
+      'word_last letter_undiacritized_nohamza_noyaa',
+      'camel_lemma',
+      'camel_root',
+      'camel_stem',
+      'camel_pos',
+      'camel_gloss',
+      'camel_diac',
+      'camel_pattern',
+      'tashaphyne_stem',
+      'T stem vs kh stem',
+      'tashaphyne_root',
+      'same_start word',
     ],
     Sample: ['sura id', 'aya id', 'sura name', 'word', 'root', 'page'],
     Qurana: ['RecordId', 'SurahId', 'AyahId', 'SegmentId', 'ConceptName', 'ConceptGloss'],
@@ -187,7 +257,7 @@ const getRequiredColumns = (sheetName) => {
   return columns;
 };
 
-const hasRequiredColumns = (record, requiredColumns) => requiredColumns.every((column) => column in record);
+const hasRequiredColumns = (requiredColumns, sheetColumns) => requiredColumns.every((item) => sheetColumns.includes(item));
 
 const getDataFromSheet = async (sheet) => {
   try {
