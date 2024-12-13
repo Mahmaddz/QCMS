@@ -4,4 +4,5 @@ export interface RequestParams {
     data?: Record<string, any> | any ;
     useToken?: boolean;
     showToast?: boolean;
+    abortRef?: AbortController;
 }

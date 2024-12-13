@@ -1,16 +1,15 @@
-import { Box, Button, Checkbox, Divider, FormControlLabel, InputAdornment, TextField, Tooltip, Typography, CircularProgress, Chip, Switch } from '@mui/material';
+import { Box, Button, Checkbox, Divider, FormControlLabel, InputAdornment, TextField, Typography, CircularProgress, Chip } from '@mui/material';
 import { useState, useEffect } from 'react';
 import { FilterStateParams, SearchFormParam } from '../interfaces/SearchForm';
 import { getQuranaInfo } from '../services/Search/getQuranaInfo.service';
 import Toaster from '../utils/helper/Toaster';
 import { getAyatInfo } from '../services/Search/getAyatInfo.service';
 import { searchAyats } from '../services/Search/getAyats.service';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-// import SelectAllIcon from '@mui/icons-material/SelectAll';
-// import DeselectIcon from '@mui/icons-material/Deselect';
-// import CloseIcon from "@mui/icons-material/Close";
+import { MAP } from '../types/map';
+import MapDisplay from './MapDisplay';
+import uniqueID from '../utils/helper/UniqueID';
+import { mergeMaps } from '../utils/functions/mergeMap';
 
 
 const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam) => {
@@ -29,18 +28,20 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
         isQurana: false,
         isQurany: false
     }); 
+    const [lemmas, setLemmas] = useState<MAP>({});
+    const [roots, setRoots] = useState<MAP>({});
 
-    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const isChecked = event.target.checked;
-        setChecked((prev) => ({
-            ...prev,
-            allSelect: isChecked,
-        }));
-        setRelatedSearch((prev) =>
-            prev.map((item) => ({ ...item, isSelected: isChecked }))
-        );
-        setSelectedKeywords(isChecked ? relatedSearch.map((rs) => rs.word) : []);
-    };
+    // const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    //     const isChecked = event.target.checked;
+    //     setChecked((prev) => ({
+    //         ...prev,
+    //         allSelect: isChecked,
+    //     }));
+    //     setRelatedSearch((prev) =>
+    //         prev.map((item) => ({ ...item, isSelected: isChecked }))
+    //     );
+    //     setSelectedKeywords(isChecked ? relatedSearch.map((rs) => rs.word) : []);
+    // };
 
     const handleChangeSearch = (value: string) => setSearch(value);
 
@@ -80,6 +81,8 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
         setSearchedCount(0);
         setSelectedKeywords([]);
         setRelatedSearch([]);
+        setLemmas({});
+        setRoots({});
 
         setChecked((prev) => ({
             ...prev,
@@ -89,9 +92,18 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
         if(!(chkbox.isLemma || chkbox.isQurana || chkbox.isQurany || chkbox.isTag)) {
             const response = await searchAyats(search);
             if (response.success) {
+                console.log(response.otherWords.lemmas);
+                console.log(response.words.lemmas)
+                setLemmas(mergeMaps(response.words.lemmas, response.otherWords.lemmas));
+                setRoots(mergeMaps(response.words.roots, response.otherWords.roots));
                 setSuggestions(response.suggestions || []);
-                setRelatedSearch(response.searchedFor.map((word) => ({ word, isSelected: true })));
-                // setSelectedKeywords(response.searchedFor);
+                const arrays = [
+                    ...Object.values(response.otherWords.lemmas).flat().map(word => ({ word, isSelected: false })),
+                    ...Object.values(response.otherWords.roots).flat().map(word => ({ word, isSelected: false })),
+                    ...Object.values(response.words.lemmas).flat().map(word => ({ word, isSelected: true })), 
+                    ...Object.values(response.words.roots).flat().map(word => ({ word, isSelected: true })),
+                ];
+                setRelatedSearch(Array.from(new Map(arrays.map(item => [item.word, item])).values()) || []);
                 handleResultantResponse(response.data);
             }
         }
@@ -123,6 +135,10 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
         }
     }
 
+    useEffect(() => {
+        console.log(lemmas);
+    }, [lemmas])
+
     const getResultBasedOnSuggestedWords = async () => {
         window.scrollTo({ top: 0, behavior: 'smooth', left: 10 });
         if(!(chkbox.isLemma || chkbox.isQurana || chkbox.isQurany || chkbox.isTag)) {
@@ -152,6 +168,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
     }, [selectedKeywords]);
 
     const handleToggle = async (value: string) => {
+        console.log(value);
         setRelatedSearch((prev) => {
             const updatedSearch = prev.map((item) =>
                 item.word === value ? { ...item, isSelected: !item.isSelected } : item
@@ -288,7 +305,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
                             name='isLemma'
                             checked={chkbox.isLemma}
                             onChange={handleChangeCheckBoxes}
-                            label="Lemma"
+                            label="Aya"
                             sx={{ '& .MuiFormControlLabel-label': { fontWeight: '500' } }}
                         />
                         <FormControlLabel
@@ -406,9 +423,9 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
                             }}
                         >
                             {
-                                suggestions.map((sug, index) =>
+                                suggestions.map((sug) =>
                                     <Button
-                                        key={index}
+                                        key={uniqueID()}
                                         onClick={() => setSearch(sug)}
                                         sx={{
                                             textTransform: 'none',
@@ -442,7 +459,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
                 )
             }
 
-            {
+            {/* {
                 relatedSearch?.length > 0 && (
                     <Box
                         sx={{
@@ -489,7 +506,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, marginTop: '12px', justifyContent: { xs: 'flex-start', sm: 'space-between' },  }}>
                             {relatedSearch.map((item) => (
                                 <Chip
-                                    key={item.word}
+                                    key={uniqueID()}
                                     label={item.word}
                                     onClick={() => handleToggle(item.word)}
                                     icon={
@@ -515,71 +532,83 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
                                 />
                             ))}
                         </Box>                     
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                            <Box
-                                sx={{
-                                    display: 'flex',
-                                    flexWrap: 'wrap',
-                                    gap: 1,
-                                    marginTop: '30px',
-                                    justifyContent: { xs: 'center', sm: 'flex-start' },
-                                    border: '2px solid #CCCCFF',
-                                    padding: '10px',
-                                    borderRadius: '8px',
-                                    width: '95%',
-                                    boxSizing: 'border-box',
-                                }}
-                            >
-                                <Typography
-                                    sx={{
-                                        fontWeight: 'bold',
-                                        fontSize: '18px',
-                                        color: 'primary.main',
-                                        marginBottom: '12px',
-                                        width: '100%',
-                                        textAlign: { xs: 'center', sm: 'left' },
-                                    }}
-                                >
-                                    Selected Keywords:
-                                </Typography>
-
-                                {relatedSearch.map((item, index) => (
-                                    item.isSelected && <Chip
-                                        key={index}
-                                        label={item.word}
-                                        sx={{
-                                            backgroundColor: '#CCCCFF',
-                                            color: 'primary.main',
-                                            fontSize: '19px',
-                                            padding: '6px 12px',
-                                            borderRadius: '16px',
-                                            border: '1px solid #A5A5A5',
-                                            marginBottom: '6px',
-                                        }}
-                                    />
-                                ))}
-                            </Box>
-
-                            {/*<Tooltip title="Hit Filter" arrow>
-                                <FilterAltIcon
-                                    color="primary"
-                                    fontSize="large"
-                                    sx={{
-                                        cursor: 'pointer',
-                                        '&:hover': {
-                                            transform: 'scale(1.1)',
-                                            color: 'action.dark',
-                                            transition: 'transform 0.3s ease, color 0.3s ease',
-                                        },
-                                        transition: 'color 0.3s ease',
-                                        marginLeft: '16px',
-                                    }}
-                                    onClick={getResultBasedOnSuggestedWords}
-                                />
-                            </Tooltip>*/}
-                        </Box>
                     </Box>
                 )
+            } */}
+
+            <Box
+                sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    width: '75%',
+                    margin: '0 auto',
+                }}
+            >
+                { Object.entries(lemmas).length > 0 && <MapDisplay title='Lemma' maps={lemmas} setterFunc={handleToggle} relatedWords={relatedSearch}/> }
+                { Object.entries(roots).length > 0 && <MapDisplay title='Roots' maps={roots} setterFunc={handleToggle} relatedWords={relatedSearch}/> }
+            </Box>
+
+            { relatedSearch?.length > 0 && 
+                <Box
+                    sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '75%',
+                        margin: '0 auto',
+                        padding: '20px',
+                        backgroundColor: '#f9f9f9',
+                        borderRadius: '12px',
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                    }}
+                >
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                flexWrap: 'wrap',
+                                gap: 1,
+                                marginTop: '30px',
+                                justifyContent: { xs: 'center', sm: 'flex-start' },
+                                border: '2px solid #CCCCFF',
+                                padding: '10px',
+                                borderRadius: '8px',
+                                width: '95%',
+                                boxSizing: 'border-box',
+                            }}
+                        >
+                            <Typography
+                                sx={{
+                                    fontWeight: 'bold',
+                                    fontSize: '18px',
+                                    color: 'primary.main',
+                                    marginBottom: '12px',
+                                    width: '100%',
+                                    textAlign: { xs: 'center', sm: 'left' },
+                                }}
+                            >
+                                Selected Keywords:
+                            </Typography>
+
+                            {relatedSearch.map((item) => (
+                                item.isSelected && <Chip
+                                    key={uniqueID()}
+                                    label={item.word}
+                                    sx={{
+                                        backgroundColor: '#CCCCFF',
+                                        color: 'primary.main',
+                                        fontSize: '19px',
+                                        padding: '6px 12px',
+                                        borderRadius: '16px',
+                                        border: '1px solid #A5A5A5',
+                                        marginBottom: '6px',
+                                    }}
+                                />
+                            ))}
+                        </Box>
+                    </Box>
+                </Box>
             }
 
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', padding: '10px', width: '85%', gap: 3 }}>
