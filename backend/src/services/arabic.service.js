@@ -18,21 +18,6 @@ const getLemo = async (data) => {
   }
 };
 
-const getRoot = async (data) => {
-  try {
-    const response = await axios.post(`http://oujda-nlp-team.net:8080/api/Racine`, `textinput=${data}`, {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-    });
-    const words = response.data.split(' ');
-    const formattedWords = words.map((word) => word.split('').join(''));
-    return formattedWords;
-  } catch (error) {
-    throw new ApiError(error.status, `[Root]: ${error.response.data}`);
-  }
-};
-
 const getLemmaUsingAlKhalil = async (data) => {
   try {
     const response = await axios.post(`http://oujda-nlp-team.net:8080/api/lemma`, `textinput=${data}`, {
@@ -46,8 +31,21 @@ const getLemmaUsingAlKhalil = async (data) => {
   }
 };
 
+const getRootUsingAlKhalil = async (data) => {
+  try {
+    const response = await axios.post(`http://oujda-nlp-team.net:8080/api/Racine`, `textinput=${data}`, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    });
+    return response.data.split(' ');
+  } catch (error) {
+    throw new ApiError(error.status, `[Root]: ${error.response.data}`);
+  }
+};
+
 module.exports = {
   getLemo,
-  getRoot,
   getLemmaUsingAlKhalil,
+  getRootUsingAlKhalil,
 };
