@@ -7,6 +7,6 @@ const router = express.Router();
 
 router.route('/info').get(validate(ayatValidation.getAyaInfo), ayatController.getAyatInfo);
 router.route('/search').get(validate(ayatValidation.searchAya), ayatController.searchAyat);
-router.route('/search-using-lemma').get(validate(ayatValidation.searchAya), ayatController.getAyatUsingLemmaApi);
+router.route('/search-using-root').get(validate(ayatValidation.searchAya), ayatController.getAyatUsingLemmaApi);
 
 module.exports = router;

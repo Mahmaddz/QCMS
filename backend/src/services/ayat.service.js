@@ -6,7 +6,6 @@ const { logger } = require('../config/logger');
 const { Sequelize, Op, Verse, sequelize } = require('../models');
 const ApiError = require('../utils/ApiError');
 const wordsServices = require('./words.service');
-// const sphql = require('../config/sphinxql');
 
 const getAyatInfo = async (ayatText, ayaNo, suraNo) => {
   if (suraNo === 0 || suraNo === null) suraNo = false;
@@ -140,7 +139,7 @@ const getAyaAndSuraUsingCncptArabic = async (lemmas) => {
   `;
 
   const results = await sequelize.query(query, {
-    replacements: { lemmas: lemmas.map((l) => l.lemma) },
+    replacements: { lemmas },
     type: sequelize.QueryTypes.SELECT,
   });
 
@@ -148,12 +147,17 @@ const getAyaAndSuraUsingCncptArabic = async (lemmas) => {
 };
 
 const getSuraAndAyaFromMushafUsingTerm = async (term) => {
-  const lemmaList = await wordsServices.getSuggestedWordsBasedOnTerm(term);
-  const lemmaNotFound = [...new Set(lemmaList.map((ll) => ll.lemma === null && ll.t))];
+  const wordsList = await wordsServices.getSuggestedWordsBasedOnTerm(term);
+  const lemmaList = Object.keys(wordsList.lemmas);
+  const rootList = Object.keys(wordsList.roots);
+  const otherWords = {
+    lemmas: await wordsServices.getWordsWithLemma(lemmaList),
+    roots: await wordsServices.getWordsWithRoot(rootList),
+  };
   const resultz = await getAyaAndSuraUsingCncptArabic(lemmaList);
-  const conceptArabicList = [...new Set(resultz.flatMap((item) => item.uniqueWords.split(',').map((word) => word.trim())))];
+  // const conceptArabicList = [...new Set(resultz.flatMap((item) => item.uniqueWords.split(',').map((word) => word.trim())))];
   const surahAndAyaList = resultz.map(({ uniqueWords, ...otherFields }) => otherFields);
-  return { surahAndAyaList, conceptArabicList, lemmaNotFound };
+  return { surahAndAyaList, lemmaList, wordsList, otherWords };
 };
 
 const getSuraAndAyaUsingWords = async (wordsArr) => {
@@ -198,6 +202,54 @@ const getSuraAndAyaUsingWords = async (wordsArr) => {
   return { surahAndAyaList, conceptArabicList };
 };
 
+const getSuraAndAyaUsingRoots = async (roots) => {
+  try {
+    const results = await sequelize.query(
+      `
+      SELECT 
+        CONCAT(v."suraNo", ':', v."ayaNo", ' - ', v."suraNameAr", ' - ', v."suraNameEn") AS "suraAyaInfo",
+        v."suraNo",
+        v."ayaNo",
+        v."suraNameEn", 
+        v."suraNameAr", 
+        v."uthmaniTextDiacritics", 
+        v."emlaeyTextNoDiacritics", 
+        v."englishTranslation",
+        m."word",
+        STRING_AGG(DISTINCT m."word", ', ') AS "uniqueWords",
+        COUNT(DISTINCT m."Lemma") AS "unique_lemma_count"
+      FROM "Mushaf" m
+      JOIN "Verses" v ON m."Chapter" = v."suraNo" AND m."Verse" = v."ayaNo"
+      WHERE m."Root" IN (:roots)
+      GROUP BY 
+        v."suraNo",
+        v."ayaNo",
+        v."suraNameEn", 
+        v."suraNameAr", 
+        v."uthmaniTextDiacritics", 
+        v."emlaeyTextNoDiacritics", 
+        v."englishTranslation",
+        m."word"
+      ORDER BY 
+        "unique_lemma_count" DESC, v."suraNo", v."ayaNo";
+    `,
+      {
+        replacements: { roots },
+        type: Sequelize.QueryTypes.SELECT,
+      }
+    );
+    const conceptArabicList = [
+      ...new Set(results.flatMap((item) => item.uniqueWords.split(',').map((word) => word.trim()))),
+    ];
+    const surahAndAyaList = results.map(({ uniqueWords, ...otherFields }) => otherFields);
+
+    return { surahAndAyaList, conceptArabicList };
+  } catch (error) {
+    console.log(error);
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, `dlds`);
+  }
+};
+
 module.exports = {
   getAyatInfo,
   searchAyatUsingTerm,
@@ -205,4 +257,5 @@ module.exports = {
   getAyaatBySuraAndAyaId,
   getSuraAndAyaFromMushafUsingTerm,
   getSuraAndAyaUsingWords,
+  getSuraAndAyaUsingRoots,
 };
