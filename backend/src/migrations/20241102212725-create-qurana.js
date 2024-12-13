@@ -27,15 +27,15 @@ module.exports = {
       },
       segmentId: {
         type: Sequelize.INTEGER,
-        allowNull: false,
+        allowNull: true,
       },
       conceptNameAr: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       conceptNameEn: {
         type: Sequelize.TEXT,
-        allowNull: false,
+        allowNull: true,
       },
       createdAt: {
         allowNull: false,

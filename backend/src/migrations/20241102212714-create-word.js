@@ -9,33 +9,23 @@ module.exports = {
       },
       surahId: {
         type: Sequelize.INTEGER,
-        // references: {
-        //   model: 'Verses',
-        //   key: 'suraNo',
-        // },
-        // onUpdate: 'CASCADE',
-        // onDelete: 'CASCADE',
+        allowNull: true,
       },
       ayaId: {
         type: Sequelize.INTEGER,
-        // references: {
-        //   model: 'Verses',
-        //   key: 'ayaNo',
-        // },
-        // onUpdate: 'CASCADE',
-        // onDelete: 'CASCADE',
+        allowNull: true,
       },
       suraName: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       word: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       root: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       createdAt: {
         allowNull: false,
@@ -46,6 +36,19 @@ module.exports = {
         type: Sequelize.DATE,
       },
     });
+
+    // Add composite foreign key constraint
+    // await queryInterface.addConstraint('Words', {
+    //   fields: ['surahId', 'ayaId'],
+    //   type: 'foreign key',
+    //   name: 'fk_words_verses', // Name of the foreign key constraint
+    //   references: {
+    //     table: 'Verses',
+    //     fields: ['suraNo', 'ayaNo'], // Composite key fields
+    //   },
+    //   onUpdate: 'CASCADE',
+    //   onDelete: 'CASCADE',
+    // });
   },
   async down(queryInterface) {
     await queryInterface.dropTable('Words');

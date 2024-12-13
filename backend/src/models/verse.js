@@ -9,6 +9,13 @@ module.exports = (sequelize, DataTypes) => {
      */
     // eslint-disable-next-line no-unused-vars
     static associate(models) {
+      // Verse.hasMany(models.Mushaf, {
+      //   foreignKey: 'Chapter',
+      //   otherKey: 'Verse',
+      //   as: 'mushafEntries',
+      //   onDelete: 'CASCADE',
+      //   onUpdate: 'CASCADE',
+      // });
       // Verse.hasMany(models.Word, {
       //   foreignKey: 'surahId',
       //   sourceKey: 'suraNo',
@@ -37,6 +44,16 @@ module.exports = (sequelize, DataTypes) => {
     {
       sequelize,
       modelName: 'Verse',
+      tableName: 'Verses',
+      indexes: [
+        {
+          fields: ['suraNo', 'ayaNo'],
+        },
+        {
+          unique: true,
+          fields: ['id', 'suraNo', 'ayaNo'],
+        },
+      ],
     }
   );
   return Verse;

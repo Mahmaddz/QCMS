@@ -4,48 +4,47 @@ module.exports = {
       id: {
         allowNull: false,
         autoIncrement: true,
-        primaryKey: true,
         type: Sequelize.INTEGER,
-      },
-      jozz: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-      },
-      page: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
       },
       suraNo: {
         type: Sequelize.INTEGER,
-        allowNull: false,
-      },
-      suraNameEn: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      suraNameAr: {
-        type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       ayaNo: {
         type: Sequelize.INTEGER,
-        allowNull: false,
+        allowNull: true,
+      },
+      jozz: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+      },
+      page: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+      },
+      suraNameEn: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      suraNameAr: {
+        type: Sequelize.STRING,
+        allowNull: true,
       },
       uthmaniTextDiacritics: {
         type: Sequelize.TEXT,
-        allowNull: false,
+        allowNull: true,
       },
       emlaeyTextNoDiacritics: {
         type: Sequelize.TEXT,
-        allowNull: false,
+        allowNull: true,
       },
       emlaeyTextDiacritics: {
         type: Sequelize.TEXT,
-        allowNull: false,
+        allowNull: true,
       },
       englishTranslation: {
         type: Sequelize.TEXT,
-        allowNull: false,
+        allowNull: true,
       },
       createdAt: {
         allowNull: false,
@@ -56,7 +55,14 @@ module.exports = {
         type: Sequelize.DATE,
       },
     });
+
+    // await queryInterface.addConstraint('Verses', {
+    //   fields: ['suraNo', 'ayaNo'],
+    //   type: 'primary key',
+    //   name: 'primary_suraNo_ayaNo',
+    // });
   },
+
   async down(queryInterface) {
     await queryInterface.dropTable('Verses');
   },
