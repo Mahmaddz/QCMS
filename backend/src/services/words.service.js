@@ -172,38 +172,26 @@ const getSuggestedWordsBasedOnTerm = async (termVal) => {
     // ========== LEMMA ==========
     if (lemmaMap.has(r.Lemma)) {
       const words = lemmaMap.get(r.Lemma) || [];
-      if (!words.includes(r.word)) {
-        lemmaMap.set(r.Lemma, [...words, r.word]);
+      if (!words.includes(r.wordLastLetterUndiacritizedWithHamza)) {
+        lemmaMap.set(r.Lemma, [...words, r.wordLastLetterUndiacritizedWithHamza]);
       }
     } else {
-      lemmaMap.set(r.Lemma, [r.word]);
+      lemmaMap.set(r.Lemma, [r.wordLastLetterUndiacritizedWithHamza]);
     }
     // ========== ROOT ==========
     if (rootMap.has(r.Root)) {
       const words = lemmaMap.get(r.Root) || [];
-      if (!words.includes(r.word)) {
-        rootMap.set(r.Root, [...words, r.word]);
+      if (!words.includes(r.wordLastLetterUndiacritizedWithHamza)) {
+        rootMap.set(r.Root, [...words, r.wordLastLetterUndiacritizedWithHamza]);
       }
     } else {
-      rootMap.set(r.Root, [r.word]);
+      rootMap.set(r.Root, [r.wordLastLetterUndiacritizedWithHamza]);
     }
   });
-
-  // return termVal.split(' ').map((t) => {
-  // const words = results.map((res) => ArabicServices.removeTashkeel(res.word));
-  // const termMatches = words.filter((match) => {
-  //   console.log(match, t);
-  //   return match === t;
-  // });
-  // console.log(termMatches);
   return {
-    // t,
-    // words: termMatches.map((item) => item.word),
     lemmas: Object.fromEntries(lemmaMap.entries()),
     roots: Object.fromEntries(rootMap.entries()),
-    // lemma: termMatches.length > 0 ? termMatches[0].Lemma : null,
   };
-  // });
 };
 
 const getSuggestedWords = async (keywords) => {
@@ -233,7 +221,7 @@ const getSuggestedWords = async (keywords) => {
 
 const getWordsWithLemma = async (wordsArray) => {
   const words = await Mushaf.findAll({
-    attributes: [[Sequelize.fn('DISTINCT', Sequelize.col('word')), 'word'], 'Lemma'],
+    attributes: [[Sequelize.fn('DISTINCT', Sequelize.col('wordLastLetterUndiacritizedWithHamza')), 'word'], 'Lemma'],
     where: {
       Lemma: {
         [Op.in]: wordsArray,
@@ -246,7 +234,7 @@ const getWordsWithLemma = async (wordsArray) => {
     if (map.has(r.Lemma)) {
       const wordTemp = map.get(r.Lemma) || [];
       if (!wordTemp.includes(r.word)) {
-        map.set(r.Lemma, [...wordTemp, r.word]);
+        map.get(r.Lemma).push(r.word);
       }
     } else {
       map.set(r.Lemma, [r.word]);
@@ -257,8 +245,8 @@ const getWordsWithLemma = async (wordsArray) => {
 };
 
 const getWordsWithRoot = async (wordsArray) => {
-  const words = await Mushaf.findAll({
-    attributes: [[Sequelize.fn('DISTINCT', Sequelize.col('word')), 'word'], 'Root'],
+  const wordz = await Mushaf.findAll({
+    attributes: [[Sequelize.fn('DISTINCT', Sequelize.col('wordLastLetterUndiacritizedWithHamza')), 'word'], 'Lemma', 'Root'],
     where: {
       Root: {
         [Op.in]: wordsArray,
@@ -267,18 +255,23 @@ const getWordsWithRoot = async (wordsArray) => {
   });
 
   const map = new Map();
-  words.forEach((r) => {
-    if (map.has(r.Root)) {
-      const wordTemp = map.get(r.Root) || [];
-      if (!wordTemp.includes(r.word)) {
-        map.set(r.Root, [...wordTemp, r.word]);
-      }
-    } else {
-      map.set(r.Root, [r.word]);
+  wordz.forEach(({ word, Lemma, Root }) => {
+    if (!map.has(Root)) {
+      map.set(Root, new Map());
     }
+    const rootMap = map.get(Root);
+    if (!rootMap.has(Lemma)) {
+      rootMap.set(Lemma, []);
+    }
+    rootMap.get(Lemma).push(word);
   });
 
-  return Object.fromEntries(map.entries());
+  return Array.from(map.entries()).map(([root, lemmaMap]) => {
+    return {
+      root,
+      lemmas: Object.fromEntries(lemmaMap.entries()),
+    };
+  });
 };
 
 module.exports = {

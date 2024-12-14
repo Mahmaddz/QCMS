@@ -1,4 +1,5 @@
 import { MAP } from "../../types/map";
+import { RootLemmaWords } from "../RootLemmaWord";
 import { SuraAyaInfo } from "../SurahAyaInfo";
 import { ErrorResponse } from "./error/error";
 
@@ -10,9 +11,8 @@ export interface SuccessResponse {
         lemmas: MAP;
         roots: MAP;
     };
-    otherWords: {
-        lemmas: MAP;
-        roots: MAP;
+    otherWords?: {
+        words: RootLemmaWords,
     };
     searchedFor?: string[];
     suggestions?: string[];

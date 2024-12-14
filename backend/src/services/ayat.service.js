@@ -150,10 +150,7 @@ const getSuraAndAyaFromMushafUsingTerm = async (term) => {
   const wordsList = await wordsServices.getSuggestedWordsBasedOnTerm(term);
   const lemmaList = Object.keys(wordsList.lemmas);
   const rootList = Object.keys(wordsList.roots);
-  const otherWords = {
-    lemmas: await wordsServices.getWordsWithLemma(lemmaList),
-    roots: await wordsServices.getWordsWithRoot(rootList),
-  };
+  const otherWords = await wordsServices.getWordsWithRoot(rootList);
   const resultz = await getAyaAndSuraUsingCncptArabic(lemmaList);
   // const conceptArabicList = [...new Set(resultz.flatMap((item) => item.uniqueWords.split(',').map((word) => word.trim())))];
   const surahAndAyaList = resultz.map(({ uniqueWords, ...otherFields }) => otherFields);
