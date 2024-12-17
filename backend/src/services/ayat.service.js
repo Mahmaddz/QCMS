@@ -105,7 +105,7 @@ const searchAyatUsingTermAndWords = async (conceptArabicList) => {
   }
 };
 
-const getAyaAndSuraUsingCncptArabic = async (lemmas) => {
+const getAyaAndSuraUsingCncptArabic = async (wordsGetUsingLemma) => {
   const query = `
     SELECT 
       CONCAT(v."suraNo", ':', v."ayaNo", ' - ', v."suraNameAr", ' - ', v."suraNameEn") AS "suraAyaInfo", 
@@ -116,7 +116,7 @@ const getAyaAndSuraUsingCncptArabic = async (lemmas) => {
       v."uthmaniTextDiacritics",
       v."emlaeyTextNoDiacritics",
       v."englishTranslation",
-      STRING_AGG(DISTINCT m."word", ', ') AS "uniqueWords",
+      STRING_AGG(DISTINCT m."wordLastLetterUndiacritizedWithHamza", ', ') AS "uniqueWords",
       COUNT(DISTINCT m."Lemma") AS "unique_lemma_count"
     FROM 
       "Mushaf" m 
@@ -125,7 +125,7 @@ const getAyaAndSuraUsingCncptArabic = async (lemmas) => {
     ON 
       v."suraNo" = m."Chapter" AND v."ayaNo" = m."Verse"
     WHERE 
-      m."Lemma" IN (:lemmas)
+      m."wordLastLetterUndiacritizedWithHamza" IN (:wordsGetUsingLemma)
     GROUP BY 
       v."suraNo",
       v."ayaNo",
@@ -139,7 +139,7 @@ const getAyaAndSuraUsingCncptArabic = async (lemmas) => {
   `;
 
   const results = await sequelize.query(query, {
-    replacements: { lemmas },
+    replacements: { wordsGetUsingLemma },
     type: sequelize.QueryTypes.SELECT,
   });
 
@@ -147,14 +147,15 @@ const getAyaAndSuraUsingCncptArabic = async (lemmas) => {
 };
 
 const getSuraAndAyaFromMushafUsingTerm = async (term) => {
-  const wordsList = await wordsServices.getSuggestedWordsBasedOnTerm(term);
+  const wordsList = await wordsServices.getSuggestedWordsBasedOnTerm(term); // (roots and lemmas) of matched words
   const lemmaList = Object.keys(wordsList.lemmas);
-  const rootList = Object.keys(wordsList.roots);
-  const otherWords = await wordsServices.getWordsWithRoot(rootList);
-  const resultz = await getAyaAndSuraUsingCncptArabic(lemmaList);
-  // const conceptArabicList = [...new Set(resultz.flatMap((item) => item.uniqueWords.split(',').map((word) => word.trim())))];
+  const otherWords = {
+    lemmasWords: await wordsServices.getWordsByLemma(lemmaList),
+    rootsWords: await wordsServices.getWordsByRoot(Object.keys(wordsList.roots)),
+  };
+  const resultz = lemmaList.length !== 0 ? await getAyaAndSuraUsingCncptArabic(Object.values(wordsList.lemmas).flat()) : [];
   const surahAndAyaList = resultz.map(({ uniqueWords, ...otherFields }) => otherFields);
-  return { surahAndAyaList, lemmaList, wordsList, otherWords };
+  return { surahAndAyaList, wordsList, otherWords };
 };
 
 const getSuraAndAyaUsingWords = async (wordsArr) => {
@@ -169,12 +170,12 @@ const getSuraAndAyaUsingWords = async (wordsArr) => {
       v."uthmaniTextDiacritics", 
       v."emlaeyTextNoDiacritics", 
       v."englishTranslation",
-      m."word",
-      STRING_AGG(DISTINCT m."word", ', ') AS "uniqueWords",
+      m."wordLastLetterUndiacritizedWithHamza",
+      STRING_AGG(DISTINCT m."wordLastLetterUndiacritizedWithHamza", ', ') AS "uniqueWords",
       COUNT(DISTINCT m."Lemma") AS "unique_lemma_count"
     FROM "Mushaf" m
     JOIN "Verses" v ON m."Chapter" = v."suraNo" AND m."Verse" = v."ayaNo"
-    WHERE m."word" IN (:wordsArr)
+    WHERE m."wordLastLetterUndiacritizedWithHamza" IN (:wordsArr)
     GROUP BY 
       v."suraNo",
       v."ayaNo",
@@ -183,7 +184,7 @@ const getSuraAndAyaUsingWords = async (wordsArr) => {
       v."uthmaniTextDiacritics", 
       v."emlaeyTextNoDiacritics", 
       v."englishTranslation",
-      m."word"
+      m."wordLastLetterUndiacritizedWithHamza"
     ORDER BY 
       "unique_lemma_count" DESC, v."suraNo", v."ayaNo";
   `,
@@ -193,8 +194,8 @@ const getSuraAndAyaUsingWords = async (wordsArr) => {
     }
   );
 
-  const conceptArabicList = [...new Set(results.map((item) => item.word))];
-  const surahAndAyaList = results.map(({ word, ...otherFields }) => otherFields);
+  const conceptArabicList = [...new Set(results.map((item) => item.wordLastLetterUndiacritizedWithHamza))];
+  const surahAndAyaList = results.map(({ wordLastLetterUndiacritizedWithHamza, ...otherFields }) => otherFields);
 
   return { surahAndAyaList, conceptArabicList };
 };

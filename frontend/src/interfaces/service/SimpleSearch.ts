@@ -11,8 +11,9 @@ export interface SuccessResponse {
         lemmas: MAP;
         roots: MAP;
     };
-    otherWords?: {
-        words: RootLemmaWords,
+    otherWords: { 
+        lemmasWords: MAP;
+        rootsWords: RootLemmaWords[];
     };
     searchedFor?: string[];
     suggestions?: string[];

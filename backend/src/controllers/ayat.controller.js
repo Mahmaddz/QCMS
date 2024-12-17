@@ -26,7 +26,7 @@ const searchAyat = catchAsync(async (req, res) => {
   if (!words) {
     const updatedTerm = ArabicServices.removeTashkeel(term);
     result = await ayatServices.getSuraAndAyaFromMushafUsingTerm(updatedTerm);
-    if (result.lemmaList.length === 0) {
+    if (Object.keys(result.wordsList.lemmas).length === 0) {
       suggestions = await wordsServices.getSuggestedWords(term);
     }
   } else {

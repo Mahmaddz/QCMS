@@ -6,11 +6,12 @@ import Toaster from '../utils/helper/Toaster';
 import { getAyatInfo } from '../services/Search/getAyatInfo.service';
 import { searchAyats } from '../services/Search/getAyats.service';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
-import { MAP } from '../types/map';
-import MapDisplay from './MapDisplay';
 import uniqueID from '../utils/helper/UniqueID';
-import { mergeMaps } from '../utils/functions/mergeMap';
-
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import RemoveCircleOutlineOutlinedIcon from '@mui/icons-material/RemoveCircleOutlineOutlined';
+// import { MAP } from '../types/map';
+// import MapDisplay from './MapDisplay';
 
 const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam) => {
 
@@ -28,20 +29,8 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
         isQurana: false,
         isQurany: false
     }); 
-    const [lemmas, setLemmas] = useState<MAP>({});
-    const [roots, setRoots] = useState<MAP>({});
-
-    // const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    //     const isChecked = event.target.checked;
-    //     setChecked((prev) => ({
-    //         ...prev,
-    //         allSelect: isChecked,
-    //     }));
-    //     setRelatedSearch((prev) =>
-    //         prev.map((item) => ({ ...item, isSelected: isChecked }))
-    //     );
-    //     setSelectedKeywords(isChecked ? relatedSearch.map((rs) => rs.word) : []);
-    // };
+    const [rootLemmaData, setRootLemmaData] = useState<{ root: string; lemmas: { [lemma: string]: string[]; }; }[]>([]);
+    // const [lemmaData, setLemmaData] = useState<MAP>();
 
     const handleChangeSearch = (value: string) => setSearch(value);
 
@@ -81,8 +70,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
         setSearchedCount(0);
         setSelectedKeywords([]);
         setRelatedSearch([]);
-        setLemmas({});
-        setRoots({});
+        setRootLemmaData([]);
 
         setChecked((prev) => ({
             ...prev,
@@ -92,14 +80,12 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
         if(!(chkbox.isLemma || chkbox.isQurana || chkbox.isQurany || chkbox.isTag)) {
             const response = await searchAyats(search);
             if (response.success) {
-                console.log(response.otherWords.lemmas);
-                console.log(response.words.lemmas)
-                setLemmas(mergeMaps(response.words.lemmas, response.otherWords.lemmas));
-                setRoots(mergeMaps(response.words.roots, response.otherWords.roots));
+                setRootLemmaData(response.otherWords.rootsWords);
+                // setLemmaData(response.otherWords.lemmasWords);
                 setSuggestions(response.suggestions || []);
                 const arrays = [
-                    ...Object.values(response.otherWords.lemmas).flat().map(word => ({ word, isSelected: false })),
-                    ...Object.values(response.otherWords.roots).flat().map(word => ({ word, isSelected: false })),
+                    ...Object.values(response.otherWords.lemmasWords).flat().map(word => ({ word, isSelected: false })),
+                    ...Object.values(response.otherWords.rootsWords.map(r => Object.values(r.lemmas)).flat()).flat().map(word => ({ word, isSelected: false })),
                     ...Object.values(response.words.lemmas).flat().map(word => ({ word, isSelected: true })), 
                     ...Object.values(response.words.roots).flat().map(word => ({ word, isSelected: true })),
                 ];
@@ -135,10 +121,6 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
         }
     }
 
-    useEffect(() => {
-        console.log(lemmas);
-    }, [lemmas])
-
     const getResultBasedOnSuggestedWords = async () => {
         window.scrollTo({ top: 0, behavior: 'smooth', left: 10 });
         if(!(chkbox.isLemma || chkbox.isQurana || chkbox.isQurany || chkbox.isTag)) {
@@ -167,22 +149,30 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
         return () => clearTimeout(timeId);
     }, [selectedKeywords]);
 
-    const handleToggle = async (value: string) => {
-        console.log(value);
+    const handleToggle = async (values: string[]) => {
         setRelatedSearch((prev) => {
             const updatedSearch = prev.map((item) =>
-                item.word === value ? { ...item, isSelected: !item.isSelected } : item
+                values.includes(item.word) ? { ...item, isSelected: !item.isSelected } : item
             );
-            const allSelected = updatedSearch.every((item) => item.isSelected);
-            setChecked((prevChecked) => ({
-                ...prevChecked,
-                allSelect: allSelected,
-            }));
             const newSelectedKeywords = updatedSearch.filter((rs) => rs.isSelected).map((rs) => rs.word);
             setSelectedKeywords(newSelectedKeywords);
             return updatedSearch;
         });
     };
+
+    const isWordSelected = (word: string) => {
+        return relatedSearch.some(rs => rs.word === word && rs.isSelected);
+    }
+
+    const selectAllLemmaWords = (root: string, lemma: string) => {
+        const lemmaWords = rootLemmaData.find((r) => r.root === root)?.lemmas[lemma] || [];
+        const areAllSelected = lemmaWords.every((word) => isWordSelected(word));
+        if (areAllSelected) {
+            handleToggle(lemmaWords);
+        } else {
+            handleToggle(lemmaWords.filter((word) => !isWordSelected(word)));
+        }
+    }
 
     return (
         <>
@@ -207,7 +197,6 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
                     }
                 }}
             >
-                {/* First Box: Search and Filters */}
                 <Box 
                     sx={{ 
                         display: 'flex', 
@@ -217,7 +206,6 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
                         marginRight: { xs: 0, sm: 10 },  
                     }}
                 >
-                    {/* Search Field */}
                     <TextField
                         label="Search"
                         variant="outlined"
@@ -236,8 +224,6 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
                             },
                         }}
                     />
-
-                    {/* Filters in Flex Row */}
                     <Box 
                         sx={{ 
                             display: 'flex', 
@@ -287,7 +273,6 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
                     </Box>
                 </Box>
 
-                {/* Second Box: Checkboxes */}
                 <Box 
                     sx={{ 
                         display: 'flex', 
@@ -298,7 +283,6 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
                         paddingInline: { xs: '10px', sm: 0 },
                     }}
                 >
-                    {/* Checkboxes in two columns */}
                     <Box sx={{ display: 'flex', flexDirection: {xs: 'row', sm: 'column'}, gap: '5px' }}>
                         <FormControlLabel
                             control={<Checkbox />}
@@ -337,8 +321,6 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
                         />
                     </Box>
                 </Box>
-
-                {/* Third Box: Search Button */}
                 <Box 
                     sx={{ 
                         display: 'flex', 
@@ -459,93 +441,21 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
                 )
             }
 
-            {/* {
-                relatedSearch?.length > 0 && (
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            width: '75%',
-                            margin: '0 auto',
-                            padding: '20px',
-                            backgroundColor: '#f9f9f9',
-                            borderRadius: '12px',
-                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                        }}
-                    >
-                        <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                            <Typography
-                                sx={{
-                                    fontWeight: 'bold',
-                                    fontSize: '20px',
-                                    color: 'primary.main',
-                                    marginBottom: '12px',
-                                    flex: 1
-                                }}
-                            >
-                                Searched For
-                            </Typography>
-                            <Box 
-                                sx={{ 
-                                    display: 'flex', 
-                                    alignItems: 'center', 
-                                    gap: '8px' 
-                                }}
-                            >
-                                <Tooltip title='Select All' arrow>
-                                    <Switch
-                                        checked={checked.allSelect}
-                                        onChange={handleChange}
-                                        inputProps={{ 'aria-label': 'controlled' }}
-                                    />
-                                </Tooltip>
-                            </Box>
-                        </Box>
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, marginTop: '12px', justifyContent: { xs: 'flex-start', sm: 'space-between' },  }}>
-                            {relatedSearch.map((item) => (
-                                <Chip
-                                    key={uniqueID()}
-                                    label={item.word}
-                                    onClick={() => handleToggle(item.word)}
-                                    icon={
-                                        item.isSelected ? (
-                                            <CheckCircleIcon color='inherit' />
-                                        ) : (
-                                            <CheckCircleOutlineIcon  />
-                                        )
-                                    }
-                                    sx={{
-                                        backgroundColor: '#CCCCFF',
-                                        color: 'primary.main',
-                                        fontSize: '19px',
-                                        padding: '6px 12px',
-                                        borderRadius: '16px',
-                                        '& .MuiChip-deleteIcon': {
-                                            color: 'primary.main',
-                                            '&:hover': {
-                                                color: 'primary.dark',
-                                            },
-                                        },
-                                    }}
-                                />
-                            ))}
-                        </Box>                     
-                    </Box>
-                )
-            } */}
-
-            <Box
-                sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    width: '75%',
-                    margin: '0 auto',
-                }}
-            >
-                { Object.entries(lemmas).length > 0 && <MapDisplay title='Lemma' maps={lemmas} setterFunc={handleToggle} relatedWords={relatedSearch}/> }
-                { Object.entries(roots).length > 0 && <MapDisplay title='Roots' maps={roots} setterFunc={handleToggle} relatedWords={relatedSearch}/> }
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', padding: '10px', width: '85%', gap: 3 }}>
+                <Typography variant="body2" sx={{ color: 'primary.main' }}>
+                    {searchedCount === 0 ? (
+                        "Nothing Found"
+                    ) : searchedCount > 0 ? (
+                        <>
+                            <Box component="span" sx={{ fontWeight: 'bold' }}>
+                                {searchedCount}
+                            </Box>{" "}
+                            search results
+                        </>
+                    ) : (
+                        "Enter values to search"
+                    )}
+                </Typography>
             </Box>
 
             { relatedSearch?.length > 0 && 
@@ -558,9 +468,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
                         width: '75%',
                         margin: '0 auto',
                         padding: '20px',
-                        backgroundColor: '#f9f9f9',
                         borderRadius: '12px',
-                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
                     }}
                 >
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
@@ -569,12 +477,13 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
                                 display: 'flex',
                                 flexWrap: 'wrap',
                                 gap: 1,
-                                marginTop: '30px',
+                                // marginTop: '30px',
                                 justifyContent: { xs: 'center', sm: 'flex-start' },
+                                margin: "0 auto",
                                 border: '2px solid #CCCCFF',
-                                padding: '10px',
+                                padding: '25px',
                                 borderRadius: '8px',
-                                width: '95%',
+                                width: '90%',
                                 boxSizing: 'border-box',
                             }}
                         >
@@ -588,7 +497,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
                                     textAlign: { xs: 'center', sm: 'left' },
                                 }}
                             >
-                                Selected Keywords:
+                                Selected Keywords
                             </Typography>
 
                             {relatedSearch.map((item) => (
@@ -611,16 +520,141 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
                 </Box>
             }
 
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', padding: '10px', width: '85%', gap: 3 }}>
-                <Typography variant="body2" sx={{ color: 'primary.main' }}>
-                    {
-                        searchedCount === 0 ? "Nothing Found" 
-                        : 
-                        searchedCount > 0 ? `${searchedCount} search results`
-                        : 
-                        "Enter values to search"
-                    }
-                </Typography>
+            <Box 
+                sx={{ 
+                    display: 'flex',
+                    flexDirection: 'column',
+                    width: '70%',
+                    margin: '0 auto',
+                    padding: '20px',
+                }}
+            >
+
+                {/* <MapDisplay maps={lemmaData} title='Lemmas' relatedWords={relatedSearch} setterFunc={handleToggle} /> */}
+
+                {rootLemmaData && rootLemmaData.map((item) => (
+                <Box key={item.root} sx={{ marginBottom: 4 }}>
+                    <Typography
+                        variant="h4"
+                        component="div"
+                        sx={{
+                            fontWeight: 'bold',
+                            color: 'primary.main',
+                            marginBottom: 2,
+                            position: 'relative',
+                            display: 'inline-block',
+                            '&::after': {
+                                content: '""',
+                                position: 'absolute',
+                                width: '100%',
+                                height: '4px',
+                                bottom: '-4px',
+                                left: 0,
+                                background: 'linear-gradient(90deg, #3A8DFF, #20B2AA)',
+                                borderRadius: '2px',
+                            },
+                        }}
+                    >
+                        {item.root}
+                    </Typography>
+                    {Object.entries(item.lemmas).map(([lemma, words]) => {
+                        const areAllSelected = words.every((word) => isWordSelected(word));
+                        const isPartiallySelected = words.some((word) => isWordSelected(word)) && !areAllSelected;
+
+                        return (
+                            <Box
+                                key={lemma}
+                                sx={{
+                                    marginBottom: 3,
+                                    display: 'grid',
+                                    gridTemplateColumns: '150px auto',
+                                    columnGap: '16px',
+                                    alignItems: 'flex-start',
+                                    '@media (max-width: 600px)': {
+                                        gridTemplateColumns: '1fr',
+                                    },
+                                }}
+                            >
+                                <Box>
+                                    <Typography
+                                        variant="h6"
+                                        component="div"
+                                        sx={{
+                                            fontWeight: 'bold',
+                                            color: areAllSelected
+                                                ? 'success.main'
+                                                : isPartiallySelected
+                                                ? 'warning.main'
+                                                : 'secondary.main',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            marginLeft: {sm: 6},
+                                            marginBottom: {xs: 2},
+                                            gap: 1,
+                                            cursor: 'pointer',
+                                            transition: 'color 0.3s ease, transform 0.2s ease',
+                                            '&:hover': {
+                                                color: '#20B2AA',
+                                                transform: 'scale(1.05)',
+                                            },
+                                            '@media (max-width: 600px)': {
+                                                fontSize: 16,
+                                            },
+                                        }}
+                                        onClick={() => selectAllLemmaWords(item.root, lemma)}
+                                    >
+                                        {lemma}
+                                        {areAllSelected && <CheckCircleIcon color="success" />}
+                                        {isPartiallySelected && <RemoveCircleOutlineOutlinedIcon color="warning" />}
+                                    </Typography>
+                                </Box>
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        flexWrap: 'wrap',
+                                        gap: '8px',
+                                        '@media (max-width: 600px)': {
+                                            justifyContent: 'center',
+                                        },
+                                    }}
+                                >
+                                    {words.map((word: string) => (
+                                        <Chip
+                                            key={word}
+                                            label={word}
+                                            onClick={() => handleToggle([word])}
+                                            icon={
+                                                isWordSelected(word) ? (
+                                                    <CheckCircleIcon color="inherit" />
+                                                ) : (
+                                                    <CheckCircleOutlineIcon />
+                                                )
+                                            }
+                                            sx={{
+                                                backgroundColor: isWordSelected(word)
+                                                    ? 'success.light'
+                                                    : '#CCCCFF',
+                                                color: isWordSelected(word) ? 'white' : 'primary.main',
+                                                fontSize: '16px',
+                                                padding: '6px 12px',
+                                                borderRadius: '16px',
+                                                '&:hover': {
+                                                    backgroundColor: isWordSelected(word)
+                                                        ? 'success.dark'
+                                                        : '#B3B3FF',
+                                                },
+                                                '@media (max-width: 600px)': {
+                                                    fontSize: '14px',
+                                                },
+                                            }}
+                                        />
+                                    ))}
+                                </Box>
+                            </Box>
+                        );
+                    })}
+                </Box>
+            ))}
             </Box>
 
             <Divider sx={{ width: '80%', margin: '20px auto', height: '2px', backgroundColor: 'primary.main' }} />

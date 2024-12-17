@@ -4,7 +4,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import uniqueID from '../utils/helper/UniqueID';
 
-const MapDisplay = ({ maps, title, setterFunc, relatedWords }: { maps: MAP, title: string, setterFunc: (val: string) => Promise<void>, relatedWords: { word: string, isSelected: boolean }[] }) => {
+const MapDisplay = ({ maps, title, setterFunc, relatedWords }: { maps: MAP | undefined, title: string, setterFunc: (val: string) => Promise<void>, relatedWords: { word: string, isSelected: boolean }[] }) => {
     return (
         <Box sx={{ padding: '16px' }}>
             <Box>
@@ -19,7 +19,7 @@ const MapDisplay = ({ maps, title, setterFunc, relatedWords }: { maps: MAP, titl
                     {title}
                 </Typography>
 
-                {Object.entries(maps).map(([root, words]) => (
+                {maps && Object.entries(maps).map(([root, words]) => (
                     <Box
                         key={uniqueID()}
                         sx={{

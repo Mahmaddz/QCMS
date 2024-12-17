@@ -108,55 +108,27 @@ const getSurahAndAyaByCncptArabicWords = async (conceptArabicList) => {
 
 const getSuggestedWordsBasedOnTerm = async (termVal) => {
   const searchValue = termVal.split(' ');
+
+  const fields = [
+    'word',
+    'wordLastLetterUndiacritizedWithHamza',
+    'wordLastLetterUndiacritizedNoHamza',
+    'wordUndiacritizedWithHamza',
+    'wordUndiacritizedNoHamza',
+    'wordLastLetterUndiacritizedWithHamzaNowaw',
+    'wordLastLetterUndiacritizedNoHamzaNowaw',
+    'wordUndiacritizedWithHamzaNowaw',
+    'wordUndiacritizedNoHamzaNowaw',
+  ];
+
   const results = await Mushaf.findAll({
+    attributes: ['id', 'Chapter', 'Verse', 'Root', 'Lemma', 'word', 'wordLastLetterUndiacritizedWithHamza'],
     where: {
-      [Op.or]: [
-        {
-          word: {
-            [Op.iLike]: { [Op.any]: searchValue.map((term) => `${term}`) },
-          },
+      [Op.or]: fields.map((field) => ({
+        [field]: {
+          [Op.iLike]: { [Op.any]: searchValue.map((term) => `${term}`) },
         },
-        {
-          wordLastLetterUndiacritizedWithHamza: {
-            [Op.iLike]: { [Op.any]: searchValue.map((term) => `${term}`) },
-          },
-        },
-        {
-          wordLastLetterUndiacritizedNoHamza: {
-            [Op.iLike]: { [Op.any]: searchValue.map((term) => `${term}`) },
-          },
-        },
-        {
-          wordUndiacritizedWithHamza: {
-            [Op.iLike]: { [Op.any]: searchValue.map((term) => `${term}`) },
-          },
-        },
-        {
-          wordUndiacritizedNoHamza: {
-            [Op.iLike]: { [Op.any]: searchValue.map((term) => `${term}`) },
-          },
-        },
-        {
-          wordLastLetterUndiacritizedWithHamzaNowaw: {
-            [Op.iLike]: { [Op.any]: searchValue.map((term) => `${term}`) },
-          },
-        },
-        {
-          wordLastLetterUndiacritizedNoHamzaNowaw: {
-            [Op.iLike]: { [Op.any]: searchValue.map((term) => `${term}`) },
-          },
-        },
-        {
-          wordUndiacritizedWithHamzaNowaw: {
-            [Op.iLike]: { [Op.any]: searchValue.map((term) => `${term}`) },
-          },
-        },
-        {
-          wordUndiacritizedNoHamzaNowaw: {
-            [Op.iLike]: { [Op.any]: searchValue.map((term) => `${term}`) },
-          },
-        },
-      ],
+      })),
     },
     order: [
       ['id', 'ASC'],
@@ -164,6 +136,8 @@ const getSuggestedWordsBasedOnTerm = async (termVal) => {
       ['Verse', 'ASC'],
     ],
   });
+
+  // results.forEach((r) => console.log(r.Root, r.Lemma, r.wordLastLetterUndiacritizedWithHamza));
 
   const lemmaMap = new Map();
   const rootMap = new Map();
@@ -219,7 +193,7 @@ const getSuggestedWords = async (keywords) => {
   return new Set(r.map((re) => re.word));
 };
 
-const getWordsWithLemma = async (wordsArray) => {
+const getWordsByLemma = async (wordsArray) => {
   const words = await Mushaf.findAll({
     attributes: [[Sequelize.fn('DISTINCT', Sequelize.col('wordLastLetterUndiacritizedWithHamza')), 'word'], 'Lemma'],
     where: {
@@ -244,7 +218,7 @@ const getWordsWithLemma = async (wordsArray) => {
   return Object.fromEntries(map.entries());
 };
 
-const getWordsWithRoot = async (wordsArray) => {
+const getWordsByRoot = async (wordsArray) => {
   const wordz = await Mushaf.findAll({
     attributes: [[Sequelize.fn('DISTINCT', Sequelize.col('wordLastLetterUndiacritizedWithHamza')), 'word'], 'Lemma', 'Root'],
     where: {
@@ -281,6 +255,6 @@ module.exports = {
   getSurahAndAyaByCncptArabicWords,
   getSuggestedWordsBasedOnTerm,
   getSuggestedWords,
-  getWordsWithLemma,
-  getWordsWithRoot,
+  getWordsByLemma,
+  getWordsByRoot,
 };
