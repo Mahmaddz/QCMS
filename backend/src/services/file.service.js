@@ -116,7 +116,7 @@ const mushafInsertBulk = async (data) => {
       PoS_tags: d['PoS tags'],
       Lemma: d.Lemma,
       lemma_pattern: d['lemma pattern'],
-      Root: d.Root,
+      Root: d.Root !== '#' ? d.Root : null,
       firstRoot: d.first_root,
       wordUndiacritizedWithHamza: d.word_undiacritized_withhamza,
       wordUndiacritizedNoHamza: d.word_undiacritized_nohamza,

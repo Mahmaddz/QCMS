@@ -124,11 +124,16 @@ const getSuggestedWordsBasedOnTerm = async (termVal) => {
   const results = await Mushaf.findAll({
     attributes: ['id', 'Chapter', 'Verse', 'Root', 'Lemma', 'word', 'wordLastLetterUndiacritizedWithHamza'],
     where: {
-      [Op.or]: fields.map((field) => ({
-        [field]: {
-          [Op.iLike]: { [Op.any]: searchValue.map((term) => `${term}`) },
+      [Op.and]: [
+        { Root: { [Op.ne]: null } },
+        {
+          [Op.or]: fields.map((field) => ({
+            [field]: {
+              [Op.iLike]: { [Op.any]: searchValue.map((term) => `${term}`) },
+            },
+          })),
         },
-      })),
+      ],
     },
     order: [
       ['id', 'ASC'],
