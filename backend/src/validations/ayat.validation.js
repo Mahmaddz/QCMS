@@ -15,7 +15,15 @@ const searchAya = {
   }),
 };
 
+const surahAPIvalidation = {
+  query: Joi.object().keys({
+    suraNo: Joi.string().required(),
+    // ayaNo: Joi.string().required(),
+  }),
+};
+
 module.exports = {
   getAyaInfo,
   searchAya,
+  surahAPIvalidation,
 };

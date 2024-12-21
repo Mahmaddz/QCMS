@@ -79,6 +79,13 @@ export default function ReviewBody({ surah, aya1, aya2, tags: initialTags, showT
     handleCloseAddTagModal();
   };
 
+  const handleShowCompleteSurah = (ayatReference: string) => {
+    const [suraNo, ayaNo] = ayatReference.split('-')[0].trim().split(':');
+    // const [, suraArabicName, suraEngName] = ayatReference.split(" - ").map(val => val.trim());
+    const path = '/ayat-reference';
+    const queryParams = `?sura=${suraNo}&aya=${ayaNo}`;
+    window.open(`${window.location.origin}${path}${queryParams}`, '_blank');
+  };
 
   return (
     <Box
@@ -174,13 +181,18 @@ export default function ReviewBody({ surah, aya1, aya2, tags: initialTags, showT
             marginTop: { xs: 2, sm: 0 }
           }}
           onClick={() => {
-            console.log(surah, aya1, aya2);
+            // console.log(surah, aya1, aya2);
+            handleShowCompleteSurah(surah);
           }}
         >
           <StyledReplyTwoToneIcon
             sx={{
               fontSize: { xs: "28px", sm: "32px" },
-              color: "primary.main"
+              color: "primary.main",
+              transition: "all 0.3s ease",
+              "&:hover": {
+                color: "primary.dark",
+              },
             }}
           />
           <Typography
@@ -188,7 +200,7 @@ export default function ReviewBody({ surah, aya1, aya2, tags: initialTags, showT
             sx={{
               fontWeight: "500",
               color: "gray",
-              textWrap: 'nowrap'
+              textWrap: 'nowrap',
             }}
           >
             Jump To Verse

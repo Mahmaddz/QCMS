@@ -1,4 +1,4 @@
-import { Box, Button, Checkbox, Divider, FormControlLabel, InputAdornment, TextField, Typography, CircularProgress, Chip } from '@mui/material';
+import { Box, Button, Checkbox, FormControlLabel, InputAdornment, TextField, Typography, CircularProgress, Chip } from '@mui/material';
 import { useState, useEffect } from 'react';
 import { FilterStateParams, SearchFormParam } from '../interfaces/SearchForm';
 import { getQuranaInfo } from '../services/Search/getQuranaInfo.service';
@@ -10,8 +10,15 @@ import uniqueID from '../utils/helper/UniqueID';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import RemoveCircleOutlineOutlinedIcon from '@mui/icons-material/RemoveCircleOutlineOutlined';
-// import { MAP } from '../types/map';
-// import MapDisplay from './MapDisplay';
+
+type CheckboxState = {
+    isLemma: boolean;
+    isTag: boolean;
+    isReference: boolean;
+    isDefault: boolean;
+    isQurana: boolean;
+    isQurany: boolean;
+};
 
 const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam) => {
 
@@ -26,21 +33,25 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
     const [chkbox, setChkBox] = useState({
         isLemma: false,
         isTag: false,
+        isReference: false,
+        isDefault: true,
         isQurana: false,
         isQurany: false
     }); 
     const [rootLemmaData, setRootLemmaData] = useState<{ root: string; lemmas: { [lemma: string]: string[]; }; }[]>([]);
-    // const [lemmaData, setLemmaData] = useState<MAP>();
 
     const handleChangeSearch = (value: string) => setSearch(value);
 
     const handleChangeCheckBoxes = (e: React.SyntheticEvent<Element, Event>, checked: boolean) => {
         e.preventDefault();
         const {name} = e.target as HTMLInputElement;
-        setChkBox((prev) => ({
-            ...prev,
-            [name]: checked
-        }));
+        setChkBox((prev) => {
+            const updatedState: CheckboxState = Object.keys(prev).reduce((acc, key) => {
+                acc[key as keyof CheckboxState] = key === name ? checked : false;
+                return acc;
+            }, {} as CheckboxState);
+            return updatedState;
+        });
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -76,12 +87,20 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
             ...prev,
             firstRender: true,
         }))
-        
-        if(!(chkbox.isLemma || chkbox.isQurana || chkbox.isQurany || chkbox.isTag)) {
+
+        if (!(chkbox.isLemma || chkbox.isQurana || chkbox.isQurany || chkbox.isTag || chkbox.isDefault || chkbox.isReference)) {
+            const response = await getAyatInfo(search, filter.aya as string || null, filter.surah as string || null);
+            if (response.success) {
+                handleResultantResponse(response.data);
+            }
+            else if (!response.success) {
+                setLoading(false);
+            }
+        }
+        if(chkbox.isDefault) {
             const response = await searchAyats(search);
             if (response.success) {
                 setRootLemmaData(response.otherWords.rootsWords);
-                // setLemmaData(response.otherWords.lemmasWords);
                 setSuggestions(response.suggestions || []);
                 const arrays = [
                     ...Object.values(response.otherWords.lemmasWords).flat().map(word => ({ word, isSelected: false })),
@@ -102,21 +121,20 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
                 setLoading(false);
             }
         }
-        if (chkbox.isLemma) {
-            const response = await getAyatInfo(search, filter.aya as string || null, filter.surah as string || null);
-            if (response.success) {
-                handleResultantResponse(response.data);
-            }
-            else if (!response.success) {
-                setLoading(false);
-            }
+        if (chkbox.isReference) {
+            Toaster("Reference => Not Implemented Yet")
+            setLoading(false);
+        }
+        if (chkbox.isTag) {
+            Toaster("Tags => Not Implemented Yet")
+            setLoading(false);
         }
         if (chkbox.isQurany) {
             Toaster("Qurany => Not Implemented Yet")
             setLoading(false);
         }
-        if (chkbox.isTag) {
-            Toaster("Tags => Not Implemented Yet")
+        if (chkbox.isLemma) {
+            Toaster("Lemma => Not Implemented Yet")
             setLoading(false);
         }
     }
@@ -286,18 +304,18 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
                     <Box sx={{ display: 'flex', flexDirection: {xs: 'row', sm: 'column'}, gap: '5px' }}>
                         <FormControlLabel
                             control={<Checkbox />}
-                            name='isLemma'
-                            checked={chkbox.isLemma}
+                            name='isDefault'
+                            checked={chkbox.isDefault}
                             onChange={handleChangeCheckBoxes}
-                            label="Aya"
+                            label="Default"
                             sx={{ '& .MuiFormControlLabel-label': { fontWeight: '500' } }}
                         />
                         <FormControlLabel
                             control={<Checkbox />}
-                            name='isQurany'
-                            checked={chkbox.isQurany}
+                            name='isReference'
+                            checked={chkbox.isReference}
                             onChange={handleChangeCheckBoxes}
-                            label="Qurany"
+                            label="Reference"
                             sx={{ '& .MuiFormControlLabel-label': { fontWeight: '500' } }}
                         />
                     </Box>
@@ -311,14 +329,14 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
                             label="Tag"
                             sx={{ '& .MuiFormControlLabel-label': { fontWeight: '500' } }}
                         />
-                        <FormControlLabel
+                        {/* <FormControlLabel
                             control={<Checkbox />}
                             name='isQurana'
                             checked={chkbox.isQurana}
                             onChange={handleChangeCheckBoxes}
                             label="Qurana"
                             sx={{ '& .MuiFormControlLabel-label': { fontWeight: '500' } }}
-                        />
+                        /> */}
                     </Box>
                 </Box>
                 <Box 
@@ -656,8 +674,6 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
                 </Box>
             ))}
             </Box>
-
-            <Divider sx={{ width: '80%', margin: '20px auto', height: '2px', backgroundColor: 'primary.main' }} />
         </>
     )
 }

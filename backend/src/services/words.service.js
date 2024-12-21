@@ -223,6 +223,43 @@ const getWordsByLemma = async (wordsArray) => {
   return Object.fromEntries(map.entries());
 };
 
+// const getWordsByRoot = async (wordsArray) => {
+//   const wordz = await Mushaf.findAll({
+//     attributes: [
+//       [Sequelize.col('wordLastLetterUndiacritizedWithHamza'), 'word'],
+//       'Lemma',
+//       'Root',
+//       [Sequelize.fn('COUNT', Sequelize.col('wordLastLetterUndiacritizedWithHamza')), 'wordCount'],
+//     ],
+//     where: {
+//       Root: {
+//         [Op.in]: wordsArray,
+//       },
+//     },
+//     group: ['wordLastLetterUndiacritizedWithHamza', 'Lemma', 'Root'],
+//   });
+
+//   const map = new Map();
+//   wordz.forEach((w) => {
+//     const { word, Lemma, Root, wordCount } = w.dataValues;
+//     if (!map.has(Root)) {
+//       map.set(Root, new Map());
+//     }
+//     const rootMap = map.get(Root);
+//     if (!rootMap.has(Lemma)) {
+//       rootMap.set(Lemma, []);
+//     }
+//     rootMap.get(Lemma).push(`${word} - ${wordCount}`);
+//   });
+
+//   return Array.from(map.entries()).map(([root, lemmaMap]) => {
+//     return {
+//       root,
+//       lemmas: Object.fromEntries(lemmaMap.entries()),
+//     };
+//   });
+// };
+
 const getWordsByRoot = async (wordsArray) => {
   const wordz = await Mushaf.findAll({
     attributes: [[Sequelize.fn('DISTINCT', Sequelize.col('wordLastLetterUndiacritizedWithHamza')), 'word'], 'Lemma', 'Root'],

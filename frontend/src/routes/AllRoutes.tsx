@@ -11,6 +11,7 @@ import TagReview from '../pages/TagReview';
 import PageNotFound from '../pages/PageNotFound';
 import ForgotPassword from '../pages/ForgotPassword';
 import ResetPassword from '../pages/ResetPassword';
+import SurahAyahList from '../pages/SurahAyahList';
 
 export const componentRoutes: PageRoute[] = [
     {
@@ -18,6 +19,12 @@ export const componentRoutes: PageRoute[] = [
         element: <Home/>,
         allowedRoles: [USER.PUBLIC, USER.REVIEWER, USER.ADMIN],
         displayName: "HOME"
+    },
+    {
+        path: "/ayat-reference",
+        element: <SurahAyahList/>,
+        allowedRoles: [USER.PUBLIC, USER.REVIEWER, USER.ADMIN],
+        displayName: ""
     },
     {
         path: "/login",

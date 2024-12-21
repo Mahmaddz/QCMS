@@ -248,6 +248,28 @@ const getSuraAndAyaUsingRoots = async (roots) => {
   }
 };
 
+const getCompleteSurahWithAyaats = async (sura) => {
+  if (!sura) throw new ApiError(httpStatus.UNPROCESSABLE_ENTITY, `Sura No. and Aya No. did not found`);
+  try {
+    const verses = await Verse.findAll({
+      attributes: [
+        [Sequelize.col('suraNameEn'), 'suraNameEn'],
+        [Sequelize.col('suraNameAr'), 'suraNameAr'],
+        [Sequelize.col('ayaNo'), 'ayaNo'],
+        [Sequelize.col('uthmaniTextDiacritics'), 'uthmani'],
+        [Sequelize.col('emlaeyTextNoDiacritics'), 'noDiaEmlaye'],
+        [Sequelize.col('emlaeyTextDiacritics'), 'emlaye'],
+        [Sequelize.col('englishTranslation'), 'english'],
+      ],
+      where: { suraNo: sura },
+      order: [['ayaNo', 'ASC']],
+    });
+    return verses;
+  } catch (error) {
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, `getCompleteSurahWithAyaats failed to execute`);
+  }
+};
+
 module.exports = {
   getAyatInfo,
   searchAyatUsingTerm,
@@ -256,4 +278,5 @@ module.exports = {
   getSuraAndAyaFromMushafUsingTerm,
   getSuraAndAyaUsingWords,
   getSuraAndAyaUsingRoots,
+  getCompleteSurahWithAyaats,
 };

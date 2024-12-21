@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
+// import Header from '../layout/Header';
 
 const Loader = ({ duration = 3000 }) => {
     const [loading, setLoading] = useState(true);
@@ -13,6 +14,10 @@ const Loader = ({ duration = 3000 }) => {
         return () => clearTimeout(timer);
     }, [duration]);
 
+    useEffect(() => {
+        window.scrollTo(0, 0)
+    }, [])
+
     if (loading) {
         return (
             <Box
@@ -23,6 +28,7 @@ const Loader = ({ duration = 3000 }) => {
                 height: '100vh',
                 }}
             >
+                {/* <Header/> */}
                 <CircularProgress />
             </Box>
         );

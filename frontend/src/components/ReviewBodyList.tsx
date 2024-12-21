@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Box, Button, Typography } from "@mui/material";
+import { useEffect, useRef, useState } from "react";
+import { Box, Divider, Pagination } from "@mui/material";
 import { RBL_Params } from "../interfaces/ReviewBodyList";
 import uniqueID from "../utils/helper/UniqueID";
 import { Tags } from "../utils/Table/ReviewTabs/Tags";
@@ -11,6 +11,7 @@ const ReviewBodyList = ({ showTags, searchData }: RBL_Params) => {
     const [currentPage, setCurrentPage] = useState(1);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [resolvedData, setResolvedData] = useState<any[]>([]);
+    const dividerRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
         setCurrentPage(1);
@@ -21,7 +22,6 @@ const ReviewBodyList = ({ showTags, searchData }: RBL_Params) => {
         return response.success ? response.data : false;
     };
 
-    // Update resolvedData based on the current page
     useEffect(() => {
         const fetchResolvedData = async () => {
             if (paginatedData) {
@@ -38,19 +38,28 @@ const ReviewBodyList = ({ showTags, searchData }: RBL_Params) => {
         fetchResolvedData();
     }, [currentPage, searchData]);
 
-    // Pagination calculation
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     const paginatedData = searchData?.slice(startIndex, endIndex);
     const totalPages = searchData ? Math.ceil(searchData.length / itemsPerPage) : 0;
 
-    const handlePageChange = (newPage: number) => {
+    const handlePageChange = (_event: React.ChangeEvent<unknown>, newPage: number) => {
         setCurrentPage(newPage);
-        window.scrollTo({ top: 0, behavior: "smooth" });
+        dividerRef.current?.scrollIntoView({ behavior: "smooth" });
+        setTimeout(() => {
+            window.scrollBy({ top: -100, behavior: "smooth" }); 
+        }, 700);
     };
+    
 
     return (
         <>
+            <Box ref={dividerRef}>
+                <Divider
+                    sx={{ width: "80%", margin: "20px auto", height: "3px", backgroundColor: "primary.main" }}
+                />
+            </Box>
+
             {resolvedData.map((a) => (
                 <ReviewBody
                     key={uniqueID()}
@@ -66,29 +75,14 @@ const ReviewBodyList = ({ showTags, searchData }: RBL_Params) => {
             {/* Pagination Controls */}
             {searchData && searchData.length > 0 && (
                 <Box display="flex" justifyContent="center" alignItems="center" mt={3} marginBottom={10}>
-                    <Button
-                        variant="contained"
+                    <Pagination
+                        count={totalPages}
+                        page={currentPage}
+                        onChange={handlePageChange}
+                        showFirstButton
+                        showLastButton
                         color="primary"
-                        onClick={() => handlePageChange(currentPage - 1)}
-                        disabled={currentPage === 1}
-                        sx={{ mr: 2 }}
-                    >
-                        Previous
-                    </Button>
-
-                    <Typography variant="body1">
-                        Page {currentPage} of {totalPages}
-                    </Typography>
-
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={() => handlePageChange(currentPage + 1)}
-                        disabled={currentPage === totalPages}
-                        sx={{ ml: 2 }}
-                    >
-                        Next
-                    </Button>
+                    />
                 </Box>
             )}
         </>

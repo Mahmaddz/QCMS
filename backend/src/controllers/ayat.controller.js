@@ -63,8 +63,20 @@ const getAyatUsingLemmaApi = catchAsync(async (req, res) => {
   });
 });
 
+const getCompleteSurah = catchAsync(async (req, res) => {
+  const result = await ayatServices.getCompleteSurahWithAyaats(req.query.suraNo);
+  return res.status(httpStatus.OK).json({
+    success: true,
+    result: {
+      totalAyats: result.length,
+      ayaat: result,
+    },
+  });
+});
+
 module.exports = {
   getAyatInfo,
   searchAyat,
   getAyatUsingLemmaApi,
+  getCompleteSurah,
 };
