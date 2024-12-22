@@ -183,7 +183,7 @@ export default function ReviewBody({ verses, tags: initialTags, showTags, isLoad
                           lineHeight: 1.5,
                         }}
                       >
-                        POS_Tag: {verse.PoS_tags}
+                        <b>POS Tag:</b> {verse.PoS_tags}
                       </Typography>
                       <Typography
                         sx={{
@@ -192,7 +192,7 @@ export default function ReviewBody({ verses, tags: initialTags, showTags, isLoad
                           lineHeight: 1.5,
                         }}
                       >
-                        Stem_Pattern: {verse.Stem_pattern}
+                        <b>Stem Pattern:</b> {verse.Stem_pattern}
                       </Typography>
                     </>
                   }
