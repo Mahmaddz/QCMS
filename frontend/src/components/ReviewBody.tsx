@@ -164,9 +164,9 @@ export default function ReviewBody({ verses, tags: initialTags, showTags, isLoad
             }}
           >
             {isLoading
-            ? Array.from({ length: 5 }).map((_, index) => (
+            ? Array.from({ length: 5 }).map(() => (
                 <Skeleton
-                  key={index}
+                  key={uniqueID()}
                   variant="text"
                   width={50}
                   height={40}
@@ -326,9 +326,9 @@ export default function ReviewBody({ verses, tags: initialTags, showTags, isLoad
 
         {showTags ? (
           tags && tags?.length > 0 ? (
-            tags.map((tag, index) => (
+            tags.map((tag) => (
               <Box
-                key={index}
+                key={uniqueID()}
                 sx={{
                   position: "relative",
                   display: "flex",
@@ -398,8 +398,8 @@ export default function ReviewBody({ verses, tags: initialTags, showTags, isLoad
             </Typography>
           )
         ) : (
-          isLoading && Array.from({ length: 3 }).map((_, index) => (
-            <Box key={index} sx={{ width: "150px", height: "40px" }}>
+          isLoading && Array.from({ length: 3 }).map(() => (
+            <Box key={uniqueID()} sx={{ width: "150px", height: "40px" }}>
               <Skeleton
                 variant="rectangular"
                 width="100%"
@@ -656,9 +656,9 @@ export default function ReviewBody({ verses, tags: initialTags, showTags, isLoad
               Previous Comments:
             </Typography>
             {comments.length > 0 ? (
-              comments.map((comment, index) => (
+              comments.map((comment) => (
                 <Chip
-                  key={index}
+                  key={uniqueID()}
                   label={comment}
                   variant="outlined"
                   sx={{

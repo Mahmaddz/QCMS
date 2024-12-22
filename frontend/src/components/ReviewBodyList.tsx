@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useRef, useState } from "react";
 import { Box, Divider, IconButton, Pagination, Tooltip } from "@mui/material";
 import { RBL_Params } from "../interfaces/ReviewBodyList";
@@ -19,18 +20,18 @@ const ReviewBodyList = ({ showTags, searchData }: RBL_Params) => {
         setCurrentPage(1);
     }, [searchData]);
 
-    const handleGetAyaWordsAPI = async (sura: string | number, aya: string | number) => {
-        const response = await getAyaWords(sura as string, [aya as string]);
-        return response;
-    }
-
     useEffect(() => {
         const time = setTimeout(() => {
             // eslint-disable-next-line @typescript-eslint/no-unused-expressions
             currentPage !== 1 && dividerRef.current?.scrollIntoView({ behavior: "smooth" });
         }, 1000);
         return () => clearTimeout(time);
-    }, [verseWords])
+    }, [verseWords]);
+
+    const handleGetAyaWordsAPI = async (sura: string | number, aya: string | number) => {
+        const response = await getAyaWords(sura as string, [aya as string]);
+        return response;
+    }
 
     useEffect(() => {
         setVerseWords([]);

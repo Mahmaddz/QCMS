@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { Box, Button, Checkbox, FormControlLabel, InputAdornment, TextField, Typography, CircularProgress, Chip } from '@mui/material';
 import { useState, useEffect } from 'react';
 import { FilterStateParams, SearchFormParam } from '../interfaces/SearchForm';
@@ -22,7 +23,7 @@ type CheckboxState = {
 
 const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch }: SearchFormParam) => {
 
-    const [relatedSearch, setRelatedSearch] = useState<{word: string, isSelected: boolean}[]>([]);
+    const [relatedSearch, setRelatedSearch] = useState<{word: {word: string, count: number | string}, isSelected: boolean}[]>([]);
     const [selectedKeywords, setSelectedKeywords] = useState<string[]>([]);
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [searchedCount, setSearchedCount] = useState<number>(-1);
@@ -38,7 +39,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch }: Search
         isQurana: false,
         isQurany: false
     }); 
-    const [rootLemmaData, setRootLemmaData] = useState<{ root: string; lemmas: { [lemma: string]: string[]; }; }[]>([]);
+    const [rootLemmaData, setRootLemmaData] = useState<{ root: string; lemmas: { [lemma: string]: {word: string, count: string | number}[]; }; }[]>([]);
 
     useEffect(() => {
         if (toSearch) {
@@ -73,8 +74,10 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch }: Search
     const handleResultantResponse = (data: any[]) => {
         setLoading(false);
         const uniqueData = filterUniqueBySura(data);
-        setSearchedCount((prev) => (prev ? uniqueData?.length + prev : uniqueData?.length));
-        setSearchedResult((prev) => { return prev ? [ ...prev, ...uniqueData] : [...uniqueData]});
+        // setSearchedCount((prev) => (prev ? uniqueData?.length + prev : uniqueData?.length));
+        setSearchedCount(uniqueData?.length || 0)
+        setSearchedResult(uniqueData);
+        // setSearchedResult((prev) => { return prev ? [ ...prev, ...uniqueData] : [...uniqueData]});
         setChecked((prev) => ({
             ...prev,
             firstRender: false
@@ -108,15 +111,20 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch }: Search
         if(chkbox.isDefault) {
             const response = await searchAyats(search);
             if (response.success) {
+                setLoading(false);
                 setRootLemmaData(response.otherWords.rootsWords);
                 setSuggestions(response.suggestions || []);
+                const toFind = Array.from(new Set(Object.values(response.words.lemmas).flat()));
+                // setSelectedKeywords(toFind);
                 const arrays = [
-                    ...Object.values(response.otherWords.lemmasWords).flat().map(word => ({ word, isSelected: false })),
-                    ...Object.values(response.otherWords.rootsWords.map(r => Object.values(r.lemmas)).flat()).flat().map(word => ({ word, isSelected: false })),
-                    ...Object.values(response.words.lemmas).flat().map(word => ({ word, isSelected: true })), 
-                    ...Object.values(response.words.roots).flat().map(word => ({ word, isSelected: true })),
+                    ...Object.values(response.otherWords.rootsWords.map(r => Object.values(r.lemmas)).flat())
+                        .flat()
+                        .map(word => ({
+                            word,
+                            isSelected: toFind.includes(word.word),
+                        })),
                 ];
-                setRelatedSearch(Array.from(new Map(arrays.map(item => [item.word, item])).values()) || []);
+                setRelatedSearch(Array.from(new Map(arrays.map((item) => [item.word.word, item])).values()) || []);
                 handleResultantResponse(response.data);
             }
         }
@@ -178,25 +186,25 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch }: Search
     const handleToggle = async (values: string[]) => {
         setRelatedSearch((prev) => {
             const updatedSearch = prev.map((item) =>
-                values.includes(item.word) ? { ...item, isSelected: !item.isSelected } : item
+                values.includes(item.word.word) ? { ...item, isSelected: !item.isSelected } : item
             );
-            const newSelectedKeywords = updatedSearch.filter((rs) => rs.isSelected).map((rs) => rs.word);
+            const newSelectedKeywords = updatedSearch.filter((rs) => rs.isSelected).map((rs) => rs.word.word);
             setSelectedKeywords(newSelectedKeywords);
             return updatedSearch;
         });
     };
 
     const isWordSelected = (word: string) => {
-        return relatedSearch.some(rs => rs.word === word && rs.isSelected);
+        return relatedSearch.some(rs => rs.word.word === word && rs.isSelected);
     }
 
     const selectAllLemmaWords = (root: string, lemma: string) => {
         const lemmaWords = rootLemmaData.find((r) => r.root === root)?.lemmas[lemma] || [];
-        const areAllSelected = lemmaWords.every((word) => isWordSelected(word));
+        const areAllSelected = lemmaWords.every((word) => isWordSelected(word.word));
         if (areAllSelected) {
-            handleToggle(lemmaWords);
+            handleToggle(lemmaWords.map(w => w.word));
         } else {
-            handleToggle(lemmaWords.filter((word) => !isWordSelected(word)));
+            handleToggle(lemmaWords.map(w => w.word).filter((word) => !isWordSelected(word)));
         }
     }
 
@@ -503,7 +511,6 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch }: Search
                                 display: 'flex',
                                 flexWrap: 'wrap',
                                 gap: 1,
-                                // marginTop: '30px',
                                 justifyContent: { xs: 'center', sm: 'flex-start' },
                                 margin: "0 auto",
                                 border: '2px solid #CCCCFF',
@@ -523,13 +530,13 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch }: Search
                                     textAlign: { xs: 'center', sm: 'left' },
                                 }}
                             >
-                                Selected Keywords
+                                Selected Keywords ({selectedKeywords.length || relatedSearch.filter(r => r.isSelected).length}/{relatedSearch.length})
                             </Typography>
 
                             {relatedSearch.map((item) => (
                                 item.isSelected && <Chip
                                     key={uniqueID()}
-                                    label={item.word}
+                                    label={item.word.word}
                                     sx={{
                                         backgroundColor: '#CCCCFF',
                                         color: 'primary.main',
@@ -559,7 +566,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch }: Search
                 {/* <MapDisplay maps={lemmaData} title='Lemmas' relatedWords={relatedSearch} setterFunc={handleToggle} /> */}
 
                 {rootLemmaData && rootLemmaData.map((item) => (
-                <Box key={item.root} sx={{ marginBottom: 4 }}>
+                <Box key={uniqueID()} sx={{ marginBottom: 4 }}>
                     <Typography
                         variant="h4"
                         component="div"
@@ -584,12 +591,12 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch }: Search
                         {item.root}
                     </Typography>
                     {Object.entries(item.lemmas).map(([lemma, words]) => {
-                        const areAllSelected = words.every((word) => isWordSelected(word));
-                        const isPartiallySelected = words.some((word) => isWordSelected(word)) && !areAllSelected;
+                        const areAllSelected = words.every((word) => isWordSelected(word.word));
+                        const isPartiallySelected = words.some((word) => isWordSelected(word.word)) && !areAllSelected;
 
                         return (
                             <Box
-                                key={lemma}
+                                key={uniqueID()}
                                 sx={{
                                     marginBottom: 3,
                                     display: 'grid',
@@ -644,28 +651,28 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch }: Search
                                         },
                                     }}
                                 >
-                                    {words.map((word: string) => (
+                                    {words.map((word) => (
                                         <Chip
-                                            key={word}
-                                            label={word}
-                                            onClick={() => handleToggle([word])}
+                                            key={uniqueID()}
+                                            label={`${word.word} - ${word.count}`}
+                                            onClick={() => handleToggle([word.word])}
                                             icon={
-                                                isWordSelected(word) ? (
+                                                isWordSelected(word.word) ? (
                                                     <CheckCircleIcon color="inherit" />
                                                 ) : (
                                                     <CheckCircleOutlineIcon />
                                                 )
                                             }
                                             sx={{
-                                                backgroundColor: isWordSelected(word)
+                                                backgroundColor: isWordSelected(word.word)
                                                     ? 'success.light'
                                                     : '#CCCCFF',
-                                                color: isWordSelected(word) ? 'white' : 'primary.main',
+                                                color: isWordSelected(word.word) ? 'white' : 'primary.main',
                                                 fontSize: '16px',
                                                 padding: '6px 12px',
                                                 borderRadius: '16px',
                                                 '&:hover': {
-                                                    backgroundColor: isWordSelected(word)
+                                                    backgroundColor: isWordSelected(word.word)
                                                         ? 'success.dark'
                                                         : '#B3B3FF',
                                                 },
