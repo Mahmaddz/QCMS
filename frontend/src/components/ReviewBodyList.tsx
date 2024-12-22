@@ -4,34 +4,45 @@ import { RBL_Params } from "../interfaces/ReviewBodyList";
 import uniqueID from "../utils/helper/UniqueID";
 import { Tags } from "../utils/Table/ReviewTabs/Tags";
 import ReviewBody from "./ReviewBody";
-import { getWords } from "../services/Search/getWords.service";
+import { getAyaWords } from "../services/Ayaat/getAyaWords";
+import { VerseWordsArr } from "../interfaces/ReviewBody";
 
 const ReviewBodyList = ({ showTags, searchData }: RBL_Params) => {
     const itemsPerPage = 10;
     const [currentPage, setCurrentPage] = useState(1);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const [resolvedData, setResolvedData] = useState<any[]>([]);
     const dividerRef = useRef<HTMLDivElement | null>(null);
+
+    const [verseWords, setVerseWords] = useState<VerseWordsArr[]>([]);
 
     useEffect(() => {
         setCurrentPage(1);
     }, [searchData]);
 
-    const handlerFunc = async (sura: string | number, aya: string | number) => {
-        const response = await getWords(sura as string, aya as string);
-        return response.success ? response.data : false;
-    };
+    const handleGetAyaWordsAPI = async (sura: string | number, aya: string | number) => {
+        const response = await getAyaWords(sura as string, [aya as string]);
+        return response;
+    }
 
     useEffect(() => {
+        setVerseWords([]);
         const fetchResolvedData = async () => {
             if (paginatedData) {
-                const data = await Promise.all(
-                    paginatedData.map(async (a) => ({
-                        ...a,
-                        aya2: (a.emlaeyTextNoDiacritics || await handlerFunc(a.suraNo, a.ayaNo)) || a.conceptNameAr || a.emlaeyTextNoDiacritics,
-                    }))
-                );
-                setResolvedData(data);
+                paginatedData.forEach(async (p) => {
+                    const response = await handleGetAyaWordsAPI(p.suraNo, p.ayaNo);
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const transformedAya = response.ayat.map((aya: any) => ({
+                        Chapter: aya.Chapter,
+                        Verse: aya.Verse,
+                        PoS_tags: aya.PoS_tags,
+                        Stem_pattern: aya.Stem_pattern,
+                        word: aya.word,
+                        wordUndiacritizedNoHamza: aya.wordUndiacritizedNoHamza,
+                    }));
+                    setVerseWords((prev) => ([
+                        ...prev,
+                        { ayat: transformedAya, suraName: `${transformedAya[0].Chapter}:${transformedAya[0].Verse} - ${response.suraName}` },
+                    ]));
+                });
             }
         };
 
@@ -60,19 +71,16 @@ const ReviewBodyList = ({ showTags, searchData }: RBL_Params) => {
                 />
             </Box>
 
-            {resolvedData.map((a) => (
+            {verseWords.map((a) => (
                 <ReviewBody
                     key={uniqueID()}
-                    surah={a.suraAyaInfo}
-                    aya1={a.uthmaniTextDiacritics}
-                    aya2={a.aya2}
-                    engTrans={a.englishTranslation}
+                    verses={a}
                     tags={Tags}
                     showTags={showTags}
+                    isLoading={false}
                 />
             ))}
 
-            {/* Pagination Controls */}
             {searchData && searchData.length > 0 && (
                 <Box display="flex" justifyContent="center" alignItems="center" mt={3} marginBottom={10}>
                     <Pagination

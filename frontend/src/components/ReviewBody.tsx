@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import {Dialog,DialogTitle,DialogContent,DialogActions,Typography,TextField,Button,IconButton,Box,Chip} from "@mui/material";
+import { Dialog,DialogTitle,DialogContent,DialogActions,Typography,TextField,Button,IconButton,Box,Chip, Tooltip, Skeleton } from "@mui/material";
 import {
   Save as SaveIcon,
   Delete as DeleteIcon
@@ -16,12 +16,14 @@ import { Tag } from "../interfaces/Tag";
 import { useAuth } from "../context/Auth/useAuth";
 // import { Marker } from "react-mark.js";
 import CloseIcon from "@mui/icons-material/Close";
+// import uniqueID from "../utils/helper/UniqueID";
+import { openNewTab } from "../utils/functions/openNewTab";
 
 const StyledReplyTwoToneIcon = styled(ReplyTwoToneIcon)({
   transform: "scale(-1, 1)"
 });
 
-export default function ReviewBody({ surah, aya1, aya2, tags: initialTags, showTags }: ReviewBodyProps) {
+export default function ReviewBody({ verses, tags: initialTags, showTags, isLoading }: ReviewBodyProps) {
 
   const { userRole } = useAuth();
 
@@ -56,8 +58,8 @@ export default function ReviewBody({ surah, aya1, aya2, tags: initialTags, showT
 
   const handleAddComment = () => {
     if (newComment.trim()) {
-      setComments([...comments, newComment]); // Add new comment to the list
-      setNewComment(""); // Clear the input field
+      setComments([...comments, newComment]);
+      setNewComment("");
     }
   };
 
@@ -81,11 +83,19 @@ export default function ReviewBody({ surah, aya1, aya2, tags: initialTags, showT
 
   const handleShowCompleteSurah = (ayatReference: string) => {
     const [suraNo, ayaNo] = ayatReference.split('-')[0].trim().split(':');
-    // const [, suraArabicName, suraEngName] = ayatReference.split(" - ").map(val => val.trim());
-    const path = '/ayat-reference';
-    const queryParams = `?sura=${suraNo}&aya=${ayaNo}`;
-    window.open(`${window.location.origin}${path}${queryParams}`, '_blank');
+    const data = {
+      sura: suraNo,
+      aya: ayaNo,
+    }
+    openNewTab('/ayat-reference', data);
   };
+
+  const handleShowResultAgainstTerm = (term: string) => {
+    const data = {
+      search: term
+    }
+    openNewTab('/', data);
+  }
 
   return (
     <Box
@@ -99,16 +109,18 @@ export default function ReviewBody({ surah, aya1, aya2, tags: initialTags, showT
         marginBottom: 2
       }}
     >
-      {/* Heading Section */}
       <Box
         sx={{
-          display: "flex",
-          alignItems: "center",
+          display: 'flex',
+          alignItems: 'center',
           padding: { xs: 2, sm: 4 },
           gap: { xs: 1, sm: 2 },
-          borderBottom: "1px solid #E0E0E0",
-          flexDirection: { xs: "column", sm: "row" },
-          textAlign: { xs: "center", sm: "left" }
+          borderBottom: '1px solid #E0E0E0',
+          flexDirection: { xs: 'column', sm: 'row' },
+          textAlign: { xs: 'center', sm: 'left' },
+          backgroundColor: '#f9f9f9',
+          boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
+          borderRadius: 2,
         }}
       >
         {userRole !== USER.PUBLIC && (
@@ -117,6 +129,7 @@ export default function ReviewBody({ surah, aya1, aya2, tags: initialTags, showT
             onClick={handleOpenCommentDialog}
           />
         )}
+
         <Typography
           variant="body2"
           sx={{
@@ -127,7 +140,7 @@ export default function ReviewBody({ surah, aya1, aya2, tags: initialTags, showT
             marginBottom: { xs: 1, sm: 0 }
           }}
         >
-          {surah}
+          {isLoading ? <Skeleton width={100} /> : verses.suraName}
         </Typography>
 
         <Box
@@ -139,33 +152,104 @@ export default function ReviewBody({ surah, aya1, aya2, tags: initialTags, showT
             marginRight: { sm: 2 },
           }}
         >
-          {/* <Marker mark={toFilterAyat}> */}
-            <Typography
-              variant="h5"
-              sx={{
-                fontWeight: "500",
-                color: "text.primary",
-                fontSize: { xs: "1.8rem", sm: "2.125rem" },
-                maxWidth: { sm: 900 }
-              }}
-            >
-              {aya1}
-            </Typography>
-          {/* </Marker> */}
-          {/* <Marker mark={filterAyat(aya2, toFilterAyat)}> */}
-            <Typography
-              variant="body2"
-              sx={{
-                fontStyle: "italic",
-                color: "text.secondary",
-                marginTop: "4px",
-                fontSize: { xs: "0.875rem", sm: "1rem" },
-                maxWidth: { sm: 900 }
-              }}
-            >
-              {aya2}
-            </Typography>
-          {/* </Marker> */}
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'row-reverse',
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+              gap: 1,
+              width: '100%',
+            }}
+          >
+            {isLoading
+            ? Array.from({ length: 5 }).map((_, index) => (
+                <Skeleton
+                  key={index}
+                  variant="text"
+                  width={50}
+                  height={40}
+                  sx={{ margin: '4px' }}
+                />
+              ))
+            : verses.ayat.map((verse) => (
+                <Tooltip 
+                  title={
+                    <>
+                      <Typography
+                        sx={{
+                          fontSize: "3",
+                          fontWeight: 500,
+                          lineHeight: 1.5,
+                        }}
+                      >
+                        POS_Tag: {verse.PoS_tags}
+                      </Typography>
+                      <Typography
+                        sx={{
+                          fontSize: "3",
+                          fontWeight: 500,
+                          lineHeight: 1.5,
+                        }}
+                      >
+                        Stem_Pattern: {verse.Stem_pattern}
+                      </Typography>
+                    </>
+                  }
+                  placement="top" 
+                  arrow 
+                  key={verse.word}
+                >
+                  <Typography
+                    variant="h5"
+                    sx={{
+                      fontWeight: 500,
+                      color: 'text.primary',
+                      fontSize: { xs: '1.8rem', sm: '2.125rem' },
+                      cursor: 'pointer',
+                      textAlign: 'center',
+                      direction: 'rtl',
+                      '&:hover': {
+                        color: 'secondary.main',
+                      },
+                      '&:active': {
+                        color: 'primary.main',
+                      },
+                    }}
+                    onClick={() => handleShowResultAgainstTerm(verse.word)}
+                  >
+                    {verse.word}
+                  </Typography>
+                </Tooltip>
+              ))}
+          </Box>
+
+          <Typography
+            variant="body2"
+            sx={{
+              fontStyle: "italic",
+              color: "text.secondary",
+              marginTop: "4px",
+              fontSize: { xs: "0.875rem", sm: "1rem" },
+              maxWidth: { sm: 900 },
+            }}
+          >
+            {isLoading ? (
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  height: "40px",
+                }}
+              >
+                <Skeleton width={400} />
+              </Box>
+            ) : (
+              verses.ayat.map((w) => w.wordUndiacritizedNoHamza).join(" ")
+            )}
+          </Typography>
+
         </Box>
 
         <Box
@@ -182,7 +266,7 @@ export default function ReviewBody({ surah, aya1, aya2, tags: initialTags, showT
           }}
           onClick={() => {
             // console.log(surah, aya1, aya2);
-            handleShowCompleteSurah(surah);
+            handleShowCompleteSurah(verses.suraName);
           }}
         >
           <StyledReplyTwoToneIcon
@@ -208,15 +292,14 @@ export default function ReviewBody({ surah, aya1, aya2, tags: initialTags, showT
         </Box>
       </Box>
 
-      {/* Body Section */}
-      <Box 
+      <Box
         sx={{
           position: "relative",
           display: "flex",
           flexWrap: "wrap",
           marginTop: "20px",
           paddingBottom: "10px",
-          gap: "20px"
+          gap: "20px",
         }}
       >
         {userRole !== USER.PUBLIC && showTags && (
@@ -228,65 +311,105 @@ export default function ReviewBody({ surah, aya1, aya2, tags: initialTags, showT
               fontSize: "32px",
               color: "primary.main",
               cursor: "pointer",
-              marginLeft: 5,
+              transition: "transform 0.3s ease",
+              "&:hover": {
+                transform: "scale(1.2)",
+              },
             }}
             onClick={handleOpenAddTagModal}
           />
         )}
 
-        {/* Existing tag display */}
-        {showTags && tags?.map((tag, index) => (
-          <Box
-            key={index}
-            sx={{
-              position: "relative",
-              display: "flex",
-              marginLeft: { xs: 4, sm: 0 }
-            }}
-          >
-            {userRole !== USER.PUBLIC && (
-              <>
-                <EditTwoToneIcon
-                  sx={{
-                    position: "absolute",
-                    top: "-8px",
-                    left: "-8px",
-                    fontSize: "20px",
-                    color: "primary.main",
-                    cursor: "pointer"
-                  }}
-                  onClick={() => handleOpenEditTagModal(tag as unknown as Tag)}
-                />
+        {showTags ? (
+          tags && tags?.length > 0 ? (
+            tags.map((tag, index) => (
+              <Box
+                key={index}
+                sx={{
+                  position: "relative",
+                  display: "flex",
+                  marginLeft: { xs: 4, sm: 0 },
+                }}
+              >
+                {userRole !== USER.PUBLIC && (
+                  <>
+                    <EditTwoToneIcon
+                      sx={{
+                        position: "absolute",
+                        top: "-8px",
+                        left: "-8px",
+                        fontSize: "20px",
+                        color: "primary.main",
+                        cursor: "pointer",
+                        transition: "color 0.3s ease",
+                        "&:hover": {
+                          color: "primary.dark",
+                        },
+                      }}
+                      onClick={() => handleOpenEditTagModal(tag as unknown as Tag)}
+                    />
+                    <CancelTwoToneIcon
+                      sx={{
+                        position: "absolute",
+                        top: "-8px",
+                        right: "-8px",
+                        fontSize: "20px",
+                        color: "error.main",
+                        cursor: "pointer",
+                        transition: "color 0.3s ease",
+                        "&:hover": {
+                          color: "error.dark",
+                        },
+                      }}
+                      onClick={() => {
+                        setSelectedTag(tag as Tag);
+                        handleOpenDeleteModal();
+                      }}
+                    />
+                  </>
+                )}
 
-                <CancelTwoToneIcon
+                <Chip
+                  label={
+                    "type" in tag && "ar" in tag && "en" in tag
+                      ? `Type: ${tag.type}   Ar: ${tag.ar}   En: ${tag.en}`
+                      : null
+                  }
+                  variant="outlined"
                   sx={{
-                    position: "absolute",
-                    top: "-8px",
-                    right: "-8px",
-                    fontSize: "20px",
-                    color: "error.main",
-                    cursor: "pointer"
+                    borderRadius: "16px",
+                    backgroundColor: "#f5f5f5",
+                    boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+                    transition: "transform 0.3s ease",
+                    "&:hover": {
+                      transform: "scale(1.05)",
+                    },
                   }}
-                  onClick={() => {  setSelectedTag(tag as Tag) ;handleOpenDeleteModal() }}
                 />
-              </>
-            )}
-
-            <Chip
-              label={
-                'type' in tag && 'ar' in tag && 'en' in tag
-                  ? `Type: ${tag.type}   Ar: ${tag.ar}   En: ${tag.en}`
-                  : null
-              }
-              variant="outlined"
-              sx={{
-                borderRadius: "16px",
-                backgroundColor: "#f5f5f5"
-              }}
-            />
-          </Box>
-        ))}
+              </Box>
+            ))
+          ) : (
+            <Typography variant="body2" color="text.secondary">
+              No tags available.
+            </Typography>
+          )
+        ) : (
+          isLoading && Array.from({ length: 3 }).map((_, index) => (
+            <Box key={index} sx={{ width: "150px", height: "40px" }}>
+              <Skeleton
+                variant="rectangular"
+                width="100%"
+                height="100%"
+                sx={{
+                  borderRadius: "16px",
+                  backgroundColor: "rgba(0, 0, 0, 0.1)",
+                }}
+              />
+            </Box>
+          ))
+        )}
       </Box>
+
 
 
       {/* Deletion Confirmation Modal */}

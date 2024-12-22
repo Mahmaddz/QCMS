@@ -3,8 +3,11 @@ import SearchForm from '../components/SearchForm';
 import ReviewBodyList from '../components/ReviewBodyList';
 import { useState } from 'react';
 import { SuraAyaInfo } from '../interfaces/SurahAyaInfo';
+import { useSearchParams } from 'react-router-dom';
 
 export default function Home() {
+
+  const [searchParam] = useSearchParams();
 
   const [showTag, setShowTag] = useState<boolean>(false);
   const [searchedResult, setSearchedResult] = useState<SuraAyaInfo[]>();
@@ -15,7 +18,7 @@ export default function Home() {
   return (
     <>
       <Header />
-      <SearchForm setShowTag={setShowTag} setSearchedResult={setSearchedResult}/>
+      <SearchForm setShowTag={setShowTag} setSearchedResult={setSearchedResult} toSearch={searchParam.get('search') || ""}/>
       <ReviewBodyList showTags={showTag} searchData={searchedResult}/>
     </>
   );

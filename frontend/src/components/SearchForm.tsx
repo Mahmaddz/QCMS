@@ -20,7 +20,7 @@ type CheckboxState = {
     isQurany: boolean;
 };
 
-const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam) => {
+const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch }: SearchFormParam) => {
 
     const [relatedSearch, setRelatedSearch] = useState<{word: string, isSelected: boolean}[]>([]);
     const [selectedKeywords, setSelectedKeywords] = useState<string[]>([]);
@@ -29,7 +29,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
     const [checked, setChecked] = useState({allSelect: true, firstRender: true});
     const [loading, setLoading] = useState(false);
     const [filter, setFilter] = useState<FilterStateParams>({ surah: 0, aya: 0 });
-    const [search, setSearch] = useState<string>("");
+    const [search, setSearch] = useState<string>(toSearch || "");
     const [chkbox, setChkBox] = useState({
         isLemma: false,
         isTag: false,
@@ -39,6 +39,14 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
         isQurany: false
     }); 
     const [rootLemmaData, setRootLemmaData] = useState<{ root: string; lemmas: { [lemma: string]: string[]; }; }[]>([]);
+
+    useEffect(() => {
+        if (toSearch) {
+            (async () => {
+                await getResult();
+            })()
+        }
+    }, [toSearch])
 
     const handleChangeSearch = (value: string) => setSearch(value);
 
@@ -63,10 +71,10 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleResultantResponse = (data: any[]) => {
+        setLoading(false);
         const uniqueData = filterUniqueBySura(data);
         setSearchedCount((prev) => (prev ? uniqueData?.length + prev : uniqueData?.length));
         setSearchedResult((prev) => { return prev ? [ ...prev, ...uniqueData] : [...uniqueData]});
-        setLoading(false);
         setChecked((prev) => ({
             ...prev,
             firstRender: false
@@ -89,7 +97,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult }: SearchFormParam)
         }))
 
         if (!(chkbox.isLemma || chkbox.isQurana || chkbox.isQurany || chkbox.isTag || chkbox.isDefault || chkbox.isReference)) {
-            const response = await getAyatInfo(search, filter.aya as string || null, filter.surah as string || null);
+            const response = await getAyatInfo(search || toSearch as string, filter.aya as string || null, filter.surah as string || null);
             if (response.success) {
                 handleResultantResponse(response.data);
             }
