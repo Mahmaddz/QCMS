@@ -115,10 +115,11 @@ const getAyaAndSuraUsingWords = async (words) => {
       wordLastLetterUndiacritizedWithHamza: {
         [Op.in]: words,
       },
+      is_basmalla: 0,
+      is_chapter_name: 0,
       Verse: {
         [Op.ne]: 0,
       },
-      is_basmalla: 0,
     },
     group: ['Chapter', 'Verse'],
   });
