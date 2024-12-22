@@ -3,6 +3,7 @@ import { RequestParams } from "../../interfaces/RequestParams";
 import successHandler from "./helper/successHandler";
 import { baseUrl } from "./BaseUrl";
 import errorHandler from "./helper/ErrorHandler";
+import { createQueryParams } from "./helper/createQueryParams";
 
 // axios.defaults.withCredentials = true;
 
@@ -70,25 +71,10 @@ export const request = {
 
     get: async ({ url, data = {}, useToken = true, showToast = true }: RequestParams): Promise<unknown> => {
         try {
-            const result: { [key: string]: string } = {};
-            let queryParams: string = "";
-
-            if (Object.keys(data).length !== 0) {
-                for (const key in data) {
-                    if (Object.prototype.hasOwnProperty.call(data, key)) {
-                        if (data[key] !== null && data[key] !== undefined && data[key] !== 0 && data[key] !== '0' && data[key] !== '') {
-                            result[key] = typeof data[key] === 'string' ? data[key] : String(data[key]);
-                        }
-                    }
-                }
-                if (Object.keys(result).length > 0) {
-                    queryParams = `?${new URLSearchParams(result).toString()}`;
-                }
-            }
-
+            const queryParams = createQueryParams(data); 
             const response = await axios.get(
                 `${baseUrl}${url}${queryParams}`, 
-                useToken ? options['withToken'] : options['default']
+                useToken ? options['withToken'] : options['default'],
             );
             if (showToast) successHandler({ response });
             return response.data;
