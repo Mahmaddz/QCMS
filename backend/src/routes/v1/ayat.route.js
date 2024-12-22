@@ -9,5 +9,6 @@ router.route('/info').get(validate(ayatValidation.getAyaInfo), ayatController.ge
 router.route('/search').get(validate(ayatValidation.searchAya), ayatController.searchAyat);
 router.route('/search-using-root').get(validate(ayatValidation.searchAya), ayatController.getAyatUsingLemmaApi);
 router.route('/surah').get(validate(ayatValidation.surahAPIvalidation), ayatController.getCompleteSurah);
+router.route('/verse-words').get(validate(ayatValidation.surahAPIvalidation), ayatController.getVerseInWords);
 
 module.exports = router;

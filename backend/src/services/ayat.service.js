@@ -3,7 +3,7 @@
 const httpStatus = require('http-status');
 const { ArabicServices } = require('arabic-services');
 const { logger } = require('../config/logger');
-const { Sequelize, Op, Verse, sequelize } = require('../models');
+const { Sequelize, Op, Verse, sequelize, Mushaf } = require('../models');
 const ApiError = require('../utils/ApiError');
 const wordsServices = require('./words.service');
 
@@ -105,45 +105,24 @@ const searchAyatUsingTermAndWords = async (conceptArabicList) => {
   }
 };
 
-const getAyaAndSuraUsingCncptArabic = async (wordsGetUsingLemma) => {
-  const query = `
-    SELECT 
-      CONCAT(v."suraNo", ':', v."ayaNo", ' - ', v."suraNameAr", ' - ', v."suraNameEn") AS "suraAyaInfo", 
-      v."suraNo",
-      v."ayaNo",
-      v."suraNameEn",
-      v."suraNameAr",
-      v."uthmaniTextDiacritics",
-      v."emlaeyTextNoDiacritics",
-      v."englishTranslation",
-      STRING_AGG(DISTINCT m."wordLastLetterUndiacritizedWithHamza", ', ') AS "uniqueWords",
-      COUNT(DISTINCT m."Lemma") AS "unique_lemma_count"
-    FROM 
-      "Mushaf" m 
-    JOIN 
-      "Verses" v 
-    ON 
-      v."suraNo" = m."Chapter" AND v."ayaNo" = m."Verse"
-    WHERE 
-      m."wordLastLetterUndiacritizedWithHamza" IN (:wordsGetUsingLemma)
-    GROUP BY 
-      v."suraNo",
-      v."ayaNo",
-      v."suraNameEn",
-      v."suraNameAr",
-      v."uthmaniTextDiacritics",
-      v."emlaeyTextNoDiacritics",
-      v."englishTranslation"
-    ORDER BY 
-      "unique_lemma_count" DESC, v."suraNo", v."ayaNo";
-  `;
-
-  const results = await sequelize.query(query, {
-    replacements: { wordsGetUsingLemma },
-    type: sequelize.QueryTypes.SELECT,
+const getAyaAndSuraUsingWords = async (words) => {
+  const results = await Mushaf.findAll({
+    attributes: [
+      [Sequelize.col('Chapter'), 'suraNo'],
+      [Sequelize.col('Verse'), 'ayaNo'],
+    ],
+    where: {
+      wordLastLetterUndiacritizedWithHamza: {
+        [Op.in]: words,
+      },
+      Verse: {
+        [Op.ne]: 0,
+      },
+      is_basmalla: 0,
+    },
+    group: ['Chapter', 'Verse'],
   });
-
-  return results;
+  return { surahAndAyaList: results || [] };
 };
 
 const getSuraAndAyaFromMushafUsingTerm = async (term) => {
@@ -153,51 +132,53 @@ const getSuraAndAyaFromMushafUsingTerm = async (term) => {
     lemmasWords: await wordsServices.getWordsByLemma(lemmaList),
     rootsWords: await wordsServices.getWordsByRoot(Object.keys(wordsList.roots)),
   };
-  const resultz = lemmaList.length !== 0 ? await getAyaAndSuraUsingCncptArabic(Object.values(wordsList.lemmas).flat()) : [];
-  const surahAndAyaList = resultz.map(({ uniqueWords, ...otherFields }) => otherFields);
-  return { surahAndAyaList, wordsList, otherWords };
+  const resultz = lemmaList.length !== 0 ? await getAyaAndSuraUsingWords(Object.values(wordsList.lemmas).flat()) : [];
+  return { surahAndAyaList: resultz.surahAndAyaList, wordsList, otherWords };
 };
 
-const getSuraAndAyaUsingWords = async (wordsArr) => {
-  const results = await sequelize.query(
-    `
-    SELECT 
-      CONCAT(v."suraNo", ':', v."ayaNo", ' - ', v."suraNameAr", ' - ', v."suraNameEn") AS "suraAyaInfo",
-      v."suraNo",
-      v."ayaNo",
-      v."suraNameEn", 
-      v."suraNameAr", 
-      v."uthmaniTextDiacritics", 
-      v."emlaeyTextNoDiacritics", 
-      v."englishTranslation",
-      m."wordLastLetterUndiacritizedWithHamza",
-      STRING_AGG(DISTINCT m."wordLastLetterUndiacritizedWithHamza", ', ') AS "uniqueWords",
-      COUNT(DISTINCT m."Lemma") AS "unique_lemma_count"
-    FROM "Mushaf" m
-    JOIN "Verses" v ON m."Chapter" = v."suraNo" AND m."Verse" = v."ayaNo"
-    WHERE m."wordLastLetterUndiacritizedWithHamza" IN (:wordsArr)
-    GROUP BY 
-      v."suraNo",
-      v."ayaNo",
-      v."suraNameEn", 
-      v."suraNameAr", 
-      v."uthmaniTextDiacritics", 
-      v."emlaeyTextNoDiacritics", 
-      v."englishTranslation",
-      m."wordLastLetterUndiacritizedWithHamza"
-    ORDER BY 
-      "unique_lemma_count" DESC, v."suraNo", v."ayaNo";
-  `,
-    {
-      replacements: { wordsArr },
-      type: Sequelize.QueryTypes.SELECT,
-    }
-  );
+const getCompleteSurahWithAyaats = async (sura) => {
+  if (!sura) throw new ApiError(httpStatus.UNPROCESSABLE_ENTITY, `Sura No. and Aya No. did not found`);
+  try {
+    const verses = await Verse.findAll({
+      attributes: [
+        [Sequelize.col('suraNameEn'), 'suraNameEn'],
+        [Sequelize.col('suraNameAr'), 'suraNameAr'],
+        [Sequelize.col('ayaNo'), 'ayaNo'],
+        [Sequelize.col('uthmaniTextDiacritics'), 'uthmani'],
+        [Sequelize.col('emlaeyTextNoDiacritics'), 'noDiaEmlaye'],
+        [Sequelize.col('emlaeyTextDiacritics'), 'emlaye'],
+        [Sequelize.col('englishTranslation'), 'english'],
+      ],
+      where: { suraNo: sura },
+      order: [['ayaNo', 'ASC']],
+    });
+    return verses;
+  } catch (error) {
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, `getCompleteSurahWithAyaats failed to execute`);
+  }
+};
 
-  const conceptArabicList = [...new Set(results.map((item) => item.wordLastLetterUndiacritizedWithHamza))];
-  const surahAndAyaList = results.map(({ wordLastLetterUndiacritizedWithHamza, ...otherFields }) => otherFields);
+const getVerseWordsBySuraNoAndAyaNo = async (sura, aya) => {
+  const results = await Mushaf.findAll({
+    attributes: ['Chapter', 'Verse', 'word', 'Stem_pattern', 'PoS_tags', 'wordUndiacritizedNoHamza'],
+    where: {
+      Chapter: sura,
+      Verse: { [Op.in]: aya },
+      is_basmalla: 0,
+    },
+  });
+  return results;
+};
 
-  return { surahAndAyaList, conceptArabicList };
+const getSurahNameBySuraNo = async (sura) => {
+  const result = await Verse.findAll({
+    attributes: [[Sequelize.fn('CONCAT', Sequelize.col('suraNameAr'), ' - ', Sequelize.col('suraNameEn')), 'suraAyaInfo']],
+    where: {
+      suraNo: sura,
+    },
+    limit: 1,
+  });
+  return result[0].dataValues.suraAyaInfo;
 };
 
 const getSuraAndAyaUsingRoots = async (roots) => {
@@ -248,35 +229,15 @@ const getSuraAndAyaUsingRoots = async (roots) => {
   }
 };
 
-const getCompleteSurahWithAyaats = async (sura) => {
-  if (!sura) throw new ApiError(httpStatus.UNPROCESSABLE_ENTITY, `Sura No. and Aya No. did not found`);
-  try {
-    const verses = await Verse.findAll({
-      attributes: [
-        [Sequelize.col('suraNameEn'), 'suraNameEn'],
-        [Sequelize.col('suraNameAr'), 'suraNameAr'],
-        [Sequelize.col('ayaNo'), 'ayaNo'],
-        [Sequelize.col('uthmaniTextDiacritics'), 'uthmani'],
-        [Sequelize.col('emlaeyTextNoDiacritics'), 'noDiaEmlaye'],
-        [Sequelize.col('emlaeyTextDiacritics'), 'emlaye'],
-        [Sequelize.col('englishTranslation'), 'english'],
-      ],
-      where: { suraNo: sura },
-      order: [['ayaNo', 'ASC']],
-    });
-    return verses;
-  } catch (error) {
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, `getCompleteSurahWithAyaats failed to execute`);
-  }
-};
-
 module.exports = {
   getAyatInfo,
   searchAyatUsingTerm,
   searchAyatUsingTermAndWords,
   getAyaatBySuraAndAyaId,
   getSuraAndAyaFromMushafUsingTerm,
-  getSuraAndAyaUsingWords,
   getSuraAndAyaUsingRoots,
   getCompleteSurahWithAyaats,
+  getVerseWordsBySuraNoAndAyaNo,
+  getSurahNameBySuraNo,
+  getAyaAndSuraUsingWords,
 };

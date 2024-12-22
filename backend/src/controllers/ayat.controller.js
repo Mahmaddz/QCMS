@@ -31,14 +31,14 @@ const searchAyat = catchAsync(async (req, res) => {
     }
   } else {
     const wordArr = wordsServices.splitCommaSeparated(words);
-    result = await ayatServices.getSuraAndAyaUsingWords(wordArr);
+    result = await ayatServices.getAyaAndSuraUsingWords(wordArr);
   }
   res.status(httpStatus.OK).json({
     success: true,
-    message: result.surahAndAyaList.length > 0 ? 'Data Received' : 'Nothing Found',
-    words: result.wordsList,
-    otherWords: result.otherWords,
-    data: result.surahAndAyaList,
+    message: result.surahAndAyaList && result.surahAndAyaList.length > 0 ? 'Data Received' : 'Nothing Found',
+    words: result.wordsList || [],
+    otherWords: result.otherWords || [],
+    data: result.surahAndAyaList || [],
     suggestions: Array.from(suggestions || []),
   });
 });
@@ -74,9 +74,22 @@ const getCompleteSurah = catchAsync(async (req, res) => {
   });
 });
 
+const getVerseInWords = catchAsync(async (req, res) => {
+  const { suraNo, ayaNo } = req.query;
+  const verseArr = wordsServices.splitCommaSeparated(ayaNo);
+  const result = await ayatServices.getVerseWordsBySuraNoAndAyaNo(suraNo, verseArr);
+  const name = await ayatServices.getSurahNameBySuraNo(suraNo);
+  return res.status(httpStatus.OK).json({
+    success: true,
+    ayat: result,
+    suraName: name,
+  });
+});
+
 module.exports = {
   getAyatInfo,
   searchAyat,
   getAyatUsingLemmaApi,
   getCompleteSurah,
+  getVerseInWords,
 };
