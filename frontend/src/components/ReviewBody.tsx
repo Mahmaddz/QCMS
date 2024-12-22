@@ -18,6 +18,7 @@ import { useAuth } from "../context/Auth/useAuth";
 import CloseIcon from "@mui/icons-material/Close";
 // import uniqueID from "../utils/helper/UniqueID";
 import { openNewTab } from "../utils/functions/openNewTab";
+import uniqueID from "../utils/helper/UniqueID";
 
 const StyledReplyTwoToneIcon = styled(ReplyTwoToneIcon)({
   transform: "scale(-1, 1)"
@@ -174,9 +175,11 @@ export default function ReviewBody({ verses, tags: initialTags, showTags, isLoad
               ))
             : verses.ayat.map((verse) => (
                 <Tooltip 
+                  key={uniqueID()}
                   title={
                     <>
                       <Typography
+                        key={uniqueID()}
                         sx={{
                           fontSize: "3",
                           fontWeight: 500,
@@ -186,6 +189,7 @@ export default function ReviewBody({ verses, tags: initialTags, showTags, isLoad
                         <b>POS Tag:</b> {verse.PoS_tags}
                       </Typography>
                       <Typography
+                        key={uniqueID()}
                         sx={{
                           fontSize: "3",
                           fontWeight: 500,
@@ -198,9 +202,9 @@ export default function ReviewBody({ verses, tags: initialTags, showTags, isLoad
                   }
                   placement="top" 
                   arrow 
-                  key={verse.word}
                 >
                   <Typography
+                    key={uniqueID()}
                     variant="h5"
                     sx={{
                       fontWeight: 500,
