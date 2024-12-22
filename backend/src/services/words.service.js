@@ -4,7 +4,7 @@ const { ArabicServices } = require('arabic-services');
 const { Sequelize, sequelize, Op, Word, Mushaf } = require('../models');
 const { logger } = require('../config/logger');
 const ApiError = require('../utils/ApiError');
-// const sphql = require('../config/sphinxql');
+const sphql = require('../config/sphinxql');
 
 const getWordsBasedOnSuraAndAyat = async (suraNo, ayaNo) => {
   try {
@@ -178,18 +178,18 @@ const getSuggestedWords = async (keywords) => {
     return new Set();
   }
 
-  // const matchQuery = keywords.map((keyword) => `*${keyword}*`).join(' | ');
+  const matchQuery = keywords.map((keyword) => `*${keyword}*`).join(' | ');
 
   let r = [];
 
   try {
-    // const { results } = await sphql
-    //   .getQueryBuilder()
-    //   .select('word')
-    //   .from('mushaf_words_idx')
-    //   .match('word', matchQuery)
-    //   .execute();
-    r = []; // results;
+    const { results } = await sphql
+      .getQueryBuilder()
+      .select('word')
+      .from('mushaf_words_idx')
+      .match('word', matchQuery)
+      .execute();
+    r = results;
   } catch (error) {
     console.error(error);
     r = [];
