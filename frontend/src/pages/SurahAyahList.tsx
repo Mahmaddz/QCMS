@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Header from '../layout/Header';
-import { Box, Typography, Skeleton } from '@mui/material';
+import { Box, Typography, Skeleton, } from '@mui/material';
 import { getCompleteSura } from '../services/Ayaat/getCompleteSura';
 import { CompleteSurah } from '../interfaces/SurahAyaList';
 import StatusBar from '../components/Statusbar';
@@ -46,96 +46,128 @@ const SurahAyahList = () => {
             <Header/>
             <StatusBar/>
 
-            <Box sx={{ padding: 2, backgroundColor: '#f9f9f9', marginTop: 5 }}>
+            <Box
+                sx={{
+                    padding: 3,
+                    backgroundColor: '#ffffff',
+                    marginTop: 5,
+                    borderRadius: 4,
+                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                    overflow: 'hidden',
+                }}
+            >
                 {surahInfo.araNm ? (
-                    <Typography 
-                        variant="h3" 
-                        sx={{ 
-                            textAlign: 'center', 
-                            fontWeight: 'bold', 
-                            color: '#4a4a4a', 
-                            marginBottom: 2 
+                    <Typography
+                        variant="h3"
+                        sx={{
+                            textAlign: 'center',
+                            fontWeight: 'bold',
+                            color: '#2e3b55',
+                            marginBottom: 2,
+                            textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
                         }}
                     >
                         سُورَة {surahInfo.araNm}
                     </Typography>
                 ) : (
-                    <Skeleton variant="text" width="60%" height={50} sx={{ marginBottom: 2 }} />
+                    <Skeleton
+                        variant="text"
+                        width="60%"
+                        height={50}
+                        sx={{ margin: '0 auto 2rem' }}
+                    />
                 )}
 
                 {surahInfo.engNm ? (
-                    <Typography 
-                        variant="h4" 
-                        sx={{ 
-                            textAlign: 'center', 
-                            color: '#6a6a6a', 
-                            marginBottom: 4 
+                    <Typography
+                        variant="h4"
+                        sx={{
+                            textAlign: 'center',
+                            color: '#607d8b',
+                            marginBottom: 4,
+                            fontStyle: 'italic',
                         }}
                     >
                         {surahInfo.engNm}
                     </Typography>
                 ) : (
-                    <Skeleton variant="text" width="40%" height={40} sx={{ marginBottom: 4 }} />
+                    <Skeleton
+                        variant="text"
+                        width="40%"
+                        height={40}
+                        sx={{ margin: '0 auto 2rem' }}
+                    />
                 )}
 
                 {surahInfo.verses && surahInfo.verses.length > 0 ? (
-                    surahInfo.verses.map(verse => (
-                        <Box 
-                            ref={(el: HTMLDivElement | null) => (ayahRefs.current[verse.ayaNo] = el)}
-                            key={verse.ayaNo} 
-                            sx={{ 
-                                display: 'flex', 
-                                flexDirection: 'row', 
-                                alignItems: 'center', 
-                                padding: 3, 
-                                width: '70%', 
-                                margin: '0 auto', 
-                                marginBottom: 2, 
-                                borderRadius: 4, 
+                    surahInfo.verses.map((verse) => (
+                        <Box
+                            ref={(el: HTMLDivElement | null) =>
+                                (ayahRefs.current[verse.ayaNo] = el)
+                            }
+                            key={verse.ayaNo}
+                            sx={{
+                                display: 'flex',
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                padding: 3,
+                                width: '70%',
+                                margin: '0 auto',
+                                marginBottom: 2,
+                                borderRadius: 4,
                                 boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)',
-                                backgroundColor: verse.ayaNo === Number.parseInt(surahInfo.aya) ? '#a1d4e3' : '',
+                                backgroundColor:
+                                    verse.ayaNo === Number.parseInt(surahInfo.aya)
+                                        ? '#e3f2fd'
+                                        : '#fafafa',
+                                transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                                '&:hover': {
+                                    transform: 'scale(1.02)',
+                                    boxShadow: '0 6px 15px rgba(0, 0, 0, 0.2)',
+                                },
                                 '@media (max-width:600px)': {
                                     width: '90%',
                                     padding: 2,
-                                }
+                                },
                             }}
                         >
-                            <Box 
-                                sx={{ 
-                                    flex: '0 0 10%', 
-                                    textAlign: 'center', 
-                                    fontWeight: 'bold', 
-                                    fontSize: '1.5rem', 
-                                    borderRight: '2px blue solid'
+                            <Box
+                                sx={{
+                                    flex: '0 0 10%',
+                                    textAlign: 'center',
+                                    fontWeight: 'bold',
+                                    fontSize: '1.5rem',
+                                    borderRight: '2px solid #0288d1',
+                                    color: '#0288d1',
                                 }}
                             >
-                                <Typography sx={{ color: 'secondary.main' }}>
-                                    {verse.ayaNo}
-                                </Typography>
+                                {verse.ayaNo}
                             </Box>
 
                             <Box sx={{ flex: 1, paddingLeft: 3 }}>
-                                <Typography 
-                                    sx={{ 
-                                        textAlign: 'right', 
-                                        fontSize: '2.5rem', 
-                                        color: '#1b5e20', 
+                                <Typography
+                                    sx={{
+                                        textAlign: 'right',
+                                        fontSize: '2.5rem',
+                                        color: '#1b5e20',
                                         marginBottom: 1,
+                                        fontFamily: 'Amiri, serif',
                                         '@media (max-width:600px)': {
                                             fontSize: '2rem',
-                                        }
+                                        },
                                     }}
                                 >
                                     {verse.uthmani}
                                 </Typography>
-                                <Typography 
-                                    sx={{ 
-                                        textAlign: 'left', 
-                                        fontSize: '1.3rem', 
+                                <Typography
+                                    sx={{
+                                        textAlign: 'left',
+                                        fontSize: '1.3rem',
                                         color: '#37474f',
+                                        lineHeight: 1.6,
                                         '@media (max-width:600px)': {
                                             fontSize: '1.1rem',
-                                        }
+                                        },
                                     }}
                                 >
                                     {verse.english}
@@ -157,10 +189,11 @@ const SurahAyahList = () => {
                                 marginBottom: 2,
                                 borderRadius: 4,
                                 boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)',
+                                backgroundColor: '#f5f5f5',
                                 '@media (max-width:600px)': {
                                     width: '90%',
                                     padding: 2,
-                                }
+                                },
                             }}
                         >
                             <Skeleton
@@ -170,7 +203,11 @@ const SurahAyahList = () => {
                                 sx={{ marginRight: 3 }}
                             />
                             <Box sx={{ flex: 1 }}>
-                                <Skeleton width="90%" height={30} sx={{ marginBottom: 1 }} />
+                                <Skeleton
+                                    width="90%"
+                                    height={30}
+                                    sx={{ marginBottom: 1 }}
+                                />
                                 <Skeleton width="80%" height={20} />
                             </Box>
                         </Box>

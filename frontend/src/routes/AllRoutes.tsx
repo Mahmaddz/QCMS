@@ -8,10 +8,11 @@ import Register from '../pages/Register';
 import Home from '../pages/Home';
 import AdminSettings from '../pages/AdminSettings';
 import TagReview from '../pages/TagReview';
-import PageNotFound from '../pages/PageNotFound';
 import ForgotPassword from '../pages/ForgotPassword';
 import ResetPassword from '../pages/ResetPassword';
 import SurahAyahList from '../pages/SurahAyahList';
+import Test from '../pages/Testing/Test';
+import PageNotFound from '../pages/PageNotFound';
 
 export const componentRoutes: PageRoute[] = [
     {
@@ -19,6 +20,12 @@ export const componentRoutes: PageRoute[] = [
         element: <Home/>,
         allowedRoles: [USER.PUBLIC, USER.REVIEWER, USER.ADMIN],
         displayName: "HOME"
+    },
+    {
+        path: "/test",
+        element: <Test/>,
+        allowedRoles: [USER.PUBLIC, USER.REVIEWER, USER.ADMIN],
+        displayName: ""
     },
     {
         path: "/ayat-reference",

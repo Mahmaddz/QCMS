@@ -17,12 +17,12 @@ export default function StatusBar() {
 
     return (
         <Box
-            style={{
+            sx={{
                 position: 'fixed',
                 width: '100%',
             }}
         >
-            <LinearProgress variant="determinate" value={progress} color='success'/>
+            <LinearProgress variant="determinate" value={progress} color='primary' sx={{ marginTop: 0 }}/>
         </Box>
     );
 }

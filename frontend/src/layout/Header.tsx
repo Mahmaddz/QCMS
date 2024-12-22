@@ -79,7 +79,12 @@ function Header() {
 
     return (
         <Box>
-            <AppBar position="fixed">
+            <AppBar 
+                position="fixed"
+                sx={{
+                    background: 'linear-gradient(to bottom, #1976d2, #42a5f5)',
+                }}
+            >
                 <Container maxWidth="xl">
                     <Toolbar disableGutters>
                         <ImportContactsTwoToneIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} />
