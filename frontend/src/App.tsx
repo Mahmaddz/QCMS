@@ -4,6 +4,7 @@ import router from "./routes/router";
 import ContainerToast from "./components/ContainerToast";
 import { useAuth } from "./context/Auth/useAuth";
 import Loader from "./components/Loader";
+import ScrollUpButton from "./components/ScrollUpButton";
 
 function App() {
   const { userRole } = useAuth();
@@ -22,6 +23,7 @@ function App() {
         <Loader /> 
       : <>
         <RouterProvider router={router({ role: userRole })} />
+        <ScrollUpButton/>
         <ContainerToast />
       </>
       }
