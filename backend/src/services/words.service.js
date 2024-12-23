@@ -4,7 +4,7 @@ const { ArabicServices } = require('arabic-services');
 const { Sequelize, sequelize, Op, Word, Mushaf } = require('../models');
 const { logger } = require('../config/logger');
 const ApiError = require('../utils/ApiError');
-// const sphql = require('../config/sphinxql');
+const sphql = require('../config/sphinxql');
 
 const getWordsBasedOnSuraAndAyat = async (suraNo, ayaNo) => {
   try {
@@ -142,8 +142,6 @@ const getSuggestedWordsBasedOnTerm = async (termVal) => {
     ],
   });
 
-  // results.forEach((r) => console.log(r.Root, r.Lemma, r.wordLastLetterUndiacritizedWithHamza));
-
   const lemmaMap = new Map();
   const rootMap = new Map();
 
@@ -178,18 +176,18 @@ const getSuggestedWords = async (keywords) => {
     return new Set();
   }
 
-  // const matchQuery = keywords.map((keyword) => `*${keyword}*`).join(' | ');
+  const matchQuery = keywords.map((keyword) => `*${keyword}*`).join(' | ');
 
   let r = [];
 
   try {
-    // const { results } = await sphql
-    //   .getQueryBuilder()
-    //   .select('word')
-    //   .from('mushaf_words_idx')
-    //   .match('word', matchQuery)
-    //   .execute();
-    r = []; // results;
+    const { results } = await sphql
+      .getQueryBuilder()
+      .select('word')
+      .from('mushaf_words_idx')
+      .match('word', matchQuery)
+      .execute();
+    r = results;
   } catch (error) {
     console.error(error);
     r = [];
@@ -264,36 +262,6 @@ const getWordsByRoot = async (wordsArray) => {
     };
   });
 };
-
-// const getWordsByRoot = async (wordsArray) => {
-//   const wordz = await Mushaf.findAll({
-//     attributes: [[Sequelize.fn('DISTINCT', Sequelize.col('wordLastLetterUndiacritizedWithHamza')), 'word'], 'Lemma', 'Root'],
-//     where: {
-//       Root: {
-//         [Op.in]: wordsArray,
-//       },
-//     },
-//   });
-
-//   const map = new Map();
-//   wordz.forEach(({ word, Lemma, Root }) => {
-//     if (!map.has(Root)) {
-//       map.set(Root, new Map());
-//     }
-//     const rootMap = map.get(Root);
-//     if (!rootMap.has(Lemma)) {
-//       rootMap.set(Lemma, []);
-//     }
-//     rootMap.get(Lemma).push(word);
-//   });
-
-//   return Array.from(map.entries()).map(([root, lemmaMap]) => {
-//     return {
-//       root,
-//       lemmas: Object.fromEntries(lemmaMap.entries()),
-//     };
-//   });
-// };
 
 module.exports = {
   getWordsBasedOnSuraAndAyat,
