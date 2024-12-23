@@ -4,6 +4,7 @@ export interface ReviewBodyProps {
     id?: number;
     role?: number;
     showTags: boolean;
+    selectedKeywords: { word: string, color: string }[];
     isLoading: boolean;
 }
 

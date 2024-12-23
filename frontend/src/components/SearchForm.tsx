@@ -21,10 +21,9 @@ type CheckboxState = {
     isQurany: boolean;
 };
 
-const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch }: SearchFormParam) => {
+const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selectedKeywords, setSelectedKeywords }: SearchFormParam) => {
 
     const [relatedSearch, setRelatedSearch] = useState<{word: {word: string, count: number | string}, isSelected: boolean}[]>([]);
-    const [selectedKeywords, setSelectedKeywords] = useState<string[]>([]);
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [searchedCount, setSearchedCount] = useState<number>(-1);
     const [checked, setChecked] = useState({allSelect: true, firstRender: true});
@@ -115,7 +114,9 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch }: Search
                 setRootLemmaData(response.otherWords.rootsWords);
                 setSuggestions(response.suggestions || []);
                 const toFind = Array.from(new Set(Object.values(response.words.lemmas).flat()));
-                // setSelectedKeywords(toFind);
+                setTimeout(() => {
+                    setSelectedKeywords(toFind);
+                }, 1000)
                 const arrays = [
                     ...Object.values(response.otherWords.rootsWords.map(r => Object.values(r.lemmas)).flat())
                         .flat()

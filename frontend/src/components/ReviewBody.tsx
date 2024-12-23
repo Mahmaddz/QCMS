@@ -11,6 +11,7 @@ import InsertCommentTwoToneIcon from "@mui/icons-material/InsertCommentTwoTone";
 import AddCircleTwoToneIcon from "@mui/icons-material/AddCircleTwoTone";
 import EditTwoToneIcon from "@mui/icons-material/EditTwoTone";
 import CancelTwoToneIcon from "@mui/icons-material/CancelTwoTone";
+import { ArabicServices } from 'arabic-services';
 import { USER } from "../utils/UserRoles";
 import { Tag } from "../interfaces/Tag";
 import { useAuth } from "../context/Auth/useAuth";
@@ -24,7 +25,7 @@ const StyledReplyTwoToneIcon = styled(ReplyTwoToneIcon)({
   transform: "scale(-1, 1)"
 });
 
-export default function ReviewBody({ verses, tags: initialTags, showTags, isLoading }: ReviewBodyProps) {
+export default function ReviewBody({ verses, tags: initialTags, showTags, isLoading, selectedKeywords }: ReviewBodyProps) {
 
   const { userRole } = useAuth();
 
@@ -96,6 +97,10 @@ export default function ReviewBody({ verses, tags: initialTags, showTags, isLoad
       search: term
     }
     openNewTab('/', data);
+  }
+
+  const getColor = (word: string) => {
+    return selectedKeywords.filter(select => ArabicServices.removeTashkeel(select.word) === ArabicServices.removeTashkeel(word))[0]?.color || 'text.primary'
   }
 
   return (
@@ -208,7 +213,7 @@ export default function ReviewBody({ verses, tags: initialTags, showTags, isLoad
                     variant="h5"
                     sx={{
                       fontWeight: 500,
-                      color: 'text.primary',
+                      color: getColor(verse.word),
                       fontSize: { xs: '1.8rem', sm: '2.125rem' },
                       cursor: 'pointer',
                       textAlign: 'center',

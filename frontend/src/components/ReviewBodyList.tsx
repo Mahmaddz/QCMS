@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useRef, useState } from "react";
 import { Box, Divider, IconButton, Pagination, Tooltip } from "@mui/material";
 import { RBL_Params } from "../interfaces/ReviewBodyList";
@@ -8,30 +7,39 @@ import ReviewBody from "./ReviewBody";
 import { getAyaWords } from "../services/Ayaat/getAyaWords";
 import { VerseWordsArr } from "../interfaces/ReviewBody";
 import { ArrowBack, ArrowForward, FirstPage, LastPage } from "@mui/icons-material";
+import { UniqueColorGenerator } from "../utils/functions/UniqueColorGenerator";
 
-const ReviewBodyList = ({ showTags, searchData }: RBL_Params) => {
+const ReviewBodyList = ({ showTags, searchData, selectedKeywords }: RBL_Params) => {
     const itemsPerPage = 10;
     const [currentPage, setCurrentPage] = useState(1);
     const dividerRef = useRef<HTMLDivElement | null>(null);
-
     const [verseWords, setVerseWords] = useState<VerseWordsArr[]>([]);
+    const colorGenerator = new UniqueColorGenerator();
+
+
+    const wordsWithColor = selectedKeywords.map(val => ({ 
+        word: val, 
+        color: colorGenerator.generateUniqueColor() 
+    }));
+    
 
     useEffect(() => {
         setCurrentPage(1);
     }, [searchData]);
 
+    const handleGetAyaWordsAPI = async (sura: string | number, aya: string | number) => {
+        const response = await getAyaWords(sura as string, [aya as string]);
+        return response;
+    }
+
     useEffect(() => {
+        console.log(paginatedData?.length, verseWords.length);
         const time = setTimeout(() => {
             // eslint-disable-next-line @typescript-eslint/no-unused-expressions
             currentPage !== 1 && dividerRef.current?.scrollIntoView({ behavior: "smooth" });
         }, 1000);
         return () => clearTimeout(time);
-    }, [verseWords]);
-
-    const handleGetAyaWordsAPI = async (sura: string | number, aya: string | number) => {
-        const response = await getAyaWords(sura as string, [aya as string]);
-        return response;
-    }
+    }, [verseWords])
 
     useEffect(() => {
         setVerseWords([]);
@@ -85,6 +93,7 @@ const ReviewBodyList = ({ showTags, searchData }: RBL_Params) => {
                     verses={a}
                     tags={Tags}
                     showTags={showTags}
+                    selectedKeywords={wordsWithColor}
                     isLoading={paginatedData?.length !== verseWords.length}
                 />
             ))}

@@ -20,4 +20,6 @@ export interface SearchFormParam {
     setFilter?: Dispatch<SetStateAction<FilterStateParams>>;
     setSearchedResult: Dispatch<SetStateAction<SuraAyaInfo[] | undefined>>
     toSearch?: string;
+    selectedKeywords: string[];
+    setSelectedKeywords: Dispatch<SetStateAction<string[]>>;
 }
