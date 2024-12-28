@@ -6,6 +6,7 @@ const cors = require('cors');
 const passport = require('passport');
 const bodyParser = require('body-parser');
 const httpStatus = require('http-status');
+const path = require('path');
 const config = require('./config/config');
 const morgan = require('./config/morgan');
 const { jwtStrategy } = require('./config/passport');
@@ -47,8 +48,16 @@ app.options('*', cors(corsOptions));
 app.use(passport.initialize());
 passport.use('jwt', jwtStrategy);
 
-app.get('/', (req, res) => {
-  res.json({ success: true });
+// react static files
+const reactBuildPath = path.join(__dirname, '../', 'build', 'dist');
+app.use(express.static(reactBuildPath));
+
+// react routes
+app.get('*', (req, res, next) => {
+  if (!req.path.startsWith('/v1')) {
+    return res.sendFile(path.join(reactBuildPath, 'index.html'));
+  }
+  next();
 });
 
 // limit repeated failed requests to auth endpoints
