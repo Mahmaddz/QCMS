@@ -1,3 +1,6 @@
-const isLocal = true;
+const baseUrlArray = [
+    'http://localhost:3000',
+    'http://localhost',
+] 
 
-export const baseUrl = isLocal ? 'http://localhost:3000' : '';
+export const baseUrl = baseUrlArray[0];

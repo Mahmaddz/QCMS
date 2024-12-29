@@ -5,7 +5,6 @@ export interface ReviewBodyProps {
     role?: number;
     showTags: boolean;
     selectedKeywords: { word: string, color: string }[];
-    isLoading: boolean;
 }
 
 export interface VerseWords {

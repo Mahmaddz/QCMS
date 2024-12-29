@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Dialog,DialogTitle,DialogContent,DialogActions,Typography,TextField,Button,IconButton,Box,Chip, Tooltip, Skeleton } from "@mui/material";
+import { Dialog,DialogTitle,DialogContent,DialogActions,Typography,TextField,Button,IconButton,Box,Chip, Tooltip } from "@mui/material";
 import {
   Save as SaveIcon,
   Delete as DeleteIcon
@@ -25,7 +25,7 @@ const StyledReplyTwoToneIcon = styled(ReplyTwoToneIcon)({
   transform: "scale(-1, 1)"
 });
 
-export default function ReviewBody({ verses, tags: initialTags, showTags, isLoading, selectedKeywords }: ReviewBodyProps) {
+export default function ReviewBody({ verses, tags: initialTags, showTags, selectedKeywords }: ReviewBodyProps) {
 
   const { userRole } = useAuth();
 
@@ -146,7 +146,7 @@ export default function ReviewBody({ verses, tags: initialTags, showTags, isLoad
             marginBottom: { xs: 1, sm: 0 }
           }}
         >
-          {isLoading ? <Skeleton width={100} /> : verses.suraName}
+          {verses.suraName}
         </Typography>
 
         <Box
@@ -168,17 +168,8 @@ export default function ReviewBody({ verses, tags: initialTags, showTags, isLoad
               width: '100%',
             }}
           >
-            {isLoading
-            ? Array.from({ length: 5 }).map(() => (
-                <Skeleton
-                  key={uniqueID()}
-                  variant="text"
-                  width={50}
-                  height={40}
-                  sx={{ margin: '4px' }}
-                />
-              ))
-            : verses.ayat.map((verse) => (
+            {
+              verses.ayat.map((verse) => (
                 <Tooltip 
                   key={uniqueID()}
                   title={
@@ -230,7 +221,8 @@ export default function ReviewBody({ verses, tags: initialTags, showTags, isLoad
                     {verse.word}
                   </Typography>
                 </Tooltip>
-              ))}
+              ))
+            }
           </Box>
 
           <Typography
@@ -243,22 +235,8 @@ export default function ReviewBody({ verses, tags: initialTags, showTags, isLoad
               maxWidth: { sm: 900 },
             }}
           >
-            {isLoading ? (
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  height: "40px",
-                }}
-              >
-                <Skeleton width={400} />
-              </Box>
-            ) : (
-              verses.ayat.map((w) => w.wordUndiacritizedNoHamza).join(" ")
-            )}
+            {verses.ayat.map((w) => w.wordUndiacritizedNoHamza).join(" ")}
           </Typography>
-
         </Box>
 
         <Box
@@ -273,10 +251,7 @@ export default function ReviewBody({ verses, tags: initialTags, showTags, isLoad
             },
             marginTop: { xs: 2, sm: 0 }
           }}
-          onClick={() => {
-            // console.log(surah, aya1, aya2);
-            handleShowCompleteSurah(verses.suraName);
-          }}
+          onClick={() => handleShowCompleteSurah(verses.suraName)}
         >
           <StyledReplyTwoToneIcon
             sx={{
@@ -329,7 +304,7 @@ export default function ReviewBody({ verses, tags: initialTags, showTags, isLoad
           />
         )}
 
-        {showTags ? (
+        {showTags && (
           tags && tags?.length > 0 ? (
             tags.map((tag) => (
               <Box
@@ -402,20 +377,6 @@ export default function ReviewBody({ verses, tags: initialTags, showTags, isLoad
               No tags available.
             </Typography>
           )
-        ) : (
-          isLoading && Array.from({ length: 3 }).map(() => (
-            <Box key={uniqueID()} sx={{ width: "150px", height: "40px" }}>
-              <Skeleton
-                variant="rectangular"
-                width="100%"
-                height="100%"
-                sx={{
-                  borderRadius: "16px",
-                  backgroundColor: "rgba(0, 0, 0, 0.1)",
-                }}
-              />
-            </Box>
-          ))
         )}
       </Box>
 
