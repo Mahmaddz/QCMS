@@ -48,20 +48,20 @@ app.options('*', cors(corsOptions));
 app.use(passport.initialize());
 passport.use('jwt', jwtStrategy);
 
-// react static files
-const reactBuildPath = path.join(__dirname, '../', 'build', 'dist');
-app.use(express.static(reactBuildPath));
-
-// react routes
-app.get('*', (req, res, next) => {
-  if (!req.path.startsWith('/v1')) {
-    return res.sendFile(path.join(reactBuildPath, 'index.html'));
-  }
-  next();
-});
-
-// limit repeated failed requests to auth endpoints
 if (config.env === 'production') {
+  // react static files
+  const reactBuildPath = path.join(__dirname, '../', 'build');
+  app.use(express.static(reactBuildPath));
+
+  // react routes
+  app.get('*', (req, res, next) => {
+    if (!req.path.startsWith('/v1')) {
+      return res.sendFile(path.join(reactBuildPath, 'index.html'));
+    }
+    next();
+  });
+
+  // limit repeated failed requests to auth endpoints
   app.use('/v1/auth', authLimiter);
 }
 
