@@ -5,6 +5,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    container_name: backend
     ports:
       - "3000:3000"
     environment:
@@ -22,6 +23,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+    container_name: frontend
     stdin_open: true
     ports:
       - "5173:5173"
@@ -50,7 +52,7 @@ services:
       - ./sphinx/stopwords.txt:/opt/sphinx/conf/stopwords.txt
     networks:
       - app-network
-    
+  
 networks:
   app-network:
     driver: bridge

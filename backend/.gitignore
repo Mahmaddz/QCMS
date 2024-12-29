@@ -17,5 +17,8 @@ uploads/
 # SECRET FILES
 ca.pem
 
+# buid directory
+build/
+
 # Docker
 # Dockerfile
