@@ -5,6 +5,7 @@ export interface ReviewBodyProps {
     role?: number;
     showTags: boolean;
     selectedKeywords: { word: string, color: string }[];
+    selectedLanguage: number | string | undefined;
 }
 
 export interface VerseWords {
@@ -16,7 +17,18 @@ export interface VerseWords {
     wordUndiacritizedNoHamza: string;
 }
 
+export interface AyaTranslationWithIds {
+    sura: string,
+    aya: number,
+    text: string,
+    language: {
+        name: string,
+        code: string
+    }
+} 
+
 export interface VerseWordsArr {
     suraName: string;
     ayat: VerseWords[];
+    translation: AyaTranslationWithIds[]
 }

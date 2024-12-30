@@ -1,11 +1,16 @@
+export interface AyatTranslation {
+    text: string; 
+    langCode: string
+}
+
 export interface Ayaat {
     ayaNo: number;
     uthmani: string;
     noDiaEmlaye: string;
-    emlaye: string;
-    english: string;    
+    emlaye: string;  
     suraNameAr: string;
     suraNameEn: string;
+    translation: AyatTranslation[]
 }
 
 export interface CompleteSurah {

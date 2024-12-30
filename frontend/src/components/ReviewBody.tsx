@@ -25,7 +25,7 @@ const StyledReplyTwoToneIcon = styled(ReplyTwoToneIcon)({
   transform: "scale(-1, 1)"
 });
 
-export default function ReviewBody({ verses, tags: initialTags, showTags, selectedKeywords }: ReviewBodyProps) {
+export default function ReviewBody({ verses, tags: initialTags, showTags, selectedKeywords, selectedLanguage }: ReviewBodyProps) {
 
   const { userRole } = useAuth();
 
@@ -235,7 +235,10 @@ export default function ReviewBody({ verses, tags: initialTags, showTags, select
               maxWidth: { sm: 900 },
             }}
           >
-            {verses.ayat.map((w) => w.wordUndiacritizedNoHamza).join(" ")}
+            {/* {verses.ayat.map((w) => w.wordUndiacritizedNoHamza).join(" ")} */}
+            {
+              verses.translation.filter((verse) => verse.language.code === selectedLanguage)[0].text
+            }
           </Typography>
         </Box>
 

@@ -5,12 +5,17 @@ import { Box, Typography, Skeleton, } from '@mui/material';
 import { getCompleteSura } from '../services/Ayaat/getCompleteSura';
 import { CompleteSurah } from '../interfaces/SurahAyaList';
 import StatusBar from '../components/Statusbar';
+import LanguageSelect from '../components/LanguageSelect';
+import { LanguageType } from '../interfaces/Language';
+import { getAllLanguages } from '../services/Language/getLanguages';
 
 const SurahAyahList = () => {
     const ayahRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
     const [searchParam] = useSearchParams();
 
     const [surahInfo, setSurahInfo] = useState<CompleteSurah>({ sura: "", aya: "", araNm: "", engNm: "", verses: [] });
+    const [listOfLanguages, setListOfLanguages] = useState<LanguageType[]>([]);
+    const [selectedLanguage, setSelectedLanguages] = useState<LanguageType>();
 
     useEffect(() => {
         // EXTRACTING VALUES
@@ -20,6 +25,7 @@ const SurahAyahList = () => {
         // FETCHING DATA
         (async () => {
             const response = await getCompleteSura(sura as string);
+            console.log(response);
             setSurahInfo({
                 aya, 
                 sura,
@@ -39,18 +45,30 @@ const SurahAyahList = () => {
                 block: 'center',
             });
         }
+        (async () => {
+            const response = await getAllLanguages();
+            if (response.success) {
+                setListOfLanguages(response.data);
+                setSelectedLanguages(response.data[0]);
+            }
+        })()
     }, [surahInfo]);
+
+    const handleLanguageChange = (selectedLanguage: LanguageType) => {
+        setSelectedLanguages(selectedLanguage)
+    }
 
     return (
         <>
             <Header/>
             <StatusBar/>
 
+            <LanguageSelect listOfLanguages={listOfLanguages} handleChange={handleLanguageChange}/>
+
             <Box
                 sx={{
                     padding: 3,
                     backgroundColor: '#ffffff',
-                    marginTop: 5,
                     borderRadius: 4,
                     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
                     overflow: 'hidden',
@@ -170,7 +188,9 @@ const SurahAyahList = () => {
                                         },
                                     }}
                                 >
-                                    {verse.english}
+                                    {
+                                        verse.translation.filter(v => v?.langCode === selectedLanguage?.code)[0]?.text
+                                    }
                                 </Typography>
                             </Box>
                         </Box>

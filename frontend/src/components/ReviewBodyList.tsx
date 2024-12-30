@@ -8,20 +8,36 @@ import { getAyaWords } from "../services/Ayaat/getAyaWords";
 import { VerseWordsArr } from "../interfaces/ReviewBody";
 import { ArrowBack, ArrowForward, FirstPage, LastPage } from "@mui/icons-material";
 import { UniqueColorGenerator } from "../utils/functions/UniqueColorGenerator";
+import { getAllLanguages } from "../services/Language/getLanguages";
+import { LanguageType } from "../interfaces/Language";
+import LanguageSelect from "./LanguageSelect";
 
 const ReviewBodyList = ({ showTags, searchData, selectedKeywords }: RBL_Params) => {
     const itemsPerPage = 10;
     const [currentPage, setCurrentPage] = useState(1);
     const dividerRef = useRef<HTMLDivElement | null>(null);
     const [verseWords, setVerseWords] = useState<VerseWordsArr[]>([]);
+    const [wordsWithColor, setWordsWithColor] = useState<{word: string, color: string}[]>([]);
     const colorGenerator = new UniqueColorGenerator();
 
 
-    const wordsWithColor = selectedKeywords.map(val => ({ 
-        word: val, 
-        color: colorGenerator.generateUniqueColor() 
-    }));
+    useEffect(() => {
+        setWordsWithColor(selectedKeywords.map(val => ({ 
+            word: val, 
+            color: colorGenerator.generateUniqueColor() 
+        })));
+    }, [selectedKeywords])
     
+    const [listOfLanguages, setListOfLanguages] = useState<LanguageType[]>([]);
+    const [selectedLanguage, setSelectedLanguages] = useState<LanguageType>();
+
+    useEffect(() => {
+        (async () => {
+            const resposne = await getAllLanguages();
+            setListOfLanguages(resposne.data);
+            setSelectedLanguages(resposne.data[0]);
+        })()
+    }, [])
 
     useEffect(() => {
         setCurrentPage(1);
@@ -59,6 +75,7 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords }: RBL_Params) 
                     newVerseWords.push({
                         ayat: transformedAya,
                         suraName: `${transformedAya[0].Chapter}:${transformedAya[0].Verse} - ${response.suraName}`,
+                        translation: response.translation,
                     });
                 }
                 setVerseWords(newVerseWords);
@@ -89,8 +106,8 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords }: RBL_Params) 
         <>
             {
                 searchData?.length !== 0 &&
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', padding: '10px', width: '85%', gap: 3 }}>
-                    <Typography variant="body2" sx={{ color: 'primary.main', fontSize: 20 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', padding: '10px', width: '85%', gap: 3, marginTop: { sm: -10, xs: -6 } }}>
+                    <Typography variant="body2" sx={{ color: 'primary.main'}}>
                         <b>Verses: </b>{" "}{verseWords.length || <CircularProgress size={20}/>}
                     </Typography>
                 </Box>
@@ -101,6 +118,8 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords }: RBL_Params) 
                     sx={{ width: "80%", margin: "20px auto", height: "3px", backgroundColor: "primary.main" }}
                 />
             </Box>
+
+            <LanguageSelect listOfLanguages={listOfLanguages} handleChange={(item: LanguageType) => setSelectedLanguages(item)}/>
 
             {
                 verseWords.length !== paginatedData.length && 
@@ -139,13 +158,14 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords }: RBL_Params) 
                 ))
             }
 
-            {verseWords.map((a) => (
+            {verseWords.map((verse) => (
                 <ReviewBody
                     key={uniqueID()}
-                    verses={a}
+                    verses={verse}
                     tags={Tags}
                     showTags={showTags}
                     selectedKeywords={wordsWithColor}
+                    selectedLanguage={selectedLanguage?.code || 0}
                 />
             ))}
 
@@ -193,8 +213,8 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords }: RBL_Params) 
                         count={totalPages}
                         page={currentPage}
                         onChange={handlePageChange}
-                        showFirstButton
-                        showLastButton
+                        hideNextButton
+                        hidePrevButton
                         color="primary"
                         siblingCount={1}
                         boundaryCount={1}

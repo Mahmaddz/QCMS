@@ -27,8 +27,8 @@ const ScrollUpButton = () => {
                     onClick={scrollToTop}
                     sx={{
                         position: 'fixed',
-                        bottom: 16,
-                        right: 16,
+                        bottom: 50,
+                        right: 50,
                         boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
                         transition: 'transform 0.3s ease',
                         '&:hover': {
