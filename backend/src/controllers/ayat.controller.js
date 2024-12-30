@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 const httpStatus = require('http-status');
 const { ArabicServices } = require('arabic-services');
-const { ayatServices, wordsServices, arabicCustomServices } = require('../services');
+const { ayatServices, wordsServices, arabicCustomServices, translationServices } = require('../services');
 const catchAsync = require('../utils/catchAsync');
 const ApiError = require('../utils/ApiError');
 
@@ -79,10 +79,12 @@ const getVerseInWords = catchAsync(async (req, res) => {
   const verseArr = wordsServices.splitCommaSeparated(ayaNo);
   const result = await ayatServices.getVerseWordsBySuraNoAndAyaNo(suraNo, verseArr);
   const name = await ayatServices.getSurahNameBySuraNo(suraNo);
+  const translation = await translationServices.getSuraTranslations(suraNo, result[0].Verse);
   return res.status(httpStatus.OK).json({
     success: true,
-    ayat: result,
     suraName: name,
+    ayat: result,
+    translation,
   });
 });
 

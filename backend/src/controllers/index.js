@@ -6,3 +6,4 @@ module.exports.quranaController = require('./qurana.controller');
 module.exports.ayatController = require('./ayat.controller');
 module.exports.wordsController = require('./words.controller');
 module.exports.tagsController = require('./tags.controller');
+module.exports.languageController = require('./language.controller');

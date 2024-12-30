@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 /* eslint-disable no-console */
 /* eslint-disable no-param-reassign */
 const httpStatus = require('http-status');
@@ -6,6 +7,7 @@ const { logger } = require('../config/logger');
 const { Sequelize, Op, Verse, sequelize, Mushaf } = require('../models');
 const ApiError = require('../utils/ApiError');
 const wordsServices = require('./words.service');
+const translationServices = require('./translation.service');
 
 const getAyatInfo = async (ayatText, ayaNo, suraNo) => {
   if (suraNo === 0 || suraNo === null) suraNo = false;
@@ -148,12 +150,21 @@ const getCompleteSurahWithAyaats = async (sura) => {
         [Sequelize.col('uthmaniTextDiacritics'), 'uthmani'],
         [Sequelize.col('emlaeyTextNoDiacritics'), 'noDiaEmlaye'],
         [Sequelize.col('emlaeyTextDiacritics'), 'emlaye'],
-        [Sequelize.col('englishTranslation'), 'english'],
       ],
       where: { suraNo: sura },
       order: [['ayaNo', 'ASC']],
     });
-    return verses;
+
+    const translate = await translationServices.getSuraTranslations(sura);
+
+    const expectedOutPut = verses.map((verse) => {
+      return {
+        ...verse.dataValues,
+        translation: translate.filter((trans) => trans.aya === verse.ayaNo).map((trans) => ({ text: trans.text, langCode: trans.language.code })),
+      };
+    });
+
+    return expectedOutPut;
   } catch (error) {
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, `getCompleteSurahWithAyaats failed to execute`);
   }

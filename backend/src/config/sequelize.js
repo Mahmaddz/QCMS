@@ -25,7 +25,7 @@ const sequelize = new Sequelize(`${PG_CONNECTION_URL}`, {
       connectTimeout: 60000,
     },
   },
-  // individualHooks: true,
+  individualHooks: true,
 });
 
 (async () => {
