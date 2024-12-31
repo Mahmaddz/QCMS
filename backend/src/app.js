@@ -14,6 +14,7 @@ const { authLimiter } = require('./middlewares/rateLimiter');
 const routes = require('./routes/v1');
 const { errorConverter, errorHandler } = require('./middlewares/error');
 const ApiError = require('./utils/ApiError');
+const { corsOptions } = require('./config/cors.config');
 
 const app = express();
 
@@ -35,12 +36,6 @@ app.use(xss());
 app.use(compression());
 
 // enable cors
-const corsOptions = {
-  origin: 'http://localhost:5173',
-  methods: 'GET,POST,PUT,DELETE,PATCH',
-  allowedHeaders: 'Content-Type,Authorization',
-  credentials: true,
-};
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 
@@ -49,18 +44,6 @@ app.use(passport.initialize());
 passport.use('jwt', jwtStrategy);
 
 if (config.env === 'production') {
-  // react static files
-  const reactBuildPath = path.join(__dirname, '../', 'build');
-  app.use(express.static(reactBuildPath));
-
-  // react routes
-  app.get('*', (req, res, next) => {
-    if (!req.path.startsWith('/v1')) {
-      return res.sendFile(path.join(reactBuildPath, 'index.html'));
-    }
-    next();
-  });
-
   // limit repeated failed requests to auth endpoints
   app.use('/v1/auth', authLimiter);
 }

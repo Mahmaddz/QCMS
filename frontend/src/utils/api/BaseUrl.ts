@@ -3,4 +3,4 @@ const baseUrlArray = [
     'http://localhost',
 ] 
 
-export const baseUrl = baseUrlArray[0];
+export const baseUrl = baseUrlArray[2];

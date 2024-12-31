@@ -5,8 +5,11 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   // base: '/',
   plugins: [react()],
+  // server: {
+  //   host: true,
+  // },
   build: {
     chunkSizeWarningLimit: 1000,
-    outDir: '../backend/build',
+    // outDir: '../backend/build',
   }
 })
