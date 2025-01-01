@@ -176,16 +176,19 @@ const getSuggestedWords = async (keywords) => {
     return new Set();
   }
 
+  console.log(keywords);
   const matchQuery = keywords.map((keyword) => `*${keyword}*`).join(' | ');
+  console.log(matchQuery);
 
   let r = [];
 
   try {
     const { results } = await sphql
       .getQueryBuilder()
-      .select('word')
+      .select('wordLastLetterUndiacritizedNoHamza as word', 'WEIGHT() AS relevance')
       .from('mushaf_words_idx')
-      .match('word', matchQuery)
+      .match('wordUndiacritizedNoHamzaNowaw', matchQuery)
+      .option('ranker', `SPH04`)
       .execute();
     r = results;
   } catch (error) {

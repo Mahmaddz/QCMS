@@ -1,5 +1,5 @@
 const allowedOrigins = {
-  'http://localhost:5173': ['GET', 'POST', 'PATCH', 'DELETE', 'PUT'],
+  'http://localhost:5173': ['GET', 'POST', 'PATCH', 'DELETE', 'PUT', 'OPTIONS'],
   'http://localhost': ['GET'],
 };
 
