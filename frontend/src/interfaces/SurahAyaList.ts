@@ -1,3 +1,5 @@
+import { VerseWordsArr } from "./ReviewBody";
+
 export interface AyatTranslation {
     text: string; 
     langCode: string
@@ -18,5 +20,5 @@ export interface CompleteSurah {
     aya: string; 
     araNm: string;
     engNm: string;
-    verses?: Ayaat[]
+    verses?: VerseWordsArr[]
 }

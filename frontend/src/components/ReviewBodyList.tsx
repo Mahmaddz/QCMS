@@ -60,6 +60,7 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords }: RBL_Params) 
         setVerseWords([]);
         const fetchResolvedData = async () => {
             if (paginatedData) {
+                colorGenerator.reset();
                 const newVerseWords: VerseWordsArr[] = [];
                 for (const p of paginatedData) {
                     const response = await handleGetAyaWordsAPI(p.suraNo, p.ayaNo);

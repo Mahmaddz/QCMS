@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Dialog,DialogTitle,DialogContent,DialogActions,Typography,TextField,Button,IconButton,Box,Chip, Tooltip } from "@mui/material";
+import { Dialog,DialogTitle,DialogContent,DialogActions,Typography,TextField,Button,IconButton,Box,Chip } from "@mui/material";
 import {
   Save as SaveIcon,
   Delete as DeleteIcon
@@ -11,7 +11,6 @@ import InsertCommentTwoToneIcon from "@mui/icons-material/InsertCommentTwoTone";
 import AddCircleTwoToneIcon from "@mui/icons-material/AddCircleTwoTone";
 import EditTwoToneIcon from "@mui/icons-material/EditTwoTone";
 import CancelTwoToneIcon from "@mui/icons-material/CancelTwoTone";
-import { ArabicServices } from 'arabic-services';
 import { USER } from "../utils/UserRoles";
 import { Tag } from "../interfaces/Tag";
 import { useAuth } from "../context/Auth/useAuth";
@@ -20,6 +19,7 @@ import CloseIcon from "@mui/icons-material/Close";
 // import uniqueID from "../utils/helper/UniqueID";
 import { openNewTab } from "../utils/functions/openNewTab";
 import uniqueID from "../utils/helper/UniqueID";
+import VersePart from "./VersePart";
 
 const StyledReplyTwoToneIcon = styled(ReplyTwoToneIcon)({
   transform: "scale(-1, 1)"
@@ -92,17 +92,6 @@ export default function ReviewBody({ verses, tags: initialTags, showTags, select
     openNewTab('/ayat-reference', data);
   };
 
-  const handleShowResultAgainstTerm = (term: string) => {
-    const data = {
-      search: term
-    }
-    openNewTab('/', data);
-  }
-
-  const getColor = (word: string) => {
-    return selectedKeywords.filter(select => ArabicServices.removeTashkeel(select.word) === ArabicServices.removeTashkeel(word))[0]?.color || 'text.primary'
-  }
-
   return (
     <Box
       sx={{
@@ -149,98 +138,7 @@ export default function ReviewBody({ verses, tags: initialTags, showTags, select
           {verses.suraName}
         </Typography>
 
-        <Box
-          sx={{
-            flexGrow: 1,
-            paddingRight: 9,
-            textAlign: { xs: "center", sm: "center" },
-            marginLeft: { sm: 2, xs: 6 },
-            marginRight: { sm: 2 },
-          }}
-        >
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'row-reverse',
-              flexWrap: 'wrap',
-              justifyContent: 'center',
-              gap: 1,
-              width: '100%',
-            }}
-          >
-            {
-              verses.ayat.map((verse) => (
-                <Tooltip 
-                  key={uniqueID()}
-                  title={
-                    <>
-                      <Typography
-                        key={uniqueID()}
-                        sx={{
-                          fontSize: "3",
-                          fontWeight: 500,
-                          lineHeight: 1.5,
-                        }}
-                      >
-                        <b>POS Tag:</b> {verse.PoS_tags}
-                      </Typography>
-                      <Typography
-                        key={uniqueID()}
-                        sx={{
-                          fontSize: "3",
-                          fontWeight: 500,
-                          lineHeight: 1.5,
-                        }}
-                      >
-                        <b>Stem Pattern:</b> {verse.Stem_pattern}
-                      </Typography>
-                    </>
-                  }
-                  placement="top" 
-                  arrow 
-                >
-                  <Typography
-                    key={uniqueID()}
-                    variant="h5"
-                    sx={{
-                      fontWeight: 500,
-                      color: getColor(verse.word),
-                      fontSize: { xs: '1.8rem', sm: '2.125rem' },
-                      cursor: 'pointer',
-                      textAlign: 'center',
-                      direction: 'rtl',
-                      '&:hover': {
-                        color: 'secondary.main',
-                      },
-                      '&:active': {
-                        color: 'primary.main',
-                      },
-                    }}
-                    onClick={() => handleShowResultAgainstTerm(verse.word)}
-                  >
-                    {verse.word}
-                  </Typography>
-                </Tooltip>
-              ))
-            }
-          </Box>
-
-          <Typography
-            variant="body2"
-            sx={{
-              fontStyle: "italic",
-              color: "text.secondary",
-              marginTop: "4px",
-              fontSize: { xs: "0.875rem", sm: "1rem" },
-              maxWidth: { sm: 900 },
-            }}
-          >
-            {/* {verses.ayat.map((w) => w.wordUndiacritizedNoHamza).join(" ")} */}
-            {
-              verses.translation.filter((verse) => verse.language.code === selectedLanguage)[0].text
-            }
-          </Typography>
-        </Box>
+        <VersePart selectedKeywords={selectedKeywords} selectedLanguage={selectedLanguage} verses={verses} />
 
         <Box
           sx={{
@@ -254,7 +152,7 @@ export default function ReviewBody({ verses, tags: initialTags, showTags, select
             },
             marginTop: { xs: 2, sm: 0 }
           }}
-          onClick={() => handleShowCompleteSurah(verses.suraName)}
+          onClick={() => handleShowCompleteSurah(verses?.suraName || "")}
         >
           <StyledReplyTwoToneIcon
             sx={{

@@ -8,5 +8,5 @@ export interface GetAyaWordsResponse extends ErrorResponse {
 }
 
 export interface GetAyaWordsRequest {
-    (sura: string, aya: string[]): Promise<GetAyaWordsResponse>;
+    (sura: string, aya?: string[]): Promise<GetAyaWordsResponse>;
 }

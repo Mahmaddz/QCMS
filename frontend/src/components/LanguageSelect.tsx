@@ -6,7 +6,7 @@ import { Autocomplete, Box, InputAdornment, TextField } from '@mui/material';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 
-const LanguageSelect = ({ listOfLanguages, handleChange }: { listOfLanguages: LanguageType[]; handleChange: (item: LanguageType) => void; }) => {
+const LanguageSelect = ({ listOfLanguages=[], handleChange }: { listOfLanguages: LanguageType[]; handleChange: (item: LanguageType) => void; }) => {
     const [isOpen, setIsOpen] = useState(false); // State to manage pop-up visibility
 
     const handleButtonClick = () => {
@@ -35,9 +35,9 @@ const LanguageSelect = ({ listOfLanguages, handleChange }: { listOfLanguages: La
         >
             <Autocomplete
                 disablePortal
-                options={listOfLanguages.filter((item) => [1,2,3,4,5].includes(item.id)).map((item) => `${item.code}: ${item.name}`)}
+                options={listOfLanguages?.filter((item) => [1,2,3,4,5].includes(item.id)).map((item) => `${item.code}: ${item.name}`)}
                 onChange={(_event, value) => {
-                    const selectedLanguage = listOfLanguages.filter((val) => val.code === value?.split(':')[0])[0];
+                    const selectedLanguage = listOfLanguages?.filter((val) => val.code === value?.split(':')[0])[0];
                     handleChange(selectedLanguage);
                 }}
                 sx={{
@@ -65,7 +65,7 @@ const LanguageSelect = ({ listOfLanguages, handleChange }: { listOfLanguages: La
                             ...params.InputProps,
                             startAdornment: (
                                 <InputAdornment position="start">
-                                {listOfLanguages.length > 0 ? (
+                                {listOfLanguages?.length > 0 ? (
                                     <TranslateIcon style={{ color: '#1976d2' }} />
                                 ) : (
                                     <CircularProgress style={{ color: '#1976d2' }} size={20} />

@@ -1,13 +1,13 @@
 export class UniqueColorGenerator {
     private generatedColors: Set<string> = new Set();
     private baseColors: string[] = [
-        '#FFFF00', // Yellow
+        '#FF69B4', // Pink
         '#FFA500', // Orange
-        '#A52A2A', // Brown
-        '#008000', // Green
-        '#FFC0CB', // Pink
         '#FF0000', // Red
+        '#008000', // Green
+        '#A52A2A', // Brown
         '#00FFFF', // Cyan
+        // '#CCCC00', // Yellow
         '#808080', // Gray
     ];
     private variantsGenerated: number = 0;

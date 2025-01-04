@@ -1,11 +1,11 @@
 export interface ReviewBodyProps {
-    verses: VerseWordsArr;
+    verses: VerseWordsArr; //\\
     tags?: ({ en: string; ar: string; type: string } | { label: string })[];
     id?: number;
     role?: number;
-    showTags: boolean;
-    selectedKeywords: { word: string, color: string }[];
-    selectedLanguage: number | string | undefined;
+    showTags?: boolean;
+    selectedKeywords?: { word: string, color: string }[]; //\\
+    selectedLanguage: number | string | undefined; //\\
 }
 
 export interface VerseWords {
@@ -28,7 +28,7 @@ export interface AyaTranslationWithIds {
 } 
 
 export interface VerseWordsArr {
-    suraName: string;
+    suraName?: string;
     ayat: VerseWords[];
     translation: AyaTranslationWithIds[]
 }

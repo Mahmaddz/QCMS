@@ -324,7 +324,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
                             name='isDefault'
                             checked={chkbox.isDefault}
                             onChange={handleChangeCheckBoxes}
-                            label="Default"
+                            label="Word"
                             sx={{ '& .MuiFormControlLabel-label': { fontWeight: '500' } }}
                         />
                         <FormControlLabel
@@ -638,8 +638,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
                                         onClick={() => selectAllLemmaWords(item.root, lemma)}
                                     >
                                         {lemma}
-                                        {areAllSelected && <CheckCircleIcon color="success" />}
-                                        {isPartiallySelected && <RemoveCircleOutlineOutlinedIcon color="warning" />}
+                                        {areAllSelected ? <CheckCircleIcon color="success" /> : <RemoveCircleOutlineOutlinedIcon color="warning" />}
                                     </Typography>
                                 </Box>
                                 <Box

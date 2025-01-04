@@ -2,49 +2,73 @@ import { useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Header from '../layout/Header';
 import { Box, Typography, Skeleton, } from '@mui/material';
-import { getCompleteSura } from '../services/Ayaat/getCompleteSura';
+// import { getCompleteSura } from '../services/Ayaat/getCompleteSura';
 import { CompleteSurah } from '../interfaces/SurahAyaList';
 import StatusBar from '../components/Statusbar';
 import LanguageSelect from '../components/LanguageSelect';
 import { LanguageType } from '../interfaces/Language';
 import { getAllLanguages } from '../services/Language/getLanguages';
+import { getAyaWords } from '../services/Ayaat/getAyaWords';
+import Toaster from '../utils/helper/Toaster';
+import VersePart from '../components/VersePart';
+import { AyaTranslationWithIds, VerseWords, VerseWordsArr } from '../interfaces/ReviewBody';
 
 const SurahAyahList = () => {
-    const ayahRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
     const [searchParam] = useSearchParams();
+    const targetRef = useRef<HTMLDivElement | null>(null);
 
-    const [surahInfo, setSurahInfo] = useState<CompleteSurah>({ sura: "", aya: "", araNm: "", engNm: "", verses: [] });
+    const [surahInfo, setSurahInfo] = useState<CompleteSurah>({ araNm: '', aya: '', engNm: '', sura: ""  });
     const [listOfLanguages, setListOfLanguages] = useState<LanguageType[]>([]);
-    const [selectedLanguage, setSelectedLanguages] = useState<LanguageType>();
+    const [selectedLanguage, setSelectedLanguages] = useState<LanguageType | undefined>();
 
     useEffect(() => {
         // EXTRACTING VALUES
         const sura = searchParam.get('sura') || "";
         const aya = searchParam.get('aya') || "";
 
+        const suraNum = Number.parseInt(sura);
+        const ayaNum = Number.parseInt(aya);
+        if ((suraNum < 1 || suraNum > 114) || (ayaNum < 1 || ayaNum > 286)) {
+            Toaster("INVALID Search Params", 'error');
+            return;
+        }
+
         // FETCHING DATA
         (async () => {
-            const response = await getCompleteSura(sura as string);
-            console.log(response);
+            const response = await getAyaWords(sura as string);
+            const data: VerseWords[] = response.ayat as unknown as VerseWords[] || [];
+            const groupedByVerse = data.reduce<Record<string, { ayat: VerseWords[]; translation: AyaTranslationWithIds[] }>>(
+                (acc, item: VerseWords) => {
+                    if (!acc[item.Verse]) {
+                        acc[item.Verse] = { ayat: [], translation: [] };
+                    }
+                    acc[item.Verse].ayat.push(item);
+                    return acc;
+                }, {}
+            );
+            response.translation.forEach((trans: AyaTranslationWithIds) => {
+                const verse = trans.aya.toString();
+                if (groupedByVerse[verse]) {
+                    groupedByVerse[verse].translation.push(trans);
+                }
+            });
             setSurahInfo({
                 aya, 
-                sura,
-                araNm: response.result?.ayaat[0]?.suraNameAr || "404", 
-                engNm: response.result?.ayaat[0]?.suraNameEn || "Not Such Data Found", 
-                verses: response.result.ayaat || [],
+                sura, 
+                araNm: response.suraName.split(' - ')[0] || "404", 
+                engNm: response.suraName.split(' - ')[1] || "Not Such Data Found", 
+                verses: Object.values(groupedByVerse) as VerseWordsArr[]
             })
         })();
 
     }, [searchParam]);
 
     useEffect(() => {
-        const targetAyaNo = Number.parseInt(surahInfo.aya);
-        if (targetAyaNo && ayahRefs.current[targetAyaNo]) {
-            ayahRefs.current[targetAyaNo]?.scrollIntoView({
-                behavior: 'smooth',
-                block: 'center',
-            });
-        }
+        const time = setTimeout(() => {
+            if (targetRef.current) {
+                targetRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }, 1500);
         (async () => {
             const response = await getAllLanguages();
             if (response.success) {
@@ -52,7 +76,8 @@ const SurahAyahList = () => {
                 setSelectedLanguages(response.data[0]);
             }
         })()
-    }, [surahInfo]);
+        return () => clearTimeout(time);
+    }, [surahInfo.aya]);
 
     const handleLanguageChange = (selectedLanguage: LanguageType) => {
         setSelectedLanguages(selectedLanguage)
@@ -74,7 +99,7 @@ const SurahAyahList = () => {
                     overflow: 'hidden',
                 }}
             >
-                {surahInfo.araNm ? (
+                {surahInfo?.araNm ? (
                     <Typography
                         variant="h3"
                         sx={{
@@ -90,13 +115,13 @@ const SurahAyahList = () => {
                 ) : (
                     <Skeleton
                         variant="text"
-                        width="60%"
+                        width="20%"
                         height={50}
                         sx={{ margin: '0 auto 2rem' }}
                     />
                 )}
 
-                {surahInfo.engNm ? (
+                {surahInfo?.engNm ? (
                     <Typography
                         variant="h4"
                         sx={{
@@ -111,90 +136,55 @@ const SurahAyahList = () => {
                 ) : (
                     <Skeleton
                         variant="text"
-                        width="40%"
+                        width="10%"
                         height={40}
                         sx={{ margin: '0 auto 2rem' }}
                     />
                 )}
 
-                {surahInfo.verses && surahInfo.verses.length > 0 ? (
-                    surahInfo.verses.map((verse) => (
-                        <Box
-                            ref={(el: HTMLDivElement | null) =>
-                                (ayahRefs.current[verse.ayaNo] = el)
-                            }
-                            key={verse.ayaNo}
-                            sx={{
-                                display: 'flex',
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                                padding: 3,
-                                width: '70%',
-                                margin: '0 auto',
-                                marginBottom: 2,
-                                borderRadius: 4,
-                                boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)',
-                                backgroundColor:
-                                    verse.ayaNo === Number.parseInt(surahInfo.aya)
-                                        ? '#e3f2fd'
-                                        : '#fafafa',
-                                transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                                '&:hover': {
-                                    transform: 'scale(1.02)',
-                                    boxShadow: '0 6px 15px rgba(0, 0, 0, 0.2)',
-                                },
-                                '@media (max-width:600px)': {
-                                    width: '90%',
-                                    padding: 2,
-                                },
-                            }}
-                        >
+                {surahInfo?.verses ? (
+                    <Box
+                    sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: 4,
+                        padding: 4,
+                        borderRadius: 2,
+                        boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
+                    }}
+                >
+                    {surahInfo.verses.map((verse, index) => {
+                        const isTarget = (index + 1) === Number.parseInt(surahInfo.aya as string);
+        
+                        return (
                             <Box
+                                key={index}
+                                ref={isTarget ? targetRef : null}
                                 sx={{
-                                    flex: '0 0 10%',
-                                    textAlign: 'center',
-                                    fontWeight: 'bold',
-                                    fontSize: '1.5rem',
-                                    borderRight: '2px solid #0288d1',
-                                    color: '#0288d1',
+                                    width: '100%',
+                                    maxWidth: 900,
+                                    padding: 3,
+                                    borderRadius: 2,
+                                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                                    background: isTarget
+                                        ? 'linear-gradient(135deg, #bbdefb,  #81d4fa)'
+                                        : 'linear-gradient(135deg, #e3f2fd, #bbdefb)',
+                                    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                                    '&:hover': {
+                                        transform: 'scale(1.03)',
+                                        boxShadow: '0 6px 15px rgba(0, 0, 0, 0.2)',
+                                    },
                                 }}
                             >
-                                {verse.ayaNo}
+                                <VersePart 
+                                    selectedLanguage={selectedLanguage?.code} 
+                                    verses={verse} 
+                                />
                             </Box>
-
-                            <Box sx={{ flex: 1, paddingLeft: 3 }}>
-                                <Typography
-                                    sx={{
-                                        textAlign: 'right',
-                                        fontSize: '2.5rem',
-                                        color: '#1b5e20',
-                                        marginBottom: 1,
-                                        fontFamily: 'Amiri, serif',
-                                        '@media (max-width:600px)': {
-                                            fontSize: '2rem',
-                                        },
-                                    }}
-                                >
-                                    {verse.uthmani}
-                                </Typography>
-                                <Typography
-                                    sx={{
-                                        textAlign: 'left',
-                                        fontSize: '1.3rem',
-                                        color: '#37474f',
-                                        lineHeight: 1.6,
-                                        '@media (max-width:600px)': {
-                                            fontSize: '1.1rem',
-                                        },
-                                    }}
-                                >
-                                    {
-                                        verse.translation.filter(v => v?.langCode === selectedLanguage?.code)[0]?.text
-                                    }
-                                </Typography>
-                            </Box>
-                        </Box>
-                    ))
+                        );
+                    })}
+                </Box>
                 ) : (
                     Array.from({ length: 5 }).map((_, index) => (
                         <Box
