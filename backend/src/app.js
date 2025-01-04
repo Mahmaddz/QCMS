@@ -6,7 +6,6 @@ const cors = require('cors');
 const passport = require('passport');
 const bodyParser = require('body-parser');
 const httpStatus = require('http-status');
-const path = require('path');
 const config = require('./config/config');
 const morgan = require('./config/morgan');
 const { jwtStrategy } = require('./config/passport');

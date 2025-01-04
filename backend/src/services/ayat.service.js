@@ -170,12 +170,15 @@ const getCompleteSurahWithAyaats = async (sura) => {
   }
 };
 
-const getVerseWordsBySuraNoAndAyaNo = async (sura, aya) => {
+const getVerseWordsBySuraNoAndAyaNo = async (sura, aya=[]) => {
   const results = await Mushaf.findAll({
     attributes: ['Chapter', 'Verse', 'word', 'Stem_pattern', 'PoS_tags', 'wordUndiacritizedNoHamza'],
     where: {
       Chapter: sura,
-      Verse: { [Op.in]: aya },
+      Verse: {
+        [Op.ne]: 0,
+      },
+      ...(aya.length > 0 && { Verse: { [Op.in]: aya } } ),
       is_basmalla: 0,
     },
   });

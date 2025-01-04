@@ -63,6 +63,7 @@ const getAyatUsingLemmaApi = catchAsync(async (req, res) => {
   });
 });
 
+// RETURNS VERSE IN TEXTUAL
 const getCompleteSurah = catchAsync(async (req, res) => {
   const result = await ayatServices.getCompleteSurahWithAyaats(req.query.suraNo);
   return res.status(httpStatus.OK).json({
@@ -76,10 +77,11 @@ const getCompleteSurah = catchAsync(async (req, res) => {
 
 const getVerseInWords = catchAsync(async (req, res) => {
   const { suraNo, ayaNo } = req.query;
-  const verseArr = wordsServices.splitCommaSeparated(ayaNo);
+  const verseArr = ayaNo ? wordsServices.splitCommaSeparated(ayaNo) : [];
   const result = await ayatServices.getVerseWordsBySuraNoAndAyaNo(suraNo, verseArr);
   const name = await ayatServices.getSurahNameBySuraNo(suraNo);
-  const translation = await translationServices.getSuraTranslations(suraNo, result[0].Verse);
+  const ayat = ayaNo ? result[0].Verse : undefined;
+  const translation = await translationServices.getSuraTranslations(suraNo, ayat);
   return res.status(httpStatus.OK).json({
     success: true,
     suraName: name,

@@ -1,5 +1,8 @@
+const httpStatus = require('http-status');
+const ApiError = require('../utils/ApiError');
+
 const allowedOrigins = {
-  'http://localhost:5173': ['GET', 'POST', 'PATCH', 'DELETE', 'PUT', 'OPTIONS'],
+  'http://localhost:5173': ['POST', 'PATCH', 'DELETE', 'PUT', 'OPTIONS'],
   'http://localhost': ['GET'],
 };
 
@@ -10,18 +13,10 @@ const corsOptions = {
     if (!origin || Object.keys(allowedOrigins).includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      callback(new ApiError(httpStatus.FORBIDDEN, 'Not allowed by CORS'));
     }
   },
-  methods: (req, callback) => {
-    const { origin } = req.headers;
-    const methods = allowedOrigins[origin] || [];
-    if (methods.length > 0) {
-      callback(null, methods.join(','));
-    } else {
-      callback(new Error('HTTP methods not allowed for this origin'));
-    }
-  },
+  methods: ['POST', 'PATCH', 'DELETE', 'PUT', 'OPTIONS'],
   allowedHeaders: allowedHeaders.join(','),
   credentials: true,
 };
