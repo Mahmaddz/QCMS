@@ -10,4 +10,5 @@ module.exports.tagsServices = require('./tags.service');
 module.exports.wordsServices = require('./words.service');
 module.exports.languageServices = require('./language.service');
 module.exports.translationServices = require('./translation.service');
+module.exports.khadijaServices = require('./khadija.service');
 module.exports.arabicCustomServices = require('./arabic.service');

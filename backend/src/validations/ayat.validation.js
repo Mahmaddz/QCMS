@@ -12,6 +12,8 @@ const searchAya = {
   query: Joi.object().keys({
     term: Joi.string().optional(),
     words: Joi.string().optional(),
+    surah: Joi.string().optional(),
+    aya: Joi.string().optional(),
   }),
 };
 

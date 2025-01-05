@@ -79,7 +79,7 @@ const khadijaInsertBulk = async (data) => {
       TRANS: d.TRANS,
       POS: d.POS,
       ANT: d.ANT,
-      Concept: d.Concept,
+      // Concept: d.Concept,
       MORPH: d.MORPH,
       ARABIC_WORD: d.ARABIC_WORD,
       Concept_Arabic: d.Concept_Arabic,
@@ -92,7 +92,9 @@ const khadijaInsertBulk = async (data) => {
       person: d.person,
     }));
     await Khadija.destroy({ truncate: true });
-    await Khadija.bulkCreate(mappedData);
+    for (let i = 0; i < mappedData.length; i += BATCH_SIZE) {
+      await Khadija.bulkCreate(mappedData.slice(i, i + BATCH_SIZE));
+    }
   } catch (error) {
     console.log(error);
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, `KHADIJA ERROR OCCURED`);
