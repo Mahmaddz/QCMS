@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Box, Button, Checkbox, FormControlLabel, InputAdornment, TextField, Typography, CircularProgress, Chip } from '@mui/material';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FilterStateParams, SearchFormParam } from '../interfaces/SearchForm';
 import { getQuranaInfo } from '../services/Search/getQuranaInfo.service';
 import Toaster from '../utils/helper/Toaster';
@@ -11,6 +11,7 @@ import uniqueID from '../utils/helper/UniqueID';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import RemoveCircleOutlineOutlinedIcon from '@mui/icons-material/RemoveCircleOutlineOutlined';
+import { getKhadijaReference } from '../services/Search/getKhadijaReference.service';
 
 type CheckboxState = {
     isLemma: boolean;
@@ -43,7 +44,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
     useEffect(() => {
         if (toSearch) {
             (async () => {
-                await getResult();
+                await getResult(undefined);
             })()
         }
     }, [toSearch])
@@ -73,17 +74,18 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
     const handleResultantResponse = (data: any[]) => {
         setLoading(false);
         const uniqueData = filterUniqueBySura(data);
-        // setSearchedCount((prev) => (prev ? uniqueData?.length + prev : uniqueData?.length));
-        setSearchedCount(uniqueData?.length || 0)
-        setSearchedResult(uniqueData);
-        // setSearchedResult((prev) => { return prev ? [ ...prev, ...uniqueData] : [...uniqueData]});
+        setSearchedCount((prev) => (prev ? uniqueData?.length + prev : uniqueData?.length));
+        // setSearchedCount(uniqueData?.length || 0)
+        // setSearchedResult(uniqueData);
+        setSearchedResult((prev) => { return prev ? [ ...prev, ...uniqueData] : [...uniqueData]});
         setChecked((prev) => ({
             ...prev,
             firstRender: false
         }))
     }
 
-    const getResult = async () => {
+    const getResult = async (e: React.FormEvent<HTMLFormElement> | React.KeyboardEvent<HTMLDivElement> | React.MouseEvent<HTMLButtonElement, MouseEvent> | undefined) => {
+        e?.preventDefault();
 
         setLoading(true);
         setSuggestions([]);
@@ -139,8 +141,13 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
             }
         }
         if (chkbox.isReference) {
-            Toaster("Reference => Not Implemented Yet")
-            setLoading(false);
+            const response = await getKhadijaReference(search, filter.surah as string || null, filter.aya as string || null);
+            if (response.success) {
+                handleResultantResponse(response.data);
+            }
+            else if (!response.success) {
+                setLoading(false);
+            }
         }
         if (chkbox.isTag) {
             Toaster("Tags => Not Implemented Yet")
@@ -164,6 +171,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
             setSearchedCount(0);
             const response = await searchAyats("", selectedKeywords);
             if (response.success) {
+                // setLoading(false);
                 // setRelatedSearch(response.searchedFor);
                 handleResultantResponse(response.data);
             }
@@ -228,7 +236,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
                 }}
                 onKeyDown={async (e) => {
                     if (e.key === 'Enter') {
-                        await getResult();
+                        await getResult(e);
                     }
                 }}
             >
@@ -379,7 +387,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
                             },
                         }}
                         disabled={loading}
-                        onClick={getResult}
+                        onClick={(e)=>getResult(e)}
                     >
                         {loading ? <CircularProgress size={24} color="inherit" /> : 'Search'}
                     </Button>
@@ -411,7 +419,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
                             textAlign: 'center',
                         }}
                     >
-                        <Typography
+                        {/* <Typography
                             sx={{
                                 fontSize: '18px',
                                 fontWeight: 'bold',
@@ -420,7 +428,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
                             }}
                         >
                             No Results for "{search}"
-                        </Typography>
+                        </Typography> */}
                         <Typography
                             sx={{
                                 fontSize: '16px',
@@ -429,7 +437,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
                                 marginBottom: '8px',
                             }}
                         >
-                            Did you mean:
+                            Do you mean:
                         </Typography>
                         <Box
                             sx={{
