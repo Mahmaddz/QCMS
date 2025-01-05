@@ -1,5 +1,5 @@
 import { Box, Tooltip, Typography } from '@mui/material'
-import React from 'react'
+import React, { memo } from 'react'
 import uniqueID from '../utils/helper/UniqueID'
 import { ArabicServices } from 'arabic-services'
 import { openNewTab } from '../utils/functions/openNewTab'
@@ -113,4 +113,4 @@ const VersePart = ({ verses, selectedKeywords, selectedLanguage }: ReviewBodyPro
     )
 }
 
-export default VersePart
+export default memo(VersePart);

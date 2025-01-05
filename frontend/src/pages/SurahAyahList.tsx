@@ -144,47 +144,47 @@ const SurahAyahList = () => {
 
                 {surahInfo?.verses ? (
                     <Box
-                    sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        gap: 4,
-                        padding: 4,
-                        borderRadius: 2,
-                        boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
-                    }}
-                >
-                    {surahInfo.verses.map((verse, index) => {
-                        const isTarget = (index + 1) === Number.parseInt(surahInfo.aya as string);
-        
-                        return (
-                            <Box
-                                key={index}
-                                ref={isTarget ? targetRef : null}
-                                sx={{
-                                    width: '100%',
-                                    maxWidth: 900,
-                                    padding: 3,
-                                    borderRadius: 2,
-                                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                                    background: isTarget
-                                        ? 'linear-gradient(135deg, #bbdefb,  #81d4fa)'
-                                        : 'linear-gradient(135deg, #e3f2fd, #bbdefb)',
-                                    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                                    '&:hover': {
-                                        transform: 'scale(1.03)',
-                                        boxShadow: '0 6px 15px rgba(0, 0, 0, 0.2)',
-                                    },
-                                }}
-                            >
-                                <VersePart 
-                                    selectedLanguage={selectedLanguage?.code} 
-                                    verses={verse} 
-                                />
-                            </Box>
-                        );
-                    })}
-                </Box>
+                        sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: 4,
+                            padding: 4,
+                            borderRadius: 2,
+                            boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
+                        }}
+                    >
+                        {surahInfo.verses.map((verse, index) => {
+                            const isTarget = (index + 1) === Number.parseInt(surahInfo.aya as string);
+            
+                            return (
+                                <Box
+                                    key={index}
+                                    ref={isTarget ? targetRef : null}
+                                    sx={{
+                                        width: '100%',
+                                        maxWidth: 900,
+                                        padding: 3,
+                                        borderRadius: 2,
+                                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                                        background: isTarget
+                                            ? 'linear-gradient(135deg, #bbdefb,  #81d4fa)'
+                                            : 'linear-gradient(135deg, #e3f2fd, #bbdefb)',
+                                        transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                                        '&:hover': {
+                                            transform: 'scale(1.03)',
+                                            boxShadow: '0 6px 15px rgba(0, 0, 0, 0.2)',
+                                        },
+                                    }}
+                                >
+                                    <VersePart 
+                                        selectedLanguage={selectedLanguage?.code} 
+                                        verses={verse} 
+                                    />
+                                </Box>
+                            );
+                        })}
+                    </Box>
                 ) : (
                     Array.from({ length: 5 }).map((_, index) => (
                         <Box

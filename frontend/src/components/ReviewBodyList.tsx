@@ -107,9 +107,9 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords }: RBL_Params) 
         <>
             {
                 searchData?.length !== 0 &&
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', padding: '10px', width: '85%', gap: 3, marginTop: { sm: -10, xs: -6 } }}>
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', padding: '10px', width: '85%', gap: 3, marginTop: { sm: -8, xs: -6 } }}>
                     <Typography variant="body2" sx={{ color: 'primary.main'}}>
-                        <b>Verses: </b>{" "}{verseWords.length || <CircularProgress size={20}/>}
+                        {totalPages !== 0 && <><b>Verses: </b>{" "}{verseWords.length || <CircularProgress size={17}/>}</> }
                     </Typography>
                 </Box>
             }

@@ -6,12 +6,22 @@ import { Autocomplete, Box, InputAdornment, TextField } from '@mui/material';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 
-const LanguageSelect = ({ listOfLanguages=[], handleChange }: { listOfLanguages: LanguageType[]; handleChange: (item: LanguageType) => void; }) => {
-    const [isOpen, setIsOpen] = useState(false); // State to manage pop-up visibility
+const LanguageSelect = ({ listOfLanguages = [], handleChange }: { listOfLanguages: LanguageType[]; handleChange: (item: LanguageType) => void; }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleButtonClick = () => {
-        setIsOpen(!isOpen); // Toggle pop-up visibility
+        setIsOpen(!isOpen);
     };
+
+    const handleLanguageChange = (_event: unknown, value: string | null) => {
+        setIsLoading(true);
+        const selectedLanguage = listOfLanguages?.find((val) => val.code === value?.split(':')[0]);
+        if (selectedLanguage) {
+            handleChange(selectedLanguage);
+        }
+        setTimeout(() => setIsLoading(false), 500);
+    }
 
     return (
         <Box
@@ -21,9 +31,10 @@ const LanguageSelect = ({ listOfLanguages=[], handleChange }: { listOfLanguages:
                 left: 20,
                 top: 20,
                 padding: 3,
-                backgroundColor: '#ffffff',
+                backgroundColor: isOpen ? '#ffffff' : '',
+                background: '',
                 borderRadius: 2,
-                boxShadow: 3,
+                boxShadow: isOpen ? 3 : '',
                 width: 250,
                 zIndex: 1000,
                 display: 'flex',
@@ -35,16 +46,13 @@ const LanguageSelect = ({ listOfLanguages=[], handleChange }: { listOfLanguages:
         >
             <Autocomplete
                 disablePortal
-                options={listOfLanguages?.filter((item) => [1,2,3,4,5].includes(item.id)).map((item) => `${item.code}: ${item.name}`)}
-                onChange={(_event, value) => {
-                    const selectedLanguage = listOfLanguages?.filter((val) => val.code === value?.split(':')[0])[0];
-                    handleChange(selectedLanguage);
-                }}
+                options={listOfLanguages?.filter((item) => [1, 2, 3, 4, 5].includes(item.id)).map((item) => `${item.code}: ${item.name}`)}
+                onChange={handleLanguageChange}
                 sx={{
                     width: 300,
                     marginRight: 1,
                     '& .MuiOutlinedInput-root': {
-                        borderRadius: '8px',
+                        borderRadius: isOpen ? '8px' : '',
                         border: 'none',
                         backgroundColor: '#f5f5f5',
                         '&:hover': {
@@ -65,11 +73,11 @@ const LanguageSelect = ({ listOfLanguages=[], handleChange }: { listOfLanguages:
                             ...params.InputProps,
                             startAdornment: (
                                 <InputAdornment position="start">
-                                {listOfLanguages?.length > 0 ? (
-                                    <TranslateIcon style={{ color: '#1976d2' }} />
-                                ) : (
-                                    <CircularProgress style={{ color: '#1976d2' }} size={20} />
-                                )}
+                                    {isLoading ? (
+                                        <CircularProgress style={{ color: '#1976d2' }} size={20} />
+                                    ) : (
+                                        <TranslateIcon style={{ color: '#1976d2' }} />
+                                    )}
                                 </InputAdornment>
                             ),
                         }}
@@ -101,7 +109,6 @@ const LanguageSelect = ({ listOfLanguages=[], handleChange }: { listOfLanguages:
             >
                 {isOpen ? <KeyboardArrowLeftIcon fontSize="large" /> : <KeyboardArrowRightIcon fontSize="large" />}
             </Box>
-
         </Box>
     );
 };

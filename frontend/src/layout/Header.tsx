@@ -259,14 +259,15 @@ function Header() {
                                     </Menu>
                                 </>
                             ) : (
-                                <Box sx={{ display: 'flex', flexDirection: 'row', gap: { xs: 0, sm: 2 } }}>
+                                <Box sx={{ display: 'flex', flexDirection: 'row', gap: { xs: 1, sm: 2 } }}>
                                     <Button
                                         variant="outlined"
                                         sx={{
                                             color: 'white',
                                             borderColor: 'white',
-                                            paddingX: 3,
-                                            paddingY: 1,
+                                            paddingX: { xs: 2, sm: 3 },
+                                            paddingY: { xs: 0.5, sm: 1 },
+                                            fontSize: { xs: '0.75rem', sm: '1rem' },
                                             '&:hover': {
                                                 backgroundColor: 'rgba(255, 255, 255, 0.2)',
                                                 borderColor: 'white',
@@ -281,13 +282,14 @@ function Header() {
                                         sx={{
                                             color: 'primary.main',
                                             backgroundColor: '#CCCCFF',
-                                            paddingX: 3,
-                                            paddingY: 1,
-                                            transition: 'all 0.3s ease', // Smooth transition
+                                            paddingX: { xs: 2, sm: 3 },
+                                            paddingY: { xs: 0.5, sm: 1 },
+                                            fontSize: { xs: '0.75rem', sm: '1rem' },
+                                            transition: 'all 0.3s ease',
                                             '&:hover': {
-                                                color: '#FFFFFF', // Changing text color on hover
-                                                backgroundColor: '#9999CC', // Darker shade for hover background
-                                                boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.2)', // Adds shadow on hover
+                                                color: '#FFFFFF',
+                                                backgroundColor: '#9999CC',
+                                                boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.2)',
                                             },
                                         }}
                                         onClick={() => navigate('/register')}
