@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { FilterStateParams, SearchFormParam } from '../interfaces/SearchForm';
 import { getQuranaInfo } from '../services/Search/getQuranaInfo.service';
 import Toaster from '../utils/helper/Toaster';
-import { getAyatInfo } from '../services/Search/getAyatInfo.service';
+// import { getAyatInfo } from '../services/Search/getAyatInfo.service';
 import { searchAyats } from '../services/Search/getAyats.service';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import uniqueID from '../utils/helper/UniqueID';
@@ -101,13 +101,15 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
         }))
 
         if (!(chkbox.isLemma || chkbox.isQurana || chkbox.isQurany || chkbox.isTag || chkbox.isDefault || chkbox.isReference)) {
-            const response = await getAyatInfo(search || toSearch as string, filter.aya as string || null, filter.surah as string || null);
-            if (response.success) {
-                handleResultantResponse(response.data);
-            }
-            else if (!response.success) {
-                setLoading(false);
-            }
+            Toaster("Click on Checkbox", "info")
+            setLoading(false);
+            // const response = await getAyatInfo(search || toSearch as string, filter.aya as string || null, filter.surah as string || null);
+            // if (response.success) {
+            //     handleResultantResponse(response.data);
+            // }
+            // else if (!response.success) {
+            //     setLoading(false);
+            // }
         }
         if(chkbox.isDefault) {
             const response = await searchAyats(search);

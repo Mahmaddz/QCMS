@@ -45,6 +45,7 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords }: RBL_Params) 
 
     const handleGetAyaWordsAPI = async (sura: string | number, aya: string | number) => {
         const response = await getAyaWords(sura as string, [aya as string]);
+        console.log(response);
         return response;
     }
 
@@ -64,6 +65,7 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords }: RBL_Params) 
                 const newVerseWords: VerseWordsArr[] = [];
                 for (const p of paginatedData) {
                     const response = await handleGetAyaWordsAPI(p.suraNo, p.ayaNo);
+                    if (!response.success) return;
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const transformedAya = response.ayat.map((aya: any) => ({
                         Chapter: aya.Chapter,
