@@ -1,5 +1,5 @@
 import { Box, Tooltip, Typography } from '@mui/material'
-import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import uniqueID from '../utils/helper/UniqueID'
 import { ArabicServices } from 'arabic-services'
 import { openNewTab } from '../utils/functions/openNewTab'
