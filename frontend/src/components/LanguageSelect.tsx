@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import TranslateIcon from '@mui/icons-material/Translate';
 import CircularProgress from '@mui/material/CircularProgress';
 import { LanguageType } from '../interfaces/Language';
@@ -6,22 +6,25 @@ import { Autocomplete, Box, InputAdornment, TextField } from '@mui/material';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 
-const LanguageSelect = ({ listOfLanguages = [], handleChange }: { listOfLanguages: LanguageType[]; handleChange: (item: LanguageType) => void; }) => {
+const LanguageSelect = React.memo(({ listOfLanguages = [], handleChange }: { listOfLanguages: LanguageType[]; handleChange: (item: LanguageType) => void; }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
-    const handleButtonClick = () => {
-        setIsOpen(!isOpen);
-    };
+    const handleButtonClick = useCallback(() => {
+        setIsOpen((prevState) => !prevState);
+    }, []);
 
-    const handleLanguageChange = (_event: unknown, value: string | null) => {
-        setIsLoading(true);
-        const selectedLanguage = listOfLanguages?.find((val) => val.code === value?.split(':')[0]);
-        if (selectedLanguage) {
-            handleChange(selectedLanguage);
-        }
-        setTimeout(() => setIsLoading(false), 500);
-    }
+    const handleLanguageChange = useCallback(
+        (_event: unknown, value: string | null) => {
+            setIsLoading(true);
+            const selectedLanguage = listOfLanguages?.find((val) => val.code === value?.split(':')[0]);
+            if (selectedLanguage) {
+                handleChange(selectedLanguage);
+            }
+            setTimeout(() => setIsLoading(false), 500);
+        },
+        [listOfLanguages, handleChange]
+    );
 
     return (
         <Box
@@ -111,6 +114,6 @@ const LanguageSelect = ({ listOfLanguages = [], handleChange }: { listOfLanguage
             </Box>
         </Box>
     );
-};
+});
 
 export default LanguageSelect;

@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Header from '../layout/Header';
 import { Box, Typography, Skeleton, } from '@mui/material';
@@ -83,6 +83,8 @@ const SurahAyahList = () => {
         setSelectedLanguages(selectedLanguage)
     }
 
+    const verses = useMemo(() => surahInfo?.verses || [], [surahInfo]);
+
     return (
         <>
             <Header/>
@@ -154,7 +156,7 @@ const SurahAyahList = () => {
                             boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
                         }}
                     >
-                        {surahInfo.verses.map((verse, index) => {
+                        {verses.map((verse, index) => {
                             const isTarget = (index + 1) === Number.parseInt(surahInfo.aya as string);
             
                             return (
@@ -178,7 +180,7 @@ const SurahAyahList = () => {
                                     }}
                                 >
                                     <VersePart 
-                                        selectedLanguage={selectedLanguage?.code} 
+                                        selectedLanguage={selectedLanguage?.code || 'en'} 
                                         verses={verse} 
                                     />
                                 </Box>

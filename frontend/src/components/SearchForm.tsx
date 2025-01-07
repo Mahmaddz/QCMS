@@ -13,21 +13,12 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import RemoveCircleOutlineOutlinedIcon from '@mui/icons-material/RemoveCircleOutlineOutlined';
 import { getKhadijaReference } from '../services/Search/getKhadijaReference.service';
 
-type CheckboxState = {
-    isLemma: boolean;
-    isTag: boolean;
-    isReference: boolean;
-    isDefault: boolean;
-    isQurana: boolean;
-    isQurany: boolean;
-};
-
 const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selectedKeywords, setSelectedKeywords }: SearchFormParam) => {
 
     const [relatedSearch, setRelatedSearch] = useState<{word: {word: string, count: number | string}, isSelected: boolean}[]>([]);
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [searchedCount, setSearchedCount] = useState<number>(-1);
-    const [checked, setChecked] = useState({allSelect: true, firstRender: true});
+    const [checked, setChecked] = useState(0);
     const [loading, setLoading] = useState(false);
     const [filter, setFilter] = useState<FilterStateParams>({ surah: 0, aya: 0 });
     const [search, setSearch] = useState<string>(toSearch || "");
@@ -54,13 +45,17 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
     const handleChangeCheckBoxes = (e: React.SyntheticEvent<Element, Event>, checked: boolean) => {
         e.preventDefault();
         const {name} = e.target as HTMLInputElement;
-        setChkBox((prev) => {
-            const updatedState: CheckboxState = Object.keys(prev).reduce((acc, key) => {
-                acc[key as keyof CheckboxState] = key === name ? checked : false;
-                return acc;
-            }, {} as CheckboxState);
-            return updatedState;
-        });
+        // setChkBox((prev) => {
+        //     const updatedState: CheckboxState = Object.keys(prev).reduce((acc, key) => {
+        //         acc[key as keyof CheckboxState] = key === name ? checked : false;
+        //         return acc;
+        //     }, {} as CheckboxState);
+        //     return updatedState;
+        // });
+        setChkBox((prev) => ({
+            ...prev,
+            [name]: checked
+        }));
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -78,10 +73,6 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
         // setSearchedCount(uniqueData?.length || 0)
         // setSearchedResult(uniqueData);
         setSearchedResult((prev) => { return prev ? [ ...prev, ...uniqueData] : [...uniqueData]});
-        setChecked((prev) => ({
-            ...prev,
-            firstRender: false
-        }))
     }
 
     const getResult = async (e: React.FormEvent<HTMLFormElement> | React.KeyboardEvent<HTMLDivElement> | React.MouseEvent<HTMLButtonElement, MouseEvent> | undefined) => {
@@ -95,10 +86,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
         setRelatedSearch([]);
         setRootLemmaData([]);
 
-        setChecked((prev) => ({
-            ...prev,
-            firstRender: true,
-        }))
+        setChecked(Object.values(chkbox).filter(value => value === true).length);
 
         if (!(chkbox.isLemma || chkbox.isQurana || chkbox.isQurany || chkbox.isTag || chkbox.isDefault || chkbox.isReference)) {
             Toaster("Click on Checkbox", "info")
@@ -184,9 +172,12 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
     }
 
     useEffect(() => {
-        if (checked.firstRender) {
+        console.log(checked);
+        if (checked > 0) {
+            setChecked((prev) => prev - 1)
             return;
         }
+        console.log('mein aya');
         const timeId = setTimeout(() => {
             getResultBasedOnSuggestedWords();
         }, 1000);
@@ -477,7 +468,6 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
                                         >
                                             {sug}
                                         </Typography>
-
                                     </Button>
                                 )
                             }

@@ -45,7 +45,6 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords }: RBL_Params) 
 
     const handleGetAyaWordsAPI = async (sura: string | number, aya: string | number) => {
         const response = await getAyaWords(sura as string, [aya as string]);
-        console.log(response);
         return response;
     }
 
