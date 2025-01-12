@@ -85,11 +85,10 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleResultantResponse = (data: any[]) => {
         setLoading(false);
-        const uniqueData = !data[0]?.wordId ? filterUniqueBySura(data) : data;
+        const uniqueData = filterUniqueBySura(data);
         setSearchedCount((prev) => (prev ? uniqueData?.length + prev : uniqueData?.length));
-        // setSearchedCount(uniqueData?.length || 0)
-        // setSearchedResult(uniqueData);
-        setSearchedResult((prev) => { return prev?.length ? [ ...prev, ...uniqueData] : [...uniqueData]});
+        const searchResult = !data[0]?.wordId ? uniqueData : data;
+        setSearchedResult((prev) => { return prev?.length ? [ ...prev, ...searchResult] : [...searchResult]});
     }
 
     const getResult = async (e: React.FormEvent<HTMLFormElement> | React.KeyboardEvent<HTMLDivElement> | React.MouseEvent<HTMLButtonElement, MouseEvent> | undefined) => {
@@ -196,6 +195,9 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
         }
         const timeId = setTimeout(() => {
             getResultBasedOnSuggestedWords();
+            if (chkbox.isReference) {
+                getResult(undefined);
+            }
         }, 1000);
     
         return () => clearTimeout(timeId);

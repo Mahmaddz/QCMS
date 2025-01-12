@@ -14,16 +14,8 @@ const VersePart = ({ verses, selectedKeywords, selectedLanguage, searchMethod }:
         openNewTab('/', data);
     }
 
-    const isCharacterInArabicWord = (arabicWord: string, position: string) => {
-        if (arabicWord === 'هُوَ') {
-            console.group('start');
-            console.log(arabicWord);
-            console.log(typeof position);
-            console.log(verses.wordId)
-            console.log(verses.arabicWord)
-            console.groupEnd();
-        }
-        return verses.wordId?.includes(position) && ArabicServices.removeTashkeel(arabicWord).includes(ArabicServices.removeTashkeel(verses.arabicWord || ""));
+    const isCharacterInArabicWord = (position: string) => {
+        return verses.wordId?.includes(position);
     }
 
     const getColorForMatchWord = (word1: string, word2: string) => {
@@ -31,7 +23,7 @@ const VersePart = ({ verses, selectedKeywords, selectedLanguage, searchMethod }:
     }
 
     const getColor = (word: string, position: number) => {
-        if (searchMethod?.method.split(' ').includes('isReference') && isCharacterInArabicWord(word, position.toString())) {
+        if (searchMethod?.method.split(' ').includes('isReference') && isCharacterInArabicWord(position.toString())) {
             return '#CCCC00';
         }
         if (searchMethod?.method.split(' ').includes('isDefault')) {
@@ -87,7 +79,7 @@ const VersePart = ({ verses, selectedKeywords, selectedLanguage, searchMethod }:
                                         <b>Stem Pattern:</b> {verse.Stem_pattern}
                                     </Typography>
                                     {
-                                        verses.wordId?.includes(`${index+1}`) && verses?.conceptArabic && isCharacterInArabicWord(verse.word, `${index+1}`) &&
+                                        // verses.wordId?.includes(`${index+1}`) && verses?.conceptArabic && isCharacterInArabicWord(verse.word, `${index+1}`) &&
                                         <Typography
                                             key={uniqueID()}
                                             sx={{

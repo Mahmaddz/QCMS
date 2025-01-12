@@ -35,6 +35,6 @@ export interface VerseWordsArr {
     ayat: VerseWords[];
     translation: AyaTranslationWithIds[];
     conceptArabic?: string;
-    arabicWord?: string;
+    arabicWord?: string[];
     wordId?: string | string[];
 }
