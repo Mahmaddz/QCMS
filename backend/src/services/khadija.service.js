@@ -6,8 +6,11 @@ const getAyaAndSuraUsingConceptArabic = async (conceptValues, suraNo, ayaNo) => 
   ayaNo = ayaNo === 0 || ayaNo === null ? false : ayaNo;
   const results = await Khadija.findAll({
     attributes: [
-      [Sequelize.fn('DISTINCT', Sequelize.col('chapter_ID')), 'suraNo'],
+      [Sequelize.col('chapter_ID'), 'suraNo'],
       ['verse_ID', 'ayaNo'],
+      ['Concept_Arabic', 'conceptArabic'],
+      ['ARABIC_WORD', 'arabicWord'],
+      ['word_ID', 'wordId'],
     ],
     where: {
       [Op.or]: conceptValues.map((value) => ({
