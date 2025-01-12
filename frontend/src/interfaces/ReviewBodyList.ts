@@ -1,4 +1,4 @@
-import { FilterStateParams } from "./SearchForm";
+import { CurrentSearch, FilterStateParams } from "./SearchForm";
 import { SuraAyaInfo } from "./SurahAyaInfo";
 
 export interface RBL_Params {
@@ -6,4 +6,5 @@ export interface RBL_Params {
     showTags: boolean;
     searchData: SuraAyaInfo[] | undefined;
     selectedKeywords: string[];
+    currentSearchMethod: CurrentSearch;
 }

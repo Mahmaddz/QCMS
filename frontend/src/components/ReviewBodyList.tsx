@@ -12,7 +12,7 @@ import { getAllLanguages } from "../services/Language/getLanguages";
 import { LanguageType } from "../interfaces/Language";
 import LanguageSelect from "./LanguageSelect";
 
-const ReviewBodyList = ({ showTags, searchData, selectedKeywords }: RBL_Params) => {
+const ReviewBodyList = ({ showTags, searchData, selectedKeywords, currentSearchMethod }: RBL_Params) => {
     const itemsPerPage = 10;
     const [currentPage, setCurrentPage] = useState(1);
     const dividerRef = useRef<HTMLDivElement | null>(null);
@@ -24,7 +24,7 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords }: RBL_Params) 
     useEffect(() => {
         setWordsWithColor(selectedKeywords.map(val => ({ 
             word: val, 
-            color: colorGenerator.generateUniqueColor() 
+            color: colorGenerator.getSearchTypeColor(currentSearchMethod, val),
         })));
     }, [selectedKeywords])
     
@@ -34,8 +34,10 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords }: RBL_Params) 
     useEffect(() => {
         (async () => {
             const resposne = await getAllLanguages();
-            setListOfLanguages(resposne.data);
-            setSelectedLanguages(resposne.data[0]);
+            if (resposne.success) {
+                setListOfLanguages(resposne.data);
+                setSelectedLanguages(resposne.data[0]);
+            }
         })()
     }, [])
 
@@ -56,12 +58,19 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords }: RBL_Params) 
         return () => clearTimeout(time);
     }, [verseWords])
 
+    // const filterUniqueBySura = (array: any[]) => {
+    //     return array?.filter((item, index, self) =>
+    //         index === self.findIndex((t) => t.suraNo === item.suraNo && t.ayaNo === item.ayaNo)
+    //     ) || [];
+    // };
+
     useEffect(() => {
         setVerseWords([]);
         const fetchResolvedData = async () => {
             if (paginatedData) {
                 colorGenerator.reset();
                 const newVerseWords: VerseWordsArr[] = [];
+                const position: { [key: string]: string[] } = {};
                 for (const p of paginatedData) {
                     const response = await handleGetAyaWordsAPI(p.suraNo, p.ayaNo);
                     if (!response.success) return;
@@ -74,12 +83,22 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords }: RBL_Params) 
                         word: aya.word,
                         wordUndiacritizedNoHamza: aya.wordUndiacritizedNoHamza,
                     }));
+                    const key = `${p.suraNo}-${p.ayaNo}`;
+                    if (position[key]) {
+                        position[key].push(p.wordId?.toString() || '');
+                    } else {
+                        position[key] = [p.wordId?.toString() || ''];
+                    }
                     newVerseWords.push({
                         ayat: transformedAya,
                         suraName: `${transformedAya[0].Chapter}:${transformedAya[0].Verse} - ${response.suraName}`,
                         translation: response.translation,
+                        arabicWord: p.arabicWord,
+                        conceptArabic: p.conceptArabic,
+                        wordId: position[key],
                     });
                 }
+                console.log(newVerseWords);
                 setVerseWords(newVerseWords);
             } else {
                 setVerseWords([]);
@@ -168,6 +187,7 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords }: RBL_Params) 
                     showTags={showTags}
                     selectedKeywords={wordsWithColor}
                     selectedLanguage={selectedLanguage?.code || 0}
+                    searchMethod={currentSearchMethod}
                 />
             ))}
 
