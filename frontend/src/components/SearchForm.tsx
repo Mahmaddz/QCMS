@@ -13,12 +13,12 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import RemoveCircleOutlineOutlinedIcon from '@mui/icons-material/RemoveCircleOutlineOutlined';
 import { getKhadijaReference } from '../services/Search/getKhadijaReference.service';
 
-const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selectedKeywords, setSelectedKeywords }: SearchFormParam) => {
+const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selectedKeywords, setSelectedKeywords, setCurrentSearchMethod }: SearchFormParam) => {
 
     const [relatedSearch, setRelatedSearch] = useState<{word: {word: string, count: number | string}, isSelected: boolean}[]>([]);
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [searchedCount, setSearchedCount] = useState<number>(-1);
-    const [checked, setChecked] = useState(0);
+    const [checked, setChecked] = useState(1);
     const [loading, setLoading] = useState(false);
     const [filter, setFilter] = useState<FilterStateParams>({ surah: 0, aya: 0 });
     const [search, setSearch] = useState<string>(toSearch || "");
@@ -40,11 +40,32 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
         }
     }, [toSearch])
 
-    const handleChangeSearch = (value: string) => setSearch(value);
+    const handleChangeSearch = (value: string) => { 
+        setSearch(value);
+        setCurrentSearchMethod((prev) => ({
+            ...prev,
+            search: value,
+        }));
+    };
+
+    useEffect(() => {
+        setCurrentSearchMethod((prev) => ({
+            ...prev,
+            method: Object.entries(chkbox).filter(([, value]) => value === true).map(([key]) => key).join(' '),
+        }));
+    }, [chkbox])
 
     const handleChangeCheckBoxes = (e: React.SyntheticEvent<Element, Event>, checked: boolean) => {
         e.preventDefault();
         const {name} = e.target as HTMLInputElement;
+        setChkBox((prev) => ({
+            ...prev,
+            [name]: checked
+        }));
+        setCurrentSearchMethod((prev) => ({
+            ...prev,
+            method: name,
+        }));
         // setChkBox((prev) => {
         //     const updatedState: CheckboxState = Object.keys(prev).reduce((acc, key) => {
         //         acc[key as keyof CheckboxState] = key === name ? checked : false;
@@ -52,10 +73,6 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
         //     }, {} as CheckboxState);
         //     return updatedState;
         // });
-        setChkBox((prev) => ({
-            ...prev,
-            [name]: checked
-        }));
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -68,11 +85,11 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleResultantResponse = (data: any[]) => {
         setLoading(false);
-        const uniqueData = filterUniqueBySura(data);
+        const uniqueData = !data[0]?.wordId ? filterUniqueBySura(data) : data;
         setSearchedCount((prev) => (prev ? uniqueData?.length + prev : uniqueData?.length));
         // setSearchedCount(uniqueData?.length || 0)
         // setSearchedResult(uniqueData);
-        setSearchedResult((prev) => { return prev ? [ ...prev, ...uniqueData] : [...uniqueData]});
+        setSearchedResult((prev) => { return prev?.length ? [ ...prev, ...uniqueData] : [...uniqueData]});
     }
 
     const getResult = async (e: React.FormEvent<HTMLFormElement> | React.KeyboardEvent<HTMLDivElement> | React.MouseEvent<HTMLButtonElement, MouseEvent> | undefined) => {
@@ -133,6 +150,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
         if (chkbox.isReference) {
             const response = await getKhadijaReference(search, filter.surah as string || null, filter.aya as string || null);
             if (response.success) {
+                console.log(response.data);
                 handleResultantResponse(response.data);
             }
             else if (!response.success) {
@@ -172,12 +190,10 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
     }
 
     useEffect(() => {
-        console.log(checked);
         if (checked > 0) {
             setChecked((prev) => prev - 1)
             return;
         }
-        console.log('mein aya');
         const timeId = setTimeout(() => {
             getResultBasedOnSuggestedWords();
         }, 1000);

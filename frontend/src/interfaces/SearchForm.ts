@@ -13,6 +13,11 @@ export interface SearchParams {
     search: string,
 }
 
+export interface CurrentSearch {
+    method: string;
+    search: string;
+}
+
 export interface SearchFormParam {
     showTag?: boolean;
     setShowTag: Dispatch<SetStateAction<boolean | undefined>> | Dispatch<React.SetStateAction<boolean>>;
@@ -22,4 +27,5 @@ export interface SearchFormParam {
     toSearch?: string;
     selectedKeywords: string[];
     setSelectedKeywords: Dispatch<SetStateAction<string[]>>;
+    setCurrentSearchMethod: Dispatch<SetStateAction<CurrentSearch>>;
 }
