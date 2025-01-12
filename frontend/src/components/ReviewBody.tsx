@@ -25,7 +25,7 @@ const StyledReplyTwoToneIcon = styled(ReplyTwoToneIcon)({
   transform: "scale(-1, 1)"
 });
 
-export default function ReviewBody({ verses, tags: initialTags, showTags, selectedKeywords, selectedLanguage }: ReviewBodyProps) {
+export default function ReviewBody({ verses, tags: initialTags, showTags, selectedKeywords, selectedLanguage, searchMethod }: ReviewBodyProps) {
 
   const { userRole } = useAuth();
 
@@ -138,7 +138,7 @@ export default function ReviewBody({ verses, tags: initialTags, showTags, select
           {verses.suraName}
         </Typography>
 
-        <VersePart selectedKeywords={selectedKeywords} selectedLanguage={selectedLanguage} verses={verses} />
+        <VersePart selectedKeywords={selectedKeywords} selectedLanguage={selectedLanguage} verses={verses} searchMethod={searchMethod}/>
 
         <Box
           sx={{
