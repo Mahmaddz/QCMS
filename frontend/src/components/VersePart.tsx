@@ -5,7 +5,7 @@ import { ArabicServices } from 'arabic-services'
 import { openNewTab } from '../utils/functions/openNewTab'
 import { ReviewBodyProps } from '../interfaces/ReviewBody'
 
-const VersePart = ({ verses, selectedKeywords, selectedLanguage }: ReviewBodyProps) => {
+const VersePart = ({ verses, selectedKeywords, selectedLanguage, searchMethod }: ReviewBodyProps) => {
 
     const handleShowResultAgainstTerm = (term: string) => {
         const data = {
@@ -14,9 +14,31 @@ const VersePart = ({ verses, selectedKeywords, selectedLanguage }: ReviewBodyPro
         openNewTab('/', data);
     }
 
-    const getColor = (word: string) => {
-        return selectedKeywords?.filter(select => ArabicServices.removeTashkeel(select.word) === ArabicServices.removeTashkeel(word))[0]?.color || 'text.primary'
+    const isCharacterInArabicWord = (arabicWord: string, position: string) => {
+        if (arabicWord === 'هُوَ') {
+            console.group('start');
+            console.log(arabicWord);
+            console.log(typeof position);
+            console.log(verses.wordId)
+            console.log(verses.arabicWord)
+            console.groupEnd();
+        }
+        return verses.wordId?.includes(position) && ArabicServices.removeTashkeel(arabicWord).includes(ArabicServices.removeTashkeel(verses.arabicWord || ""));
     }
+
+    const getColorForMatchWord = (word1: string, word2: string) => {
+        return ArabicServices.removeTashkeel(word1) === ArabicServices.removeTashkeel(word2)
+    }
+
+    const getColor = (word: string, position: number) => {
+        if (searchMethod?.method.split(' ').includes('isReference') && isCharacterInArabicWord(word, position.toString())) {
+            return '#CCCC00';
+        }
+        if (searchMethod?.method.split(' ').includes('isDefault')) {
+            return selectedKeywords?.filter(select => getColorForMatchWord(select.word, word))[0]?.color || 'text.primary';
+        }
+        return 'text.primary';
+    };
 
     return (
         <React.Fragment>
@@ -39,7 +61,7 @@ const VersePart = ({ verses, selectedKeywords, selectedLanguage }: ReviewBodyPro
                         width: '100%',
                     }}
                 >
-                    {verses.ayat.map((verse) => (
+                    {verses.ayat.map((verse, index) => (
                         <Tooltip 
                             key={uniqueID()}
                             title={
@@ -64,6 +86,19 @@ const VersePart = ({ verses, selectedKeywords, selectedLanguage }: ReviewBodyPro
                                     >
                                         <b>Stem Pattern:</b> {verse.Stem_pattern}
                                     </Typography>
+                                    {
+                                        verses.wordId?.includes(`${index+1}`) && verses?.conceptArabic && isCharacterInArabicWord(verse.word, `${index+1}`) &&
+                                        <Typography
+                                            key={uniqueID()}
+                                            sx={{
+                                                fontSize: "3",
+                                                fontWeight: 500,
+                                                lineHeight: 1.5,
+                                            }}
+                                        >
+                                            <b>Concept Arabic:</b> {verses.conceptArabic}
+                                        </Typography>
+                                    }
                                 </>
                             }
                             placement="top" 
@@ -74,7 +109,7 @@ const VersePart = ({ verses, selectedKeywords, selectedLanguage }: ReviewBodyPro
                                 variant="h5"
                                 sx={{
                                     fontWeight: 500,
-                                    color: getColor(verse.word),
+                                    color: getColor(verse.word, index+1),
                                     fontSize: { xs: '1.8rem', sm: '2.125rem' },
                                     cursor: 'pointer',
                                     textAlign: 'center',

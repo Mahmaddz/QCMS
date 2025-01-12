@@ -1,3 +1,6 @@
+import { ArabicServices } from "arabic-services";
+import { CurrentSearch } from "../../interfaces/SearchForm";
+
 export class UniqueColorGenerator {
     private generatedColors: Set<string> = new Set();
     private baseColors: string[] = [
@@ -7,10 +10,20 @@ export class UniqueColorGenerator {
         '#008000', // Green
         '#A52A2A', // Brown
         '#00FFFF', // Cyan
-        // '#CCCC00', // Yellow
         '#808080', // Gray
+        '#CCCC00', // Yellow
     ];
     private variantsGenerated: number = 0;
+
+    getSearchTypeColor(searchType: CurrentSearch, word: string) : string {
+        if (searchType.method.split(' ').includes('isDefault')) {
+            return '#FF0000'
+        }
+        else if (searchType.method.split(' ').includes('isReference') && searchType.search.split(' ').map(val => ArabicServices.removeTashkeel(val)).includes(ArabicServices.removeTashkeel(word))) {
+            return '#CCCC00'
+        }
+        return '#FF69B4'
+    }
 
     generateUniqueColor(): string {
         let color: string;

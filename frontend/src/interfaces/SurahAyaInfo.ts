@@ -6,5 +6,8 @@ export interface SuraAyaInfo {
     conceptNameEn?: string;
     ayaNo: number;
     suraNo: number;
-    emlaeyTextNoDiacritics?: string
+    emlaeyTextNoDiacritics?: string;
+    arabicWord?: string;
+    conceptArabic?: string;
+    wordId?: number | string;
 }
