@@ -79,7 +79,7 @@ const VersePart = ({ verses, selectedKeywords, selectedLanguage, searchMethod }:
                                         <b>Stem Pattern:</b> {verse.Stem_pattern}
                                     </Typography>
                                     {
-                                        // verses.wordId?.includes(`${index+1}`) && verses?.conceptArabic && isCharacterInArabicWord(verse.word, `${index+1}`) &&
+                                        verses.wordId?.includes(`${index+1}`) && verses?.conceptArabic && isCharacterInArabicWord(`${index+1}`) &&
                                         <Typography
                                             key={uniqueID()}
                                             sx={{

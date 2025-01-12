@@ -157,7 +157,7 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords, currentSearchM
             <LanguageSelect listOfLanguages={listOfLanguages} handleChange={(item: LanguageType) => setSelectedLanguages(item)}/>
 
             {
-                verseWords.length === 0 && 
+                searchData?.length && verseWords.length === 0 && 
                 Array.from({ length: 5 }).map((_, index) => (
                     <Box
                         key={index}

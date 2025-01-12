@@ -91,6 +91,16 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
         setSearchedResult((prev) => { return prev?.length ? [ ...prev, ...searchResult] : [...searchResult]});
     }
 
+    const getReferenceData = async () => {
+        const response = await getKhadijaReference(search, filter.surah as string || null, filter.aya as string || null);
+        if (response.success) {
+            handleResultantResponse(response.data);
+        }
+        else if (!response.success) {
+            setLoading(false);
+        }
+    }
+
     const getResult = async (e: React.FormEvent<HTMLFormElement> | React.KeyboardEvent<HTMLDivElement> | React.MouseEvent<HTMLButtonElement, MouseEvent> | undefined) => {
         e?.preventDefault();
 
@@ -147,14 +157,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
             }
         }
         if (chkbox.isReference) {
-            const response = await getKhadijaReference(search, filter.surah as string || null, filter.aya as string || null);
-            if (response.success) {
-                console.log(response.data);
-                handleResultantResponse(response.data);
-            }
-            else if (!response.success) {
-                setLoading(false);
-            }
+            await getReferenceData()
         }
         if (chkbox.isTag) {
             Toaster("Tags => Not Implemented Yet")
@@ -196,7 +199,9 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
         const timeId = setTimeout(() => {
             getResultBasedOnSuggestedWords();
             if (chkbox.isReference) {
-                getResult(undefined);
+                (async () => {
+                    await getReferenceData();
+                })()
             }
         }, 1000);
     
