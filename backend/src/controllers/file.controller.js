@@ -14,7 +14,7 @@ const fileUpload = catchAsync(async (req, res) => {
 
   if (req.params.fileNature === 'verses') {
     const workbook = await fileServices.readXlxsFile(req.file.buffer);
-    const requiredModels = ['khadija']; // ['verses', 'Qurana']; // 'khadija']; //  ['Sample-index']; // ['mushaf+'];
+    const requiredModels = ['mushaf+']; // ['verses', 'Qurana', 'khadija', 'Sample-index', 'mushaf+'];
 
     // await sequelize.query('SET session_replication_role = replica;');
 

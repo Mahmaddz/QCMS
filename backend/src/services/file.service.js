@@ -102,10 +102,6 @@ const khadijaInsertBulk = async (data) => {
 };
 
 const mushafInsertBulk = async (data) => {
-  for (let i = 0; i < 10; i += 1) {
-    console.log(data[i].word);
-    console.log('count ->', i);
-  }
   try {
     const mappedData = data.map((d) => ({
       is_chapter_name: d.is_chapter_name,
@@ -118,7 +114,7 @@ const mushafInsertBulk = async (data) => {
       PoS_tags: d['PoS tags'],
       Lemma: d.Lemma,
       lemma_pattern: d['lemma pattern'],
-      Root: d.Root !== '#' ? d.Root : null,
+      Root: d.Root,
       firstRoot: d.first_root,
       wordUndiacritizedWithHamza: d.word_undiacritized_withhamza,
       wordUndiacritizedNoHamza: d.word_undiacritized_nohamza,
@@ -151,8 +147,13 @@ const mushafInsertBulk = async (data) => {
       sameStartWord: d['same_start word'],
     }));
     await Mushaf.sequelize.query('TRUNCATE TABLE "Mushaf" RESTART IDENTITY CASCADE');
+    const totalBatches = Math.ceil(mappedData.length / BATCH_SIZE);
     for (let i = 0; i < mappedData.length; i += BATCH_SIZE) {
+      const currentBatch = Math.floor(i / BATCH_SIZE) + 1;
       await Mushaf.bulkCreate(mappedData.slice(i, i + BATCH_SIZE));
+      console.log(
+        `Progress: Batch ${currentBatch} of ${totalBatches} completed (${((currentBatch / totalBatches) * 100).toFixed(2)}%)`
+      );
     }
   } catch (error) {
     console.log(error);
