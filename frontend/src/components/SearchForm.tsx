@@ -86,9 +86,12 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
     const handleResultantResponse = (data: any[]) => {
         setLoading(false);
         const uniqueData = filterUniqueBySura(data);
-        setSearchedCount((prev) => (prev ? uniqueData?.length + prev : uniqueData?.length));
         const searchResult = !data[0]?.wordId ? uniqueData : data;
-        setSearchedResult((prev) => { return prev?.length ? [ ...prev, ...searchResult] : [...searchResult]});
+        setSearchedResult((prev) => {
+            const tempData = prev?.length ? [ ...prev, ...searchResult] : [...searchResult] // filterUniqueBySura();
+            setSearchedCount(tempData.length);
+            return tempData.sort((a, b) => (a.suraNo - b.suraNo) || (a.ayaNo - b.ayaNo));
+        });
     }
 
     const getReferenceData = async () => {
@@ -126,7 +129,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
             // }
         }
         if(chkbox.isDefault) {
-            const response = await searchAyats(search);
+            const response = await searchAyats(search, [], filter.surah as string, filter.aya as string);
             if (response.success) {
                 setLoading(false);
                 setRootLemmaData(response.otherWords.rootsWords);
@@ -179,7 +182,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
             setLoading(true);
             setSearchedResult([]);
             setSearchedCount(0);
-            const response = await searchAyats("", selectedKeywords);
+            const response = await searchAyats("", selectedKeywords, filter.surah as string, filter.aya as string);
             if (response.success) {
                 // setLoading(false);
                 // setRelatedSearch(response.searchedFor);
@@ -508,7 +511,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
                             <Box component="span" sx={{ fontWeight: 'bold' }}>
                                 {searchedCount}
                             </Box>{" "}
-                            search results
+                            Match Found
                         </>
                     ) : (
                         "Enter values to search"

@@ -15,7 +15,7 @@ const getAyatInfo = catchAsync(async (req, res) => {
 });
 
 const searchAyat = catchAsync(async (req, res) => {
-  const { term, words } = req.query;
+  const { term, words, surah, aya } = req.query;
 
   if (!term && !words) {
     throw new ApiError(httpStatus.BAD_REQUEST, `Empty Query`);
@@ -25,7 +25,7 @@ const searchAyat = catchAsync(async (req, res) => {
   let suggestions;
   if (!words) {
     const updatedTerm = ArabicServices.removeTashkeel(term);
-    result = await ayatServices.getSuraAndAyaFromMushafUsingTerm(updatedTerm);
+    result = await ayatServices.getSuraAndAyaFromMushafUsingTerm(updatedTerm, surah, aya);
     if (Object.keys(result.wordsList.lemmas).length === 0) {
       suggestions = await wordsServices.getSuggestedWords(updatedTerm.split(' '));
     }

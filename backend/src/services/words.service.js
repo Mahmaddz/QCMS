@@ -125,7 +125,8 @@ const getSuggestedWordsBasedOnTerm = async (termVal) => {
     attributes: ['id', 'Chapter', 'Verse', 'Root', 'Lemma', 'word', 'wordLastLetterUndiacritizedWithHamza'],
     where: {
       [Op.and]: [
-        { Root: { [Op.ne]: null } },
+        { Root: { [Op.ne]: '#' } },
+        { Verse: { [Op.ne]: 0 } },
         {
           [Op.or]: fields.map((field) => ({
             [field]: {
@@ -175,13 +176,8 @@ const getSuggestedWords = async (keywords) => {
   if (!keywords.length) {
     return new Set();
   }
-
-  console.log(keywords);
   const matchQuery = keywords.map((keyword) => `*${keyword}*`).join(' | ');
-  console.log(matchQuery);
-
   let r = [];
-
   try {
     const { results } = await sphql
       .getQueryBuilder()
@@ -195,7 +191,6 @@ const getSuggestedWords = async (keywords) => {
     console.error(error);
     r = [];
   }
-
   return new Set(r.map((re) => re.word));
 };
 
@@ -224,7 +219,7 @@ const getWordsByLemma = async (wordsArray) => {
   return Object.fromEntries(map.entries());
 };
 
-const getWordsByRoot = async (wordsArray) => {
+const getWordsByRoot = async (wordsArray, prefferedLemmas = []) => {
   const wordz = await Mushaf.findAll({
     attributes: [
       [Sequelize.col('wordLastLetterUndiacritizedWithHamza'), 'word'],
@@ -241,6 +236,7 @@ const getWordsByRoot = async (wordsArray) => {
       Verse: {
         [Op.ne]: 0,
       },
+      ...(prefferedLemmas.length && { Lemma: { [Op.in]: prefferedLemmas } }),
     },
     group: ['wordLastLetterUndiacritizedWithHamza', 'Lemma', 'Root'],
   });

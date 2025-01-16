@@ -1,11 +1,22 @@
+/* eslint-disable no-misleading-character-class */
 import { Box, Tooltip, Typography } from '@mui/material'
 import React, { memo } from 'react'
 import uniqueID from '../utils/helper/UniqueID'
 import { ArabicServices } from 'arabic-services'
 import { openNewTab } from '../utils/functions/openNewTab'
 import { ReviewBodyProps } from '../interfaces/ReviewBody'
+import { Marker } from "react-mark.js";
 
 const VersePart = ({ verses, selectedKeywords, selectedLanguage, searchMethod }: ReviewBodyProps) => {
+
+    const normalizeText = (str: string[]) => 
+        str.map(singleWord => 
+            singleWord
+                .replace(/[\u06E6\u0670]/g, "")
+                .replace(/ى[\u064E\u0653]?/g, "ي")
+                .replace(/ا\u0653/g, "ا") 
+                .replace(/[\u06E5\u0653]/g, "")
+        );
 
     const handleShowResultAgainstTerm = (term: string) => {
         const data = {
@@ -24,7 +35,7 @@ const VersePart = ({ verses, selectedKeywords, selectedLanguage, searchMethod }:
 
     const getColor = (word: string, position: number) => {
         if (searchMethod?.method.split(' ').includes('isReference') && isCharacterInArabicWord(position.toString())) {
-            return '#CCCC00';
+            return 'text.primary';
         }
         if (searchMethod?.method.split(' ').includes('isDefault')) {
             return selectedKeywords?.filter(select => getColorForMatchWord(select.word, word))[0]?.color || 'text.primary';
@@ -115,7 +126,14 @@ const VersePart = ({ verses, selectedKeywords, selectedLanguage, searchMethod }:
                                 }}
                                 onClick={() => handleShowResultAgainstTerm(verse.word)}
                             >
-                                {verse.word}
+                                {
+                                    verses.wordId?.includes(`${index+1}`) ?
+                                        <Marker mark={normalizeText(verses.arabicWord || [])}>
+                                            {verse.word}
+                                        </Marker>
+                                    : 
+                                    verse.word
+                                }
                             </Typography>
                         </Tooltip>
                     ))}

@@ -107,7 +107,7 @@ const searchAyatUsingTermAndWords = async (conceptArabicList) => {
   }
 };
 
-const getAyaAndSuraUsingWords = async (words) => {
+const getAyaAndSuraUsingWords = async (words, surah, aya) => {
   const results = await Mushaf.findAll({
     attributes: [
       [Sequelize.col('Chapter'), 'suraNo'],
@@ -119,23 +119,34 @@ const getAyaAndSuraUsingWords = async (words) => {
       },
       is_basmalla: 0,
       is_chapter_name: 0,
-      Verse: {
-        [Op.ne]: 0,
-      },
+      ...(surah && {
+        Chapter: surah,
+      }),
+      ...(aya ? 
+        {
+          Verse: aya,
+        }
+      : {
+          Verse: {
+            [Op.ne]: 0,
+          },
+        }
+      ),
     },
-    group: ['Chapter', 'Verse'],
+    group: ['id', 'Chapter', 'Verse'],
+    order: [['id', 'ASC']],
   });
   return { surahAndAyaList: results || [] };
 };
 
-const getSuraAndAyaFromMushafUsingTerm = async (term) => {
+const getSuraAndAyaFromMushafUsingTerm = async (term, surah, aya) => {
   const wordsList = await wordsServices.getSuggestedWordsBasedOnTerm(term); // (roots and lemmas) of matched words
   const lemmaList = Object.keys(wordsList.lemmas);
   const otherWords = {
     lemmasWords: await wordsServices.getWordsByLemma(lemmaList),
-    rootsWords: await wordsServices.getWordsByRoot(Object.keys(wordsList.roots)),
+    rootsWords: await wordsServices.getWordsByRoot(Object.keys(wordsList.roots), lemmaList),
   };
-  const resultz = lemmaList.length !== 0 ? await getAyaAndSuraUsingWords(Object.values(wordsList.lemmas).flat()) : [];
+  const resultz = lemmaList.length !== 0 ? await getAyaAndSuraUsingWords(Object.values(wordsList.lemmas).flat(), surah, aya) : [];
   return { surahAndAyaList: resultz.surahAndAyaList, wordsList, otherWords };
 };
 
@@ -181,6 +192,7 @@ const getVerseWordsBySuraNoAndAyaNo = async (sura, aya=[]) => {
       ...(aya.length > 0 && { Verse: { [Op.in]: aya } } ),
       is_basmalla: 0,
     },
+    order: [['id', 'ASC']],
   });
   return results;
 };
