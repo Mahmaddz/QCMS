@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Box, Typography, Button, CircularProgress } from '@mui/material';
 import { Link, useLocation } from 'react-router-dom';
-import { componentRoutes } from '../routes/AllRoutes';
 import { useAuth } from '../context/Auth/useAuth';
 
 const PageNotFound = () => {
@@ -14,10 +13,6 @@ const PageNotFound = () => {
         // if (location.pathname === '/login') {
         //     // window.location.reload();
         // }
-
-        console.log(userRole);
-        const val = componentRoutes.filter(c => c.path === location.pathname);
-        console.log(val);
 
         const timer = setTimeout(() => {
             setLoading(false);

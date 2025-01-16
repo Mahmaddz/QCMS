@@ -67,11 +67,9 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords, currentSearchM
                 const uniqueVerseWords = new Map<string, VerseWordsArr>(); // Map to store unique entries
                 const position: { [key: string]: string[] } = {};
                 const words: { [key: string]: string[] } = {};
-        
                 for (const p of paginatedData) {
                     const response = await handleGetAyaWordsAPI(p.suraNo, p.ayaNo);
                     if (!response.success) return;
-        
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const transformedAya = response.ayat.map((aya: any) => ({
                         Chapter: aya.Chapter,
@@ -81,10 +79,8 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords, currentSearchM
                         word: aya.word,
                         wordUndiacritizedNoHamza: aya.wordUndiacritizedNoHamza,
                     }));
-        
                     const key = `${p.suraNo}-${p.ayaNo}`;
                     const uniqueKey = `${transformedAya[0].Chapter}-${transformedAya[0].Verse}`;
-        
                     if (position[key]) {
                         position[key].push(p.wordId?.toString() || '');
                         words[key].push(p.arabicWord?.toString() || '');
@@ -92,7 +88,6 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords, currentSearchM
                         position[key] = [p.wordId?.toString() || ''];
                         words[key] = [p.arabicWord?.toString() || ''];
                     }
-        
                     const verseWordEntry: VerseWordsArr = {
                         ayat: transformedAya,
                         suraName: `${transformedAya[0].Chapter}:${transformedAya[0].Verse} - ${response.suraName}`,
@@ -101,16 +96,11 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords, currentSearchM
                         conceptArabic: p.conceptArabic,
                         wordId: position[key],
                     };
-        
-                    // Ensure uniqueness
                     if (!uniqueVerseWords.has(uniqueKey)) {
                         uniqueVerseWords.set(uniqueKey, verseWordEntry);
                     }
                 }
-        
-                // Convert Map values to an array
                 const newVerseWords = Array.from(uniqueVerseWords.values());
-
                 console.log(newVerseWords);
                 setVerseWords(newVerseWords);
             } else {
