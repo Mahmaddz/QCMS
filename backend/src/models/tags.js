@@ -1,41 +1,33 @@
 const { Model } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
-  class Tags extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
-    static associate(models) {
-      Tags.belongsTo(models.Status, {
-        foreignKey: 'statusId',
-        as: 'tagStatus',
-      });
-      Tags.belongsTo(models.Action, {
-        foreignKey: 'actionId',
-        as: 'tagAction',
-      });
+  class Tag extends Model {
+    static associate() {
+      // Tag.belongsTo(models.Verse, {
+      //   foreignKey: 'suraNo',
+      //   targetKey: 'suraNo',
+      //   as: 'verse',
+      // });
+      // Tag.belongsTo(models.Verse, {
+      //   foreignKey: 'ayaNo',
+      //   targetKey: 'ayaNo',
+      //   as: 'verseByAya',
+      // });
     }
   }
-  Tags.init(
+  Tag.init(
     {
       suraNo: DataTypes.INTEGER,
-      verseNo: DataTypes.INTEGER,
-      wordNo: DataTypes.INTEGER,
-      segment: DataTypes.INTEGER,
-      source: DataTypes.STRING,
-      statusId: DataTypes.INTEGER,
-      en: DataTypes.STRING,
-      ar: DataTypes.STRING,
-      type: DataTypes.STRING,
-      actionId: DataTypes.INTEGER,
+      ayaNo: DataTypes.INTEGER,
+      category: DataTypes.STRING,
+      arabic: DataTypes.STRING,
     },
     {
       sequelize,
-      paranoid: true,
-      modelName: 'Tags',
+      modelName: 'Tag',
+      tableName: 'Tags',
+      timestamps: true,
     }
   );
-  return Tags;
+  return Tag;
 };

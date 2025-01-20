@@ -10,45 +10,14 @@ module.exports = {
       suraNo: {
         type: Sequelize.INTEGER,
       },
-      verseNo: {
+      ayaNo: {
         type: Sequelize.INTEGER,
       },
-      wordNo: {
-        type: Sequelize.INTEGER,
-      },
-      segment: {
-        type: Sequelize.INTEGER,
-      },
-      source: {
+      category: {
         type: Sequelize.STRING,
       },
-      statusId: {
-        type: Sequelize.INTEGER,
-        references: {
-          model: 'Statuses', // the table name of Status Actions
-          key: 'id',
-        },
-        onUpdate: 'CASCADE',
-        onDelete: 'SET NULL',
-      },
-      en: {
+      arabic: {
         type: Sequelize.STRING,
-      },
-      ar: {
-        type: Sequelize.STRING,
-      },
-      type: {
-        type: Sequelize.ENUM('Qurana', 'Quranay'),
-        allowNull: false,
-      },
-      actionId: {
-        type: Sequelize.INTEGER,
-        references: {
-          model: 'Action', // the table name of actions
-          key: 'id',
-        },
-        onUpdate: 'CASCADE',
-        onDelete: 'SET NULL',
       },
       createdAt: {
         allowNull: false,
