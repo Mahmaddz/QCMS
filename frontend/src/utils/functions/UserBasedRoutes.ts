@@ -1,7 +1,7 @@
 import { componentRoutes } from "../../routes/AllRoutes";
 
 // THIS IS TO EXCLUDE SOME ROUTES FROM HEADER
-const excludeRoutes: string[] = ["/reset-password"]
+const excludeRoutes: string[] = ["/reset-password", "/test"]
 
 export const userBasedRoutes = (role: number) => (
     componentRoutes
