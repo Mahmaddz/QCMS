@@ -1,3 +1,5 @@
+/* eslint-disable no-restricted-syntax */
+/* eslint-disable no-await-in-loop */
 /* eslint-disable no-case-declarations */
 /* eslint-disable no-console */
 const httpStatus = require('http-status');
@@ -14,60 +16,61 @@ const fileUpload = catchAsync(async (req, res) => {
 
   if (req.params.fileNature === 'verses') {
     const workbook = await fileServices.readXlxsFile(req.file.buffer);
-    const requiredModels = ['mushaf+']; // ['verses', 'Qurana', 'khadija', 'Sample-index', 'mushaf+'];
+    const requiredModels = ['verses']; // ['verses', 'Qurana', 'khadija', 'Sample-index', 'mushaf+'];
 
-    // await sequelize.query('SET session_replication_role = replica;');
+    const successArr = [];
 
-    // eslint-disable-next-line no-unused-vars
-    const sheetsColumnNames = await workbook.SheetNames.filter((sn) => requiredModels.includes(sn)).map(
-      async (sheetName) => {
-        const sheet = workbook.Sheets[sheetName];
-        const dataSet = await fileServices.getDataFromSheet(sheet);
+    for (const sheetName of workbook.SheetNames.filter((sn) => requiredModels.includes(sn))) {
+      const sheet = workbook.Sheets[sheetName];
+      const dataSet = await fileServices.getDataFromSheet(sheet);
 
-        const validRecords = await fileServices.hasRequiredColumns(
-          await fileServices.getRequiredColumns(sheetName.split('-')[0].split('+')[0]),
-          await fileServices.getSheetColumnNames(sheet)
-        );
+      const validRecords = await fileServices.hasRequiredColumns(
+        await fileServices.getRequiredColumns(sheetName.split('-')[0].split('+')[0]),
+        await fileServices.getSheetColumnNames(sheet)
+      );
 
-        if (!validRecords) {
-          throw new ApiError(httpStatus.CONFLICT, `No Valid Record For This "${sheetName}" Sheet Found`);
-        }
-
-        switch (sheetName) {
-          case 'verses':
-            await fileServices.verseInsertBulk(dataSet);
-            break;
-
-          case 'Sample-index':
-            await fileServices.wordInsertBulk(dataSet);
-            break;
-
-          case 'Qurana':
-            await fileServices.quranaInsertBulk(dataSet);
-            break;
-
-          case 'khadija':
-            await fileServices.khadijaInsertBulk(dataSet);
-            break;
-
-          case 'Mushaf-C-SA':
-          case 'mushaf+':
-            await fileServices.mushafInsertBulk(dataSet);
-            break;
-
-          default:
-            break;
-        }
-
-        return 0;
+      if (!validRecords) {
+        throw new ApiError(httpStatus.CONFLICT, `No Valid Record For This "${sheetName}" Sheet Found`);
       }
-    );
 
-    // await sequelize.query('SET session_replication_role = DEFAULT;');
+      switch (sheetName) {
+        case 'verses':
+          successArr.push({ sheetName, success: await fileServices.verseInsertBulk(dataSet) });
+          break;
 
-    return res.status(200).json({
-      success: true,
-      message: 'File uploaded and parsed successfully',
+        case 'Sample-index':
+          successArr.push({ sheetName, success: await fileServices.wordInsertBulk(dataSet) });
+          break;
+
+        case 'Qurana':
+          successArr.push({ sheetName, success: await fileServices.quranaInsertBulk(dataSet) });
+          break;
+
+        case 'khadija':
+          successArr.push({ sheetName, success: await fileServices.khadijaInsertBulk(dataSet) });
+          break;
+
+        case 'Mushaf-C-SA':
+        case 'mushaf+':
+          successArr.push({ sheetName, success: await fileServices.mushafInsertBulk(dataSet) });
+          break;
+
+        default:
+          break;
+      }
+    }
+
+    if (successArr.every((item) => item.success)) {
+      return res.status(httpStatus.OK).json({
+        success: true,
+        message: 'File uploaded and parsed successfully',
+        updatedTables: successArr.map((item) => item.sheetName),
+      });
+    }
+
+    return res.status(httpStatus.EXPECTATION_FAILED).json({
+      success: false,
+      message: 'File uploaded but not parsed',
     });
   }
 
@@ -77,7 +80,10 @@ const fileUpload = catchAsync(async (req, res) => {
     });
   }
 
-  return res.status(httpStatus.NOT_ACCEPTABLE);
+  return res.status(httpStatus.NOT_ACCEPTABLE).json({
+    success: true,
+    message: 'Nothing to do',
+  });
 });
 
 module.exports = {

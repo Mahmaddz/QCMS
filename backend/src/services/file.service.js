@@ -8,6 +8,18 @@ const { Qurana, Verse, Word, Khadija, Mushaf } = require('../models');
 
 const BATCH_SIZE = 1000;
 
+const insertInBatches = async (model, data, batchSize = BATCH_SIZE) => {
+  const totalBatches = Math.ceil(data.length / batchSize);
+  let successCount = 0;
+  for (let i = 0; i < data.length; i += batchSize) {
+    const batch = data.slice(i, i + batchSize);
+    await model.bulkCreate(batch);
+    successCount += batch.length;
+    console.log(`Batch ${Math.floor(i / batchSize) + 1} of ${totalBatches} completed.`);
+  }
+  return successCount === data.length;
+};
+
 const quranaInsertBulk = async (data) => {
   try {
     const mappedData = data.map((d) => ({
@@ -40,10 +52,7 @@ const verseInsertBulk = async (data) => {
       englishTranslation: d['English-Translation1 (Y Ali)'],
     }));
     await Verse.sequelize.query('TRUNCATE "Verses" CASCADE');
-    // await Verse.destroy({ truncate: true });
-    for (let i = 0; i < mappedData.length; i += BATCH_SIZE) {
-      await Verse.bulkCreate(mappedData.slice(i, i + BATCH_SIZE));
-    }
+    return await insertInBatches(Verse, mappedData);
   } catch (error) {
     console.log(error);
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, `VERSE ERROR OCCURED`);
@@ -79,7 +88,7 @@ const khadijaInsertBulk = async (data) => {
       TRANS: d.TRANS,
       POS: d.POS,
       ANT: d.ANT,
-      // Concept: d.Concept,
+      Concept: d.Concept,
       MORPH: d.MORPH,
       ARABIC_WORD: d.ARABIC_WORD,
       Concept_Arabic: d.Concept_Arabic,
@@ -92,9 +101,7 @@ const khadijaInsertBulk = async (data) => {
       person: d.person,
     }));
     await Khadija.destroy({ truncate: true });
-    for (let i = 0; i < mappedData.length; i += BATCH_SIZE) {
-      await Khadija.bulkCreate(mappedData.slice(i, i + BATCH_SIZE));
-    }
+    return await insertInBatches(Khadija, mappedData);
   } catch (error) {
     console.log(error);
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, `KHADIJA ERROR OCCURED`);
@@ -147,14 +154,7 @@ const mushafInsertBulk = async (data) => {
       sameStartWord: d['same_start word'],
     }));
     await Mushaf.sequelize.query('TRUNCATE TABLE "Mushaf" RESTART IDENTITY CASCADE');
-    const totalBatches = Math.ceil(mappedData.length / BATCH_SIZE);
-    for (let i = 0; i < mappedData.length; i += BATCH_SIZE) {
-      const currentBatch = Math.floor(i / BATCH_SIZE) + 1;
-      await Mushaf.bulkCreate(mappedData.slice(i, i + BATCH_SIZE));
-      console.log(
-        `Progress: Batch ${currentBatch} of ${totalBatches} completed (${((currentBatch / totalBatches) * 100).toFixed(2)}%)`
-      );
-    }
+    return await insertInBatches(Mushaf, mappedData);
   } catch (error) {
     console.log(error);
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, `MUSHAF ERROR OCCURED`);
