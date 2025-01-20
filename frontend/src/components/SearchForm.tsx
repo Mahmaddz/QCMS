@@ -89,7 +89,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
         const searchResult = !data[0]?.wordId ? uniqueData : data;
         setSearchedResult((prev) => {
             const tempData = prev?.length ? [ ...prev, ...searchResult] : [...searchResult] // filterUniqueBySura();
-            setSearchedCount(tempData.length);
+            setSearchedCount(tempData.length || 0);
             return tempData.sort((a, b) => (a.suraNo - b.suraNo) || (a.ayaNo - b.ayaNo));
         });
     }
@@ -132,14 +132,14 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
             const response = await searchAyats(search, [], filter.surah as string, filter.aya as string);
             if (response.success) {
                 setLoading(false);
-                setRootLemmaData(response.otherWords.rootsWords);
+                setRootLemmaData(response.otherWords.rootsWords.filter(i => i.root !== '#'));
                 setSuggestions(response.suggestions || []);
                 const toFind = Array.from(new Set(Object.values(response.words.lemmas).flat()));
                 setTimeout(() => {
                     setSelectedKeywords(toFind);
                 }, 1000)
                 const arrays = [
-                    ...Object.values(response.otherWords.rootsWords.map(r => Object.values(r.lemmas)).flat())
+                    ...Object.values(response.otherWords.rootsWords.filter(i => i.root !== '#').map(r => Object.values(r.lemmas)).flat())
                         .flat()
                         .map(word => ({
                             word,
