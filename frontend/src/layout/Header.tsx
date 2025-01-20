@@ -164,7 +164,7 @@ function Header() {
                         <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
                             {userRole === USER.ADMIN &&
                                 pages.map((page) => (
-                                    <Button
+                                    page.displayName !== "" && <Button
                                         key={page.path}
                                         onClick={() => handleCloseNavMenu(page.path)}
                                         sx={{ my: 2, color: 'white', display: 'block' }}
