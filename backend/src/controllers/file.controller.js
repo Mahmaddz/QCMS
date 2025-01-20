@@ -16,14 +16,17 @@ const fileUpload = catchAsync(async (req, res) => {
 
   if (req.params.fileNature === 'verses') {
     const workbook = await fileServices.readXlxsFile(req.file.buffer);
-    const requiredModels = ['verses']; // ['verses', 'Qurana', 'khadija', 'Sample-index', 'mushaf+'];
+    const requiredModels = [req.body.selectedSheet]; // ['verses', 'Qurana', 'khadija', 'Sample-index', 'mushaf+', 'RK'];
 
     const successArr = [];
+    let isSheetFound = false;
 
     for (const sheetName of workbook.SheetNames.filter((sn) => requiredModels.includes(sn))) {
       const sheet = workbook.Sheets[sheetName];
       const dataSet = await fileServices.getDataFromSheet(sheet);
+      isSheetFound = true;
 
+      logger.info(`Verifying ${sheetName} Column .....`);
       const validRecords = await fileServices.hasRequiredColumns(
         await fileServices.getRequiredColumns(sheetName.split('-')[0].split('+')[0]),
         await fileServices.getSheetColumnNames(sheet)
@@ -32,6 +35,7 @@ const fileUpload = catchAsync(async (req, res) => {
       if (!validRecords) {
         throw new ApiError(httpStatus.CONFLICT, `No Valid Record For This "${sheetName}" Sheet Found`);
       }
+      logger.info(`Columns ${sheetName} Verified .....`);
 
       switch (sheetName) {
         case 'verses':
@@ -50,6 +54,10 @@ const fileUpload = catchAsync(async (req, res) => {
           successArr.push({ sheetName, success: await fileServices.khadijaInsertBulk(dataSet) });
           break;
 
+        case 'RK':
+          successArr.push({ sheetName, success: await fileServices.rkInsertBulk(dataSet) });
+          break;
+
         case 'Mushaf-C-SA':
         case 'mushaf+':
           successArr.push({ sheetName, success: await fileServices.mushafInsertBulk(dataSet) });
@@ -60,10 +68,19 @@ const fileUpload = catchAsync(async (req, res) => {
       }
     }
 
+    if (!isSheetFound) {
+      logger.error(`Sheet ${req.body.selectedSheet} Not Found`);
+      return res.status(httpStatus.NOT_ACCEPTABLE).json({
+        success: false,
+        message: `Sheet ${req.body.selectedSheet} Not Found`,
+      });
+    }
+
     if (successArr.every((item) => item.success)) {
+      logger.info(`Data Inserted in ${successArr.map((item) => item.sheetName).join(', ')} tables`);
       return res.status(httpStatus.OK).json({
         success: true,
-        message: 'File uploaded and parsed successfully',
+        message: `${req.body.selectedSheet} uploaded successfully`,
         updatedTables: successArr.map((item) => item.sheetName),
       });
     }

@@ -72,17 +72,19 @@ const AdminSettings: React.FC = () => {
             <Box sx={{
                 display: 'flex',
                 flexWrap: 'wrap',
-                width: { sm: "100%", xs: "100%" },
+                width: { sm: "80%", xs: "100%" },
                 justifyContent: 'center',
+                margin: '0 auto'
             }}>
                 <MatTable rowz={userRows} columnz={AS_Columns({ changeUserRole: handleChangeUserRole, roles: roles })} widthIn={100} />
                 <Box sx={{
                     display: 'flex',
-                    flexDirection: { xs: 'column', md: 'row' }, // Change direction based on screen size
+                    flexDirection: { xs: 'column', md: 'row' },
                     alignItems: 'center',
                     justifyContent: 'center',
                     marginRight: { xs: 0, md: 5 },
                     width: '70%',
+                    gap: 4
                 }}>
                     <FileUploader title='Verses Upload' />
                     <FileUploader title='Tags Upload' />
