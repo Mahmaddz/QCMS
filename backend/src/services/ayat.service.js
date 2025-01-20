@@ -144,7 +144,7 @@ const getSuraAndAyaFromMushafUsingTerm = async (term, surah, aya) => {
   const lemmaList = Object.keys(wordsList.lemmas);
   const otherWords = {
     lemmasWords: await wordsServices.getWordsByLemma(lemmaList),
-    rootsWords: await wordsServices.getWordsByRoot(Object.keys(wordsList.roots), lemmaList),
+    rootsWords: (await wordsServices.getWordsByRoot(Object.keys(wordsList.roots), lemmaList)).filter(i => i.root !== '#'),
   };
   const resultz = lemmaList.length !== 0 ? await getAyaAndSuraUsingWords(Object.values(wordsList.lemmas).flat(), surah, aya) : [];
   return { surahAndAyaList: resultz.surahAndAyaList, wordsList, otherWords };

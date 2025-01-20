@@ -125,7 +125,7 @@ const getSuggestedWordsBasedOnTerm = async (termVal) => {
     attributes: ['id', 'Chapter', 'Verse', 'Root', 'Lemma', 'word', 'wordLastLetterUndiacritizedWithHamza'],
     where: {
       [Op.and]: [
-        { Root: { [Op.ne]: '#' } },
+        // { Root: { [Op.ne]: '#' } },
         { Verse: { [Op.ne]: 0 } },
         {
           [Op.or]: fields.map((field) => ({
