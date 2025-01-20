@@ -12,7 +12,7 @@
   },
   "scripts": {
     "start": "pm2 start ecosystem.config.json --no-daemon",
-    "dev": "cross-env NODE_ENV=production node src/index.js",
+    "dev": "cross-env NODE_ENV=production nodemon src/index.js",
     "test": "jest -i --colors --verbose --detectOpenHandles",
     "test:watch": "jest -i --watchAll",
     "coverage": "jest -i --coverage",
@@ -28,7 +28,9 @@
     "migrate": "cross-env NODE_ENV=production npx sequelize-cli db:migrate",
     "migrate-undo": "cross-env NODE_ENV=production npx sequelize-cli db:migrate:undo",
     "migrate-undo-all": "cross-env NODE_ENV=production npx sequelize-cli db:migrate:undo:all",
-    "seed": "cross-env NODE_ENV=production npx sequelize-cli db:seed:all"
+    "seed": "cross-env NODE_ENV=production npx sequelize-cli db:seed:all",
+    "seed-undo": "cross-env NODE_ENV=production npx sequelize-cli db:seed:undo",
+    "seed-undo-all": "cross-env NODE_ENV=production npx sequelize-cli db:seed:undo:all"
   },
   "keywords": [
     "node",
