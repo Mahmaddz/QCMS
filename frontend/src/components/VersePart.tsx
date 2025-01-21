@@ -48,10 +48,10 @@ const VersePart = ({ verses, selectedKeywords, selectedLanguage, searchMethod }:
             <Box
                 sx={{
                     flexGrow: 1,
-                    paddingRight: 9,
-                    textAlign: { xs: "center", sm: "center" },
-                    marginLeft: { sm: 2, xs: 6 },
-                    marginRight: { sm: 2 },
+                    paddingRight: { xs: 2, sm: 9 },
+                    textAlign: "center",
+                    marginLeft: { xs: 2, sm: 6 },
+                    marginRight: { xs: 2, sm: 2 },
                 }}
             >
                 <Box
@@ -60,7 +60,7 @@ const VersePart = ({ verses, selectedKeywords, selectedLanguage, searchMethod }:
                         flexDirection: 'row-reverse',
                         flexWrap: 'wrap',
                         justifyContent: 'center',
-                        gap: 1,
+                        gap: { xs: 0.5, sm: 1 },
                         width: '100%',
                     }}
                 >
@@ -72,7 +72,7 @@ const VersePart = ({ verses, selectedKeywords, selectedLanguage, searchMethod }:
                                     <Typography
                                         key={uniqueID()}
                                         sx={{
-                                            fontSize: "3",
+                                            fontSize: "0.75rem",
                                             fontWeight: 500,
                                             lineHeight: 1.5,
                                         }}
@@ -82,26 +82,27 @@ const VersePart = ({ verses, selectedKeywords, selectedLanguage, searchMethod }:
                                     <Typography
                                         key={uniqueID()}
                                         sx={{
-                                            fontSize: "3",
+                                            fontSize: "0.75rem",
                                             fontWeight: 500,
                                             lineHeight: 1.5,
                                         }}
                                     >
                                         <b>Stem Pattern:</b> {verse.Stem_pattern}
                                     </Typography>
-                                    {
-                                        verses.wordId?.includes(`${index+1}`) && verses?.conceptArabic && isCharacterInArabicWord(`${index+1}`) &&
-                                        <Typography
-                                            key={uniqueID()}
-                                            sx={{
-                                                fontSize: "3",
-                                                fontWeight: 500,
-                                                lineHeight: 1.5,
-                                            }}
-                                        >
-                                            <b>Concept Arabic:</b> {verses.conceptArabic}
-                                        </Typography>
-                                    }
+                                    {verses.wordId?.includes(`${index + 1}`) &&
+                                        verses?.conceptArabic &&
+                                        isCharacterInArabicWord(`${index + 1}`) && (
+                                            <Typography
+                                                key={uniqueID()}
+                                                sx={{
+                                                    fontSize: "0.75rem",
+                                                    fontWeight: 500,
+                                                    lineHeight: 1.5,
+                                                }}
+                                            >
+                                                <b>Concept Arabic:</b> {verses.conceptArabic}
+                                            </Typography>
+                                        )}
                                 </>
                             }
                             placement="top" 
@@ -112,8 +113,8 @@ const VersePart = ({ verses, selectedKeywords, selectedLanguage, searchMethod }:
                                 variant="h5"
                                 sx={{
                                     fontWeight: 500,
-                                    color: getColor(verse.word, index+1),
-                                    fontSize: { xs: '1.8rem', sm: '2.125rem' },
+                                    color: getColor(verse.word, index + 1),
+                                    fontSize: { xs: '1.2rem', sm: '2.125rem' },
                                     cursor: 'pointer',
                                     textAlign: 'center',
                                     direction: 'rtl',
@@ -126,36 +127,36 @@ const VersePart = ({ verses, selectedKeywords, selectedLanguage, searchMethod }:
                                 }}
                                 onClick={() => handleShowResultAgainstTerm(verse.word)}
                             >
-                                {
-                                    verses.wordId?.includes(`${index+1}`) ?
-                                        <Marker mark={normalizeText(verses.arabicWord || [])}>
-                                            {verse.word}
-                                        </Marker>
-                                    : 
+                                {verses.wordId?.includes(`${index + 1}`) ? (
+                                    <Marker mark={normalizeText(verses.arabicWord || [])}>
+                                        {verse.word}
+                                    </Marker>
+                                ) : (
                                     verse.word
-                                }
+                                )}
                             </Typography>
                         </Tooltip>
                     ))}
                 </Box>
-
+    
                 <Typography
                     variant="body2"
                     sx={{
                         fontStyle: "italic",
                         color: "text.secondary",
                         marginTop: "4px",
-                        fontSize: { xs: "0.875rem", sm: "1rem" },
-                        maxWidth: { sm: 900 },
+                        fontSize: { xs: "0.75rem", sm: "1rem" },
+                        maxWidth: { xs: '90%', sm: 900 },
                         textAlign: 'center',
-                        margin: '0 auto'
+                        margin: '0 auto',
                     }}
                 >
-                    { verses.translation.filter((verse) => verse.language.code === selectedLanguage)[0]?.text }
+                    {verses.translation.filter((verse) => verse.language.code === selectedLanguage)[0]?.text}
                 </Typography>
             </Box>
         </React.Fragment>
-    )
+    );
+    
 }
 
 export default memo(VersePart);
