@@ -72,7 +72,7 @@ const VersePart = ({ verses, selectedKeywords, selectedLanguage, searchMethod }:
                                     <Typography
                                         key={uniqueID()}
                                         sx={{
-                                            fontSize: "0.75rem",
+                                            fontSize: { xs: "0.75rem", sm: 18 },
                                             fontWeight: 500,
                                             lineHeight: 1.5,
                                         }}
@@ -82,7 +82,7 @@ const VersePart = ({ verses, selectedKeywords, selectedLanguage, searchMethod }:
                                     <Typography
                                         key={uniqueID()}
                                         sx={{
-                                            fontSize: "0.75rem",
+                                            fontSize: { xs: "0.75rem", sm: 18 },
                                             fontWeight: 500,
                                             lineHeight: 1.5,
                                         }}
@@ -95,7 +95,7 @@ const VersePart = ({ verses, selectedKeywords, selectedLanguage, searchMethod }:
                                             <Typography
                                                 key={uniqueID()}
                                                 sx={{
-                                                    fontSize: "0.75rem",
+                                                    fontSize: { xs: "0.75rem", sm: 18 },
                                                     fontWeight: 500,
                                                     lineHeight: 1.5,
                                                 }}

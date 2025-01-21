@@ -73,7 +73,6 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords, currentSearchM
             const words: { [key: string]: string[] } = {};
             const tags: { [key: string]: string[] } = {};
         
-            // Fetch all data in parallel
             const responses = await Promise.all(
                 paginatedData.map((p) => handleGetAyaWordsAPI(p.suraNo, p.ayaNo))
             );
@@ -83,7 +82,7 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords, currentSearchM
                 const response = responses[i];
         
                 if (!response.success) continue;
-        
+
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const transformedAya = response.ayat.map((aya: any) => ({
                     Chapter: aya.Chapter,
@@ -101,37 +100,38 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords, currentSearchM
                 const key = `${p.suraNo}-${p.ayaNo}`;
                 const uniqueKey = `${transformedAya[0].Chapter}-${transformedAya[0].Verse}`;
         
-                position[key] = position[key]
-                    ? [...position[key], p.wordId?.toString() || '']
-                    : [p.wordId?.toString() || ''];
+                if (!position[key]) position[key] = [];
+                if (!words[key]) words[key] = [];
+                if (p.wordId) position[key].push(p.wordId.toString());
+                if (p.arabicWord) words[key].push(p.arabicWord.toString());
         
-                words[key] = words[key]
-                    ? [...words[key], p.arabicWord?.toString() || '']
-                    : [p.arabicWord?.toString() || ''];
+                const existingEntry = uniqueVerseWords.get(uniqueKey);
         
-                const verseWordEntry: VerseWordsArr = {
-                    ayat: transformedAya,
-                    suraName: `${transformedAya[0].Chapter}:${transformedAya[0].Verse} - ${response.suraName}`,
-                    translation: response.translation,
-                    arabicWord: words[key],
-                    conceptArabic: p.conceptArabic,
-                    wordId: position[key],
-                    tags: Object.entries(tags)
-                        .filter(([, value]) =>
-                            value.some((item) => item.split('-')[1] === p.ayaNo.toString() && p.ar)
-                        )
-                        .map(([key]) => {
-                            const [ar, en] = key.split('-');
-                            return { ar, en };
-                        }),
-                };
-        
-                if (!uniqueVerseWords.has(uniqueKey)) {
-                    uniqueVerseWords.set(uniqueKey, verseWordEntry);
+                if (existingEntry) {
+                    existingEntry.wordId = position[key];
+                    existingEntry.arabicWord = words[key];
+                } else {
+                    uniqueVerseWords.set(uniqueKey, {
+                        ayat: transformedAya,
+                        suraName: `${transformedAya[0].Chapter}:${transformedAya[0].Verse} - ${response.suraName}`,
+                        translation: response.translation,
+                        arabicWord: words[key],
+                        conceptArabic: p.conceptArabic,
+                        wordId: position[key],
+                        tags: Object.entries(tags)
+                            .filter(([, value]) =>
+                                value.some((item) => item.split('-')[1] === p.ayaNo.toString() && item.split('-')[0] === p.suraNo.toString())
+                            )
+                            .map(([key]) => {
+                                const [ar, en] = key.split('-');
+                                return { ar, en };
+                            }),
+                    });
                 }
             }
             setVerseWords(Array.from(uniqueVerseWords.values()));
         };
+        
         
         
     
