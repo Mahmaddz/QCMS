@@ -8,6 +8,7 @@ const { Sequelize, Op, Verse, sequelize, Mushaf } = require('../models');
 const ApiError = require('../utils/ApiError');
 const wordsServices = require('./words.service');
 const translationServices = require('./translation.service');
+const tagsServices= require('./tags.service');
 
 const getAyatInfo = async (ayatText, ayaNo, suraNo) => {
   if (suraNo === 0 || suraNo === null) suraNo = false;
@@ -256,6 +257,11 @@ const getSuraAndAyaUsingRoots = async (roots) => {
   }
 };
 
+const getAyatInfoByTags = async (term, sura, aya) => {
+  const res = await tagsServices.suraAndAyaByTagMatch(term, sura, aya);
+  return res;
+}
+
 module.exports = {
   getAyatInfo,
   searchAyatUsingTerm,
@@ -267,4 +273,5 @@ module.exports = {
   getVerseWordsBySuraNoAndAyaNo,
   getSurahNameBySuraNo,
   getAyaAndSuraUsingWords,
+  getAyatInfoByTags,
 };

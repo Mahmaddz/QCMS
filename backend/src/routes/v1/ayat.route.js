@@ -10,6 +10,7 @@ router.route('/search').get(validate(ayatValidation.searchAya), ayatController.s
 router.route('/search-using-root').get(validate(ayatValidation.searchAya), ayatController.getAyatUsingLemmaApi);
 router.route('/surah').get(validate(ayatValidation.surahAPIvalidation), ayatController.getCompleteSurah);
 router.route('/verse-words').get(validate(ayatValidation.surahAPIvalidation), ayatController.getVerseInWords);
+router.route('/tags-search').get(validate(ayatValidation.searchAya), ayatController.getVersesByTagsMatch);
 router.route('/reference').get(validate(ayatValidation.searchAya), khadijaController.getSuraAndAyaListByConceptArabic);
 
 module.exports = router;

@@ -5,6 +5,15 @@ const { ayatServices, wordsServices, arabicCustomServices, translationServices }
 const catchAsync = require('../utils/catchAsync');
 const ApiError = require('../utils/ApiError');
 
+const getVersesByTagsMatch = catchAsync(async (req, res) => {
+  const { term, surah, aya } = req.query;
+  const data = await ayatServices.getAyatInfoByTags(term, surah, aya);
+  return res.status(httpStatus.OK).json({
+    success: true,
+    data,
+  });
+});
+
 const getAyatInfo = catchAsync(async (req, res) => {
   const { ayatText, ayaNo, suraNo } = req.query;
   const result = await ayatServices.getAyatInfo(ayatText, ayaNo, suraNo);
@@ -96,4 +105,5 @@ module.exports = {
   getAyatUsingLemmaApi,
   getCompleteSurah,
   getVerseInWords,
+  getVersesByTagsMatch,
 };

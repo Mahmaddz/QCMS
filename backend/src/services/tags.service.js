@@ -1,11 +1,11 @@
 const httpStatus = require('http-status');
 const { logger } = require('../config/logger');
-const { Tags } = require('../models');
+const { Tag, Op, Sequelize } = require('../models');
 const ApiError = require('../utils/ApiError');
 
 const addTagsToTheVerses = async (suraNo, verseNo, wordNo, segment, source, statusId, en, ar, type, actionId) => {
   try {
-    await Tags.create({
+    await Tag.create({
       suraNo,
       verseNo,
       wordNo,
@@ -27,7 +27,7 @@ const updateTagsRowUsingTagId = async (tagId, suraNo, verseNo, wordNo, segment, 
   try {
     logger.debug(tagId, suraNo, verseNo, wordNo, segment, en, ar, type, actionId);
 
-    const [updatedRowCount, updatedRows] = await Tags.update(
+    const [updatedRowCount, updatedRows] = await Tag.update(
       {
         suraNo,
         verseNo,
@@ -59,7 +59,7 @@ const updateTagsRowUsingTagId = async (tagId, suraNo, verseNo, wordNo, segment, 
 
 const deleteTagUsingTagId = async (tagId) => {
   try {
-    const deletedRowCount = await Tags.destroy({
+    const deletedRowCount = await Tag.destroy({
       where: { id: tagId },
     });
 
@@ -74,7 +74,7 @@ const deleteTagUsingTagId = async (tagId) => {
 
 const changeTagsStatsusUsingId = async (tagId, statusId) => {
   try {
-    const [updatedRowCount] = await Tags.update(
+    const [updatedRowCount] = await Tag.update(
       {
         statusId,
       },
@@ -92,9 +92,38 @@ const changeTagsStatsusUsingId = async (tagId, statusId) => {
   }
 };
 
+const suraAndAyaByTagMatch = async (term, suraNo = undefined, ayaNo = undefined) => {
+  if (!term || term.trim() === '') {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Search term cannot be empty');
+  }
+
+  // eslint-disable-next-line no-nested-ternary
+  const column = /[a-zA-Z]/.test(term) ? 'category' : /[\u0600-\u06FF]/.test(term) ? 'arabic' : null;
+  if (!column) {
+    throw new ApiError(httpStatus.NOT_ACCEPTABLE, 'Language not detected');
+  }
+
+  const result = await Tag.findAll({
+    attributes: ['suraNo', 'ayaNo', [Sequelize.col('category'), 'en'], [Sequelize.col('arabic'), 'ar']],
+    where: {
+      [column]: {
+        [Op.iLike]: `%${term}%`,
+      },
+      ...(suraNo && { suraNo }),
+      ...(ayaNo && { ayaNo }),
+    },
+    order: [
+      ['suraNo', 'ASC'],
+      ['ayaNo', 'ASC'],
+    ],
+  });
+  return result;
+};
+
 module.exports = {
   addTagsToTheVerses,
   updateTagsRowUsingTagId,
   deleteTagUsingTagId,
   changeTagsStatsusUsingId,
+  suraAndAyaByTagMatch,
 };
