@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Dialog,DialogTitle,DialogContent,DialogActions,Typography,TextField,Button,IconButton,Box,Chip } from "@mui/material";
 import {
   Save as SaveIcon,
@@ -38,10 +38,6 @@ export default function ReviewBody({ verses, showTags, selectedKeywords, selecte
   const [openCommentDialog, setOpenCommentDialog] = useState(false);
   const [comments, setComments] = useState<string[]>([]);
   const [newComment, setNewComment] = useState("");
-
-  useEffect(() => {
-    console.log(tags);
-  }, [tags])
 
   const handleOpenDeleteModal = () => setOpenDeleteModal(true);
   const handleCloseDeleteModal = () => setOpenDeleteModal(false);

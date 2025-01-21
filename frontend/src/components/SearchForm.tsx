@@ -164,7 +164,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
             await getReferenceData()
         }
         if (chkbox.isTag) {
-            const response = await getAyatsByTag(search, filter.aya as string || '0', filter.surah as string || '0');
+            const response = await getAyatsByTag(search, filter.surah as string || '0', filter.aya as string || '0');
             if (response.success) {
                 handleResultantResponse(response.data);
             }

@@ -107,10 +107,18 @@ const suraAndAyaByTagMatch = async (term, suraNo = undefined, ayaNo = undefined)
     attributes: ['suraNo', 'ayaNo', [Sequelize.col('category'), 'en'], [Sequelize.col('arabic'), 'ar']],
     where: {
       [column]: {
-        [Op.iLike]: `%${term}%`,
+        [Op.iLike]: { [Op.any]: term.split(' ').map((t) => `%${t}%`) },
       },
       ...(suraNo && { suraNo }),
-      ...(ayaNo && { ayaNo }),
+      ...(ayaNo
+        ? {
+            ayaNo,
+          }
+        : {
+            ayaNo: {
+              [Op.ne]: 0,
+            },
+          }),
     },
     order: [
       ['suraNo', 'ASC'],
