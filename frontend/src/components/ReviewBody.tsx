@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Dialog,DialogTitle,DialogContent,DialogActions,Typography,TextField,Button,IconButton,Box,Chip } from "@mui/material";
 import {
   Save as SaveIcon,
@@ -25,7 +25,7 @@ const StyledReplyTwoToneIcon = styled(ReplyTwoToneIcon)({
   transform: "scale(-1, 1)"
 });
 
-export default function ReviewBody({ verses, tags: initialTags, showTags, selectedKeywords, selectedLanguage, searchMethod }: ReviewBodyProps) {
+export default function ReviewBody({ verses, showTags, selectedKeywords, selectedLanguage, searchMethod }: ReviewBodyProps) {
 
   const { userRole } = useAuth();
 
@@ -34,10 +34,14 @@ export default function ReviewBody({ verses, tags: initialTags, showTags, select
   const [openEditTagModal, setOpenEditTagModal] = useState(false);
   const [selectedTag, setSelectedTag] = useState<Tag>();
   const [tagFields, setTagFields] = useState<Tag>({ ar: "", en: "", type: "" });
-  const [tags, setTags] = useState(initialTags);
+  const [tags, setTags] = useState(verses.tags);
   const [openCommentDialog, setOpenCommentDialog] = useState(false);
   const [comments, setComments] = useState<string[]>([]);
   const [newComment, setNewComment] = useState("");
+
+  useEffect(() => {
+    console.log(tags);
+  }, [tags])
 
   const handleOpenDeleteModal = () => setOpenDeleteModal(true);
   const handleCloseDeleteModal = () => setOpenDeleteModal(false);
@@ -72,12 +76,12 @@ export default function ReviewBody({ verses, tags: initialTags, showTags, select
   };
 
   const handleDeleteTag = (tagToDelete: Tag) => {
-    setTags(tags?.filter((tag) => tag !== tagToDelete));
+    setTags(() => tags?.filter((tag) => tag !== tagToDelete));
     handleCloseDeleteModal();
   };
 
   const handleAddTag = () => {
-    if (tags)
+    if (tags) 
     setTags([...tags, tagFields]);
     setTagFields({ ar: "", en: "", type: "" });
     handleCloseAddTagModal();
@@ -255,11 +259,7 @@ export default function ReviewBody({ verses, tags: initialTags, showTags, select
                 )}
 
                 <Chip
-                  label={
-                    "type" in tag && "ar" in tag && "en" in tag
-                      ? `Type: ${tag.type}   Ar: ${tag.ar}   En: ${tag.en}`
-                      : null
-                  }
+                  label={`Arabic: ${tag.ar},   English: ${tag.en}`}
                   variant="outlined"
                   sx={{
                     borderRadius: "16px",
@@ -381,7 +381,7 @@ export default function ReviewBody({ verses, tags: initialTags, showTags, select
             fullWidth
             variant="outlined"
           />
-          <TextField
+          {/* <TextField
             margin="dense"
             label="Type"
             name="type"
@@ -389,7 +389,7 @@ export default function ReviewBody({ verses, tags: initialTags, showTags, select
             onChange={handleFieldChange}
             fullWidth
             variant="outlined"
-          />
+          /> */}
         </DialogContent>
         <DialogActions sx={{ padding: "16px" }}>
           <Button
@@ -453,7 +453,7 @@ export default function ReviewBody({ verses, tags: initialTags, showTags, select
             fullWidth
             variant="outlined"
           />
-          <TextField
+          {/* <TextField
             margin="dense"
             label="Type"
             name="type"
@@ -461,7 +461,7 @@ export default function ReviewBody({ verses, tags: initialTags, showTags, select
             onChange={handleFieldChange}
             fullWidth
             variant="outlined"
-          />
+          /> */}
         </DialogContent>
         <DialogActions sx={{ padding: "16px" }}>
           <Button

@@ -62,51 +62,77 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords, currentSearchM
     useEffect(() => {
         setVerseWords([]);
         const fetchResolvedData = async () => {
-            if (paginatedData) {
-                colorGenerator.reset();
-                const uniqueVerseWords = new Map<string, VerseWordsArr>(); // Map to store unique entries
-                const position: { [key: string]: string[] } = {};
-                const words: { [key: string]: string[] } = {};
-                for (const p of paginatedData) {
-                    const response = await handleGetAyaWordsAPI(p.suraNo, p.ayaNo);
-                    if (!response.success) return;
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const transformedAya = response.ayat.map((aya: any) => ({
-                        Chapter: aya.Chapter,
-                        Verse: aya.Verse,
-                        PoS_tags: aya.PoS_tags,
-                        Stem_pattern: aya.Stem_pattern,
-                        word: aya.word,
-                        wordUndiacritizedNoHamza: aya.wordUndiacritizedNoHamza,
-                    }));
-                    const key = `${p.suraNo}-${p.ayaNo}`;
-                    const uniqueKey = `${transformedAya[0].Chapter}-${transformedAya[0].Verse}`;
-                    if (position[key]) {
-                        position[key].push(p.wordId?.toString() || '');
-                        words[key].push(p.arabicWord?.toString() || '');
-                    } else {
-                        position[key] = [p.wordId?.toString() || ''];
-                        words[key] = [p.arabicWord?.toString() || ''];
-                    }
-                    const verseWordEntry: VerseWordsArr = {
-                        ayat: transformedAya,
-                        suraName: `${transformedAya[0].Chapter}:${transformedAya[0].Verse} - ${response.suraName}`,
-                        translation: response.translation,
-                        arabicWord: words[key],
-                        conceptArabic: p.conceptArabic,
-                        wordId: position[key],
-                    };
-                    if (!uniqueVerseWords.has(uniqueKey)) {
-                        uniqueVerseWords.set(uniqueKey, verseWordEntry);
-                    }
-                }
-                const newVerseWords = Array.from(uniqueVerseWords.values());
-                console.log(newVerseWords);
-                setVerseWords(newVerseWords);
-            } else {
+            if (!paginatedData) {
                 setVerseWords([]);
+                return;
             }
+        
+            colorGenerator.reset();
+            const uniqueVerseWords = new Map<string, VerseWordsArr>();
+            const position: { [key: string]: string[] } = {};
+            const words: { [key: string]: string[] } = {};
+            const tags: { [key: string]: string[] } = {};
+        
+            // Fetch all data in parallel
+            const responses = await Promise.all(
+                paginatedData.map((p) => handleGetAyaWordsAPI(p.suraNo, p.ayaNo))
+            );
+        
+            for (let i = 0; i < paginatedData.length; i++) {
+                const p = paginatedData[i];
+                const response = responses[i];
+        
+                if (!response.success) continue;
+        
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const transformedAya = response.ayat.map((aya: any) => ({
+                    Chapter: aya.Chapter,
+                    Verse: aya.Verse,
+                    PoS_tags: aya.PoS_tags,
+                    Stem_pattern: aya.Stem_pattern,
+                    word: aya.word,
+                    wordUndiacritizedNoHamza: aya.wordUndiacritizedNoHamza,
+                }));
+        
+                const tagKey = `${p.ar}-${p.en}`;
+                const tagVal = `${p.suraNo}-${p.ayaNo}`;
+                tags[tagKey] = tags[tagKey] ? [...tags[tagKey], tagVal] : [tagVal];
+        
+                const key = `${p.suraNo}-${p.ayaNo}`;
+                const uniqueKey = `${transformedAya[0].Chapter}-${transformedAya[0].Verse}`;
+        
+                position[key] = position[key]
+                    ? [...position[key], p.wordId?.toString() || '']
+                    : [p.wordId?.toString() || ''];
+        
+                words[key] = words[key]
+                    ? [...words[key], p.arabicWord?.toString() || '']
+                    : [p.arabicWord?.toString() || ''];
+        
+                const verseWordEntry: VerseWordsArr = {
+                    ayat: transformedAya,
+                    suraName: `${transformedAya[0].Chapter}:${transformedAya[0].Verse} - ${response.suraName}`,
+                    translation: response.translation,
+                    arabicWord: words[key],
+                    conceptArabic: p.conceptArabic,
+                    wordId: position[key],
+                    tags: Object.entries(tags)
+                        .filter(([, value]) =>
+                            value.some((item) => item.split('-')[1] === p.ayaNo.toString() && p.ar)
+                        )
+                        .map(([key]) => {
+                            const [ar, en] = key.split('-');
+                            return { ar, en };
+                        }),
+                };
+        
+                if (!uniqueVerseWords.has(uniqueKey)) {
+                    uniqueVerseWords.set(uniqueKey, verseWordEntry);
+                }
+            }
+            setVerseWords(Array.from(uniqueVerseWords.values()));
         };
+        
         
     
         const time = setTimeout(() => {

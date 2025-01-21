@@ -12,6 +12,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import RemoveCircleOutlineOutlinedIcon from '@mui/icons-material/RemoveCircleOutlineOutlined';
 import { getKhadijaReference } from '../services/Search/getKhadijaReference.service';
+import { getAyatsByTag } from '../services/Search/getAyatsByTags.service';
 
 const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selectedKeywords, setSelectedKeywords, setCurrentSearchMethod }: SearchFormParam) => {
 
@@ -163,8 +164,13 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
             await getReferenceData()
         }
         if (chkbox.isTag) {
-            Toaster("Tags => Not Implemented Yet")
-            setLoading(false);
+            const response = await getAyatsByTag(search, filter.aya as string || '0', filter.surah as string || '0');
+            if (response.success) {
+                handleResultantResponse(response.data);
+            }
+            else if (!response.success) {
+                setLoading(false);
+            }
         }
         if (chkbox.isQurany) {
             Toaster("Qurany => Not Implemented Yet")

@@ -10,4 +10,6 @@ export interface SuraAyaInfo {
     arabicWord?: string;
     conceptArabic?: string;
     wordId?: number | string;
+    ar?: string;
+    en?: string;
 }

@@ -37,4 +37,5 @@ export interface VerseWordsArr {
     conceptArabic?: string;
     arabicWord?: string[];
     wordId?: string | string[];
+    tags?: {ar: string, en: string}[] | null;
 }
