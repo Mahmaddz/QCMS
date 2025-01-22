@@ -71,7 +71,6 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords, currentSearchM
             const uniqueVerseWords = new Map<string, VerseWordsArr>();
             const position: { [key: string]: string[] } = {};
             const words: { [key: string]: string[] } = {};
-            const tags: { [key: string]: string[] } = {};
         
             const responses = await Promise.all(
                 paginatedData.map((p) => handleGetAyaWordsAPI(p.suraNo, p.ayaNo))
@@ -92,10 +91,6 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords, currentSearchM
                     word: aya.word,
                     wordUndiacritizedNoHamza: aya.wordUndiacritizedNoHamza,
                 }));
-        
-                const tagKey = `${p.ar}-${p.en}`;
-                const tagVal = `${p.suraNo}-${p.ayaNo}`;
-                tags[tagKey] = tags[tagKey] ? [...tags[tagKey], tagVal] : [tagVal];
         
                 const key = `${p.suraNo}-${p.ayaNo}`;
                 const uniqueKey = `${transformedAya[0].Chapter}-${transformedAya[0].Verse}`;
@@ -118,27 +113,17 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords, currentSearchM
                         arabicWord: words[key],
                         conceptArabic: p.conceptArabic,
                         wordId: position[key],
-                        tags: Object.entries(tags)
-                            .filter(([, value]) =>
-                                value.some((item) => item.split('-')[1] === p.ayaNo.toString() && item.split('-')[0] === p.suraNo.toString())
-                            )
-                            .map(([key]) => {
-                                const [ar, en] = key.split('-');
-                                return { ar, en };
-                            }),
+                        tags: p.tags,
                     });
                 }
             }
             setVerseWords(Array.from(uniqueVerseWords.values()));
         };
-        
-        
-        
-    
+
         const time = setTimeout(() => {
             fetchResolvedData();
         }, 1000);
-    
+
         return () => clearTimeout(time);
     }, [currentPage, searchData]);
     

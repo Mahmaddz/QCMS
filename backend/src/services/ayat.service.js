@@ -258,8 +258,17 @@ const getSuraAndAyaUsingRoots = async (roots) => {
 };
 
 const getAyatInfoByTags = async (term, sura, aya) => {
-  const res = await tagsServices.suraAndAyaByTagMatch(term, sura, aya);
-  return res;
+  const ayahList = await tagsServices.suraAndAyaByTagMatch(term, sura, aya);
+  const otherTags = await tagsServices.tagsRelatedToSurahAndAyah(ayahList);
+  const combined = {};
+  otherTags.forEach(({ suraNo, ayaNo, en, ar }) => {
+    const key = `${suraNo}-${ayaNo}`;
+    if (!combined[key]) {
+      combined[key] = { suraNo, ayaNo, tags: [] };
+    }
+    combined[key].tags.push({ en, ar });
+  });
+  return Object.values(combined);
 }
 
 module.exports = {

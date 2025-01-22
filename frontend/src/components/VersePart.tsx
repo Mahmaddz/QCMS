@@ -9,14 +9,15 @@ import { Marker } from "react-mark.js";
 
 const VersePart = ({ verses, selectedKeywords, selectedLanguage, searchMethod }: ReviewBodyProps) => {
 
-    const normalizeText = (str: string[]) => 
+    const normalizeText = (str: string[]) => (
         str.map(singleWord => 
             singleWord
                 .replace(/[\u06E6\u0670]/g, "")
                 .replace(/ى[\u064E\u0653]?/g, "ي")
                 .replace(/ا\u0653/g, "ا") 
                 .replace(/[\u06E5\u0653]/g, "")
-        );
+        )
+    );
 
     const handleShowResultAgainstTerm = (term: string) => {
         const data = {

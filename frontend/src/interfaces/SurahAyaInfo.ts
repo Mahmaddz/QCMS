@@ -10,6 +10,10 @@ export interface SuraAyaInfo {
     arabicWord?: string;
     conceptArabic?: string;
     wordId?: number | string;
-    ar?: string;
-    en?: string;
+    tags?: Tagz[];
+}
+
+export interface Tagz {
+    ar: string;
+    en: string;
 }

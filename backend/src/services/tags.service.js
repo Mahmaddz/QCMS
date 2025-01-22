@@ -104,7 +104,7 @@ const suraAndAyaByTagMatch = async (term, suraNo = undefined, ayaNo = undefined)
   }
 
   const result = await Tag.findAll({
-    attributes: ['suraNo', 'ayaNo', [Sequelize.col('category'), 'en'], [Sequelize.col('arabic'), 'ar']],
+    attributes: ['suraNo', 'ayaNo'],
     where: {
       [column]: {
         [Op.iLike]: { [Op.any]: term.split(' ').map((t) => `%${t}%`) },
@@ -125,7 +125,21 @@ const suraAndAyaByTagMatch = async (term, suraNo = undefined, ayaNo = undefined)
       ['ayaNo', 'ASC'],
     ],
   });
-  return result;
+  return result.map((r) => r.dataValues);
+};
+
+const tagsRelatedToSurahAndAyah = async (suraAyaList) => {
+  const result = await Tag.findAll({
+    attributes: ['suraNo', 'ayaNo', [Sequelize.col('category'), 'en'], [Sequelize.col('arabic'), 'ar']],
+    where: {
+      [Op.or]: suraAyaList.map(({ suraNo, ayaNo }) => ({ suraNo, ayaNo })),
+    },
+    order: [
+      ['suraNo', 'ASC'],
+      ['ayaNo', 'ASC'],
+    ],
+  });
+  return result.map((r) => r.dataValues);
 };
 
 module.exports = {
@@ -134,4 +148,5 @@ module.exports = {
   deleteTagUsingTagId,
   changeTagsStatsusUsingId,
   suraAndAyaByTagMatch,
+  tagsRelatedToSurahAndAyah,
 };
