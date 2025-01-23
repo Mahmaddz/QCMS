@@ -1,4 +1,5 @@
 import { CurrentSearch } from "./SearchForm";
+import { Tagz } from "./SurahAyaInfo";
 
 export interface ReviewBodyProps {
     verses: VerseWordsArr; //\\
@@ -28,6 +29,7 @@ export interface AyaTranslationWithIds {
         name: string,
         code: string
     }
+    tags?: Tagz[];
 } 
 
 export interface VerseWordsArr {
@@ -37,5 +39,5 @@ export interface VerseWordsArr {
     conceptArabic?: string;
     arabicWord?: string[];
     wordId?: string | string[];
-    tags?: {ar: string, en: string}[] | null;
+    tags?: Tagz[]
 }

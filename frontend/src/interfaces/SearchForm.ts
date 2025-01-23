@@ -19,7 +19,7 @@ export interface CurrentSearch {
 }
 
 export interface SearchFormParam {
-    showTag?: boolean;
+    showTag: boolean;
     setShowTag: Dispatch<SetStateAction<boolean | undefined>> | Dispatch<React.SetStateAction<boolean>>;
     filter?: FilterStateParams;
     setFilter?: Dispatch<SetStateAction<FilterStateParams>>;

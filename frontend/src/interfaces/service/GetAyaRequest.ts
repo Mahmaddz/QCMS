@@ -1,10 +1,12 @@
 import { AyaTranslationWithIds } from "../ReviewBody";
+import { Tagz } from "../SurahAyaInfo";
 import { ErrorResponse } from "./error/error";
 
 export interface GetAyaWordsResponse extends ErrorResponse {
-    suraName: string, 
-    ayat: string[],
-    translation: AyaTranslationWithIds[],
+    tags?: Tagz[];
+    suraName: string; 
+    ayat: string[];
+    translation: AyaTranslationWithIds[];
 }
 
 export interface GetAyaWordsRequest {

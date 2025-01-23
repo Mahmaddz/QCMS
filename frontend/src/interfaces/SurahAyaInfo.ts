@@ -16,4 +16,5 @@ export interface SuraAyaInfo {
 export interface Tagz {
     ar: string;
     en: string;
+    ayaNo?: number;
 }
