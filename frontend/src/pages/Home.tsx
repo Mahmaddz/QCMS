@@ -9,7 +9,7 @@ export default function Home() {
 
   const [searchParam] = useSearchParams();
 
-  const [showTag, setShowTag] = useState<boolean>(false);
+  const [showTag, setShowTag] = useState<boolean>(true);
   const [searchedResult, setSearchedResult] = useState<SuraAyaInfo[]>();
   const [selectedKeywords, setSelectedKeywords] = useState<string[]>([]);
   const [currentSearch, setCurrentSearch] = useState({
@@ -23,7 +23,7 @@ export default function Home() {
   return (
     <>
       <Header />
-      <SearchForm setCurrentSearchMethod={setCurrentSearch} setShowTag={setShowTag} setSearchedResult={setSearchedResult} toSearch={searchParam.get('search') || ""} selectedKeywords={selectedKeywords} setSelectedKeywords={setSelectedKeywords}/>
+      <SearchForm setCurrentSearchMethod={setCurrentSearch} showTag={showTag} setShowTag={setShowTag} setSearchedResult={setSearchedResult} toSearch={searchParam.get('search') || ""} selectedKeywords={selectedKeywords} setSelectedKeywords={setSelectedKeywords}/>
       <ReviewBodyList currentSearchMethod={currentSearch} showTags={showTag} searchData={searchedResult} selectedKeywords={selectedKeywords}/>
     </>
   );

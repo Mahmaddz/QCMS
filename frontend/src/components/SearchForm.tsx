@@ -19,7 +19,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
     const [relatedSearch, setRelatedSearch] = useState<{word: {word: string, count: number | string}, isSelected: boolean}[]>([]);
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [searchedCount, setSearchedCount] = useState<number>(-1);
-    const [checked, setChecked] = useState(1);
+    const [checked, setChecked] = useState(2);
     const [loading, setLoading] = useState(false);
     const [filter, setFilter] = useState<FilterStateParams>({ surah: 0, aya: 0 });
     const [search, setSearch] = useState<string>(toSearch || "");
@@ -107,6 +107,11 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
 
     const getResult = async (e: React.FormEvent<HTMLFormElement> | React.KeyboardEvent<HTMLDivElement> | React.MouseEvent<HTMLButtonElement, MouseEvent> | undefined) => {
         e?.preventDefault();
+
+        if (!search) {
+            Toaster("Search is Empty", 'warn')
+            return;
+        }
 
         setLoading(true);
         setSuggestions([]);
@@ -420,7 +425,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
                     <FormControlLabel
                         control={<Checkbox />}
                         checked={showTag}
-                        onChange={(_e, checked) => setShowTag(checked)}
+                        onChange={(_e, checked) => setShowTag(()=>checked)}
                         label="Show Tags"
                         sx={{ '& .MuiFormControlLabel-label': { fontWeight: '500' } }}
                     />
