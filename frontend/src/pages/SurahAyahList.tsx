@@ -12,6 +12,8 @@ import { getAyaWords } from '../services/Ayaat/getAyaWords';
 import Toaster from '../utils/helper/Toaster';
 import VersePart from '../components/VersePart';
 import { AyaTranslationWithIds, VerseWords, VerseWordsArr } from '../interfaces/ReviewBody';
+import DisplayTags from '../components/DisplayTags';
+import { Tagz } from '../interfaces/SurahAyaInfo';
 
 const SurahAyahList = () => {
     const [searchParam] = useSearchParams();
@@ -37,10 +39,10 @@ const SurahAyahList = () => {
         (async () => {
             const response = await getAyaWords(sura as string);
             const data: VerseWords[] = response.ayat as unknown as VerseWords[] || [];
-            const groupedByVerse = data.reduce<Record<string, { ayat: VerseWords[]; translation: AyaTranslationWithIds[] }>>(
+            const groupedByVerse = data.reduce<Record<string, { ayat: VerseWords[]; translation: AyaTranslationWithIds[], tags: Tagz[] }>>(
                 (acc, item: VerseWords) => {
                     if (!acc[item.Verse]) {
-                        acc[item.Verse] = { ayat: [], translation: [] };
+                        acc[item.Verse] = { ayat: [], translation: [], tags: [] };
                     }
                     acc[item.Verse].ayat.push(item);
                     return acc;
@@ -50,6 +52,12 @@ const SurahAyahList = () => {
                 const verse = trans.aya.toString();
                 if (groupedByVerse[verse]) {
                     groupedByVerse[verse].translation.push(trans);
+                }
+            });
+            response.tags?.forEach((tag: Tagz) => {
+                const verse = tag?.ayaNo?.toString();
+                if (verse && groupedByVerse[verse]) {
+                    groupedByVerse[verse].tags.push(tag);
                 }
             });
             setSurahInfo({
@@ -183,6 +191,9 @@ const SurahAyahList = () => {
                                         selectedLanguage={selectedLanguage?.code || 'en'} 
                                         verses={verse} 
                                     />
+                                    <Box>
+                                        <DisplayTags tagz={verse.tags || []} />
+                                    </Box>
                                 </Box>
                             );
                         })}

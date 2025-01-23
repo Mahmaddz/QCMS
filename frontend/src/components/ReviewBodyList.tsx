@@ -113,7 +113,7 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords, currentSearchM
                         arabicWord: words[key],
                         conceptArabic: p.conceptArabic,
                         wordId: position[key],
-                        tags: p.tags,
+                        tags: response.tags,
                     });
                 }
             }

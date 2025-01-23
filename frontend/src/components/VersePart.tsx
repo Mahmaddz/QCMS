@@ -6,6 +6,7 @@ import { ArabicServices } from 'arabic-services'
 import { openNewTab } from '../utils/functions/openNewTab'
 import { ReviewBodyProps } from '../interfaces/ReviewBody'
 import { Marker } from "react-mark.js";
+// import DisplayTags from './DisplayTags'
 
 const VersePart = ({ verses, selectedKeywords, selectedLanguage, searchMethod }: ReviewBodyProps) => {
 
@@ -90,9 +91,8 @@ const VersePart = ({ verses, selectedKeywords, selectedLanguage, searchMethod }:
                                     >
                                         <b>Stem Pattern:</b> {verse.Stem_pattern}
                                     </Typography>
-                                    {verses.wordId?.includes(`${index + 1}`) &&
-                                        verses?.conceptArabic &&
-                                        isCharacterInArabicWord(`${index + 1}`) && (
+                                    {isCharacterInArabicWord(`${index + 1}`) &&
+                                        verses?.conceptArabic && (
                                             <Typography
                                                 key={uniqueID()}
                                                 sx={{
