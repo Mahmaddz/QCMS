@@ -132,7 +132,9 @@ const tagsRelatedToSurahAndAyah = async (suraAyaList) => {
   const result = await Tag.findAll({
     attributes: ['suraNo', 'ayaNo', [Sequelize.col('category'), 'en'], [Sequelize.col('arabic'), 'ar']],
     where: {
-      [Op.or]: suraAyaList.map(({ suraNo, ayaNo }) => ({ suraNo, ayaNo })),
+      ...(suraAyaList[0].ayaNo
+        ? { [Op.or]: suraAyaList.map(({ suraNo, ayaNo }) => ({ suraNo, ayaNo })) }
+        : { suraNo: suraAyaList[0].suraNo }),
     },
     order: [
       ['suraNo', 'ASC'],
