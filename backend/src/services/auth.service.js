@@ -25,7 +25,10 @@ const loginUserWithEmailAndPassword = async (email, password) => {
   if (user.roleID === 3) {
     throw new ApiError(httpStatus.TEMPORARY_REDIRECT, `YOU CANNOT LOG IN`);
   }
-  return user;
+  const userData = user.dataValues;
+  delete userData.password;
+  delete userData.isEmailVerified;
+  return userData;
 };
 
 /**

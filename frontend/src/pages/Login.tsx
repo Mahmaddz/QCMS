@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 // import FormControlLabel from "@mui/material/FormControlLabel";
@@ -14,6 +14,7 @@ import { useNavigate } from "react-router";
 import { login } from "../services/Auth/login.service";
 import { useAuth } from "../context/Auth/useAuth";
 import { validateEmail } from "../utils/functions/validateEmail";
+import { CircularProgress } from "@mui/material";
 
 const theme = createTheme();
 
@@ -21,6 +22,7 @@ export default function SignIn() {
 
   const navigate = useNavigate();
   const {setUser, setUserRole} = useAuth();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -30,6 +32,7 @@ export default function SignIn() {
       Toaster('Email is not valid', "error");
       return;
     }
+    setIsLoading(true);
 
     const response = await login(data.get('email') as string, data.get('password') as string);
     
@@ -37,6 +40,8 @@ export default function SignIn() {
       // STORING TOKENS FOR FUTURE USE
       localStorage.setItem('accessToken', response.tokens?.access.token || "");
       localStorage.setItem('refreshToken', response.tokens?.refresh.token || "");
+
+      setIsLoading(false);
 
       // SETTING USER AND ROLE GLOBALLY
       setUserRole(response.user?.roleID || 0);
@@ -49,6 +54,7 @@ export default function SignIn() {
     }
     else {
       console.log("ni chla")
+      setIsLoading(false);
     }
   };
 
@@ -165,6 +171,7 @@ export default function SignIn() {
             <Button
               type="submit"
               fullWidth
+              disabled={isLoading}
               variant="contained"
               sx={{
                 mt: 3,
@@ -183,7 +190,7 @@ export default function SignIn() {
                 },
               }}
             >
-              Sign In
+              {isLoading ? <CircularProgress size={24} sx={{ ml: 2 }} /> : "Sign In"}
             </Button>
             <Grid
               container
