@@ -97,6 +97,22 @@ export const request = {
         }
     },
 
+    delete: async ({ url, data, showToast = true, useToken = true }: RequestParams): Promise<unknown> => {
+        try {
+            const response = await axios.delete(
+                `${baseUrl}${url}`, 
+                {
+                    data,
+                    ...(useToken ? options['withToken'] : options['default']),
+                }
+            );
+            if (showToast) successHandler({ response });
+            return response.data;
+        } catch (error) {
+            return errorHandler(error);
+        }
+    },
+
     put: async ({ url, data, showToast = true }: RequestParams): Promise<unknown> => {
         try {
             const response = await axios.put(
