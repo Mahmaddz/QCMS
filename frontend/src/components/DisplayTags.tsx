@@ -1,10 +1,10 @@
-import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, TextField, Typography } from "@mui/material";
+import { useState } from "react";
+import { Box, Button, Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, TextField, Typography } from "@mui/material";
 import { USER } from "../utils/UserRoles";
 import AddCircleTwoToneIcon from "@mui/icons-material/AddCircleTwoTone";
 import EditTwoToneIcon from "@mui/icons-material/EditTwoTone";
 import CancelTwoToneIcon from "@mui/icons-material/CancelTwoTone";
 import uniqueID from "../utils/helper/UniqueID";
-import { Tag } from "../interfaces/Tag";
 import { useAuth } from "../context/Auth/useAuth";
 import CloseIcon from "@mui/icons-material/Close";
 import { Tagz } from "../interfaces/SurahAyaInfo";
@@ -12,17 +12,21 @@ import {
     Save as SaveIcon,
     Delete as DeleteIcon
 } from "@mui/icons-material";
-import { useState } from "react";
+import { addTagAgainstAya } from "../services/Tags/addTag.service";
+import { deleteTagAgainstAya } from "../services/Tags/deleteTag.service";
+import { editTagAgainstAya } from "../services/Tags/editTag.service";
 
-const DisplayTags = ({showTags=true, tagz}:{showTags?: boolean | undefined; tagz: Tagz[];}) => {
+const DisplayTags = ({showTags=true, tagz, Chapter, Verse}:{showTags?: boolean | undefined; tagz: Tagz[]; Chapter: number, Verse: number}) => {
     const { userRole } = useAuth();
+
+    const [isLoading, setIsLoading] = useState<boolean>(false);
 
     const [tags, setTags] = useState(tagz);
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
     const [openAddTagModal, setOpenAddTagModal] = useState(false);
     const [openEditTagModal, setOpenEditTagModal] = useState(false);
-    const [selectedTag, setSelectedTag] = useState<Tag>();
-    const [tagFields, setTagFields] = useState<Tag>({ ar: "", en: "", type: "" });
+    const [selectedTag, setSelectedTag] = useState<Tagz>();
+    const [tagFields, setTagFields] = useState<Tagz>({ ar: "", en: "", id: 0, suraNo: 0, ayaNo: 0 });
 
     const handleOpenDeleteModal = () => setOpenDeleteModal(true);
     const handleCloseDeleteModal = () => setOpenDeleteModal(false);
@@ -32,7 +36,7 @@ const DisplayTags = ({showTags=true, tagz}:{showTags?: boolean | undefined; tagz
 
     const handleCloseEditTagModal = () => setOpenEditTagModal(false);
 
-    const handleOpenEditTagModal = (tag: Tag) => {
+    const handleOpenEditTagModal = (tag: Tagz) => {
         setSelectedTag(tag);
         setTagFields(tag);
         setOpenEditTagModal(true);
@@ -43,17 +47,43 @@ const DisplayTags = ({showTags=true, tagz}:{showTags?: boolean | undefined; tagz
         setTagFields((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleDeleteTag = (tagToDelete: Tag) => {
-        setTags(() => tags?.filter((tag) => tag !== tagToDelete));
-        handleCloseDeleteModal();
+    const handleDeleteTag = async (tagToDelete: Tagz) => {
+        setIsLoading(true);
+        const response = await deleteTagAgainstAya(tagToDelete.id);
+        if (response.success) {
+            setIsLoading(false);
+            setTags(() => tags?.filter((tag) => tag !== tagToDelete));
+            handleCloseDeleteModal();
+        }
     };
     
-    const handleAddTag = () => {
-        if (tags) 
-            setTags([...tags, tagFields]);
-        setTagFields({ ar: "", en: "", type: "" });
-        handleCloseAddTagModal();
+    const handleAddTag = async () => {
+        setIsLoading(true);
+        const response = await addTagAgainstAya(tagFields.en, tagFields.ar, Chapter, Verse);
+        if (response.success) {
+            setIsLoading(false);
+            if (tags && response.insertedTagId) setTags([...tags, { ...tagFields, id: response.insertedTagId }]);
+            setTagFields({ ar: "", en: "", id: 0, suraNo: 0, ayaNo: 0 });
+            handleCloseAddTagModal();
+        }
     };
+
+    const handleEditTag = async (tagToEdit: Tagz) => {
+        setIsLoading(true);
+        const response = await editTagAgainstAya(tagToEdit.id, Chapter, Verse, tagToEdit.en, tagToEdit.ar);
+        if (response.success) {
+            setIsLoading(false);
+            setTags(prevTags =>
+                prevTags.map(tag =>
+                    tag.id === tagToEdit.id ? { ...tag, ...tagToEdit } : tag
+                )
+            );
+            handleCloseEditTagModal();
+        }
+        else {
+            setIsLoading(false);
+        }
+    }
 
     return (
         <>
@@ -108,10 +138,10 @@ const DisplayTags = ({showTags=true, tagz}:{showTags?: boolean | undefined; tagz
                                             cursor: "pointer",
                                             transition: "color 0.3s ease",
                                             "&:hover": {
-                                            color: "primary.dark",
+                                                color: "primary.dark",
                                             },
                                         }}
-                                        onClick={() => handleOpenEditTagModal(tag as unknown as Tag)}
+                                        onClick={() => handleOpenEditTagModal(tag as unknown as Tagz)}
                                     />
                                     <CancelTwoToneIcon
                                         sx={{
@@ -123,11 +153,11 @@ const DisplayTags = ({showTags=true, tagz}:{showTags?: boolean | undefined; tagz
                                             cursor: "pointer",
                                             transition: "color 0.3s ease",
                                             "&:hover": {
-                                            color: "error.dark",
+                                                color: "error.dark",
                                             },
                                         }}
                                         onClick={() => {
-                                            setSelectedTag(tag as Tag);
+                                            setSelectedTag(tag as Tagz);
                                             handleOpenDeleteModal();
                                         }}
                                     />
@@ -135,29 +165,33 @@ const DisplayTags = ({showTags=true, tagz}:{showTags?: boolean | undefined; tagz
                             )}
 
                             <Chip
-                            label={`Arabic: ${tag.ar},   English: ${tag.en}`}
-                            variant="outlined"
-                            sx={{
-                                borderRadius: "16px",
-                                backgroundColor: "#f5f5f5",
-                                boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
-                                transition: "transform 0.3s ease",
-                                "&:hover": {
-                                transform: "scale(1.05)",
-                                },
-                            }}
+                                label={
+                                    <span>
+                                        <strong>Arabic:</strong> {tag.ar}, <strong>English:</strong> {tag.en}
+                                    </span>
+                                }
+                                variant="outlined"
+                                sx={{
+                                    borderRadius: "16px",
+                                    backgroundColor: "#f5f5f5",
+                                    boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+                                    transition: "transform 0.3s ease",
+                                    "&:hover": {
+                                        transform: "scale(1.05)",
+                                    },
+                                }}
                             />
                         </Box>
                         ))
                     ) : (
                         <Typography variant="body2" color="text.secondary">
-                        No tags available.
+                            No tags available.
                         </Typography>
                     )
                 )}
-        </Box>
+            </Box>
 
-            {/* Deletion Confirmation Modal */}
+            {/* ===================================== Deletion Confirmation Modal ===================================== */}
             <Dialog
                 open={openDeleteModal}
                 onClose={handleCloseDeleteModal}
@@ -165,51 +199,52 @@ const DisplayTags = ({showTags=true, tagz}:{showTags?: boolean | undefined; tagz
                 fullWidth
             >
                 <DialogTitle sx={{ display: "flex", alignItems: "center" }}>
-                <Typography variant="h6" component="div" flex={1}>
-                    Confirm Deletion
-                </Typography>
-                <IconButton
-                    onClick={handleCloseDeleteModal}
-                    sx={{
-                    color: "white",
-                    backgroundColor: "#FF6B6B",
-                    width: "48px",
-                    height: "48px",
-                    "&:hover": {
-                        backgroundColor: "darkred",
-                    },
-                    borderRadius: "8px",
-                    }}
-                >
-                    <CloseIcon fontSize="medium"/>
-                </IconButton>
+                    <Typography variant="h6" component="div" flex={1}>
+                        Confirm Deletion
+                    </Typography>
+                    <IconButton
+                        disabled={isLoading}
+                        onClick={handleCloseDeleteModal}
+                        sx={{
+                            color: "white",
+                            backgroundColor: "#FF6B6B",
+                            width: "48px",
+                            height: "48px",
+                            "&:hover": {
+                                backgroundColor: "darkred",
+                            },
+                            borderRadius: "8px",
+                        }}
+                    >
+                        <CloseIcon fontSize="medium"/>
+                    </IconButton>
                 </DialogTitle>
                 <DialogContent dividers>
-                <Typography variant="body1">
-                    Are you sure you want to delete this tag? This action cannot be
-                    undone.
-                </Typography>
+                    <Typography variant="body1">
+                        Are you sure you want to delete this tag? This action cannot be
+                        undone.
+                    </Typography>
                 </DialogContent>
                 <DialogActions sx={{ padding: "16px" }}>
-                <Button onClick={handleCloseDeleteModal} variant="outlined" color="primary">
-                    Cancel
-                </Button>
-                <Button
-                    onClick={() => {
-                    console.log(selectedTag)
-                    if (selectedTag) handleDeleteTag(selectedTag);
-                    }}
-                    variant="contained"
-                    color="error"
-                    sx={{ bgcolor: "error.main", "&:hover": { bgcolor: "error.dark" } }}
-                    startIcon={<DeleteIcon/>}
-                >
-                    Delete
-                </Button>
+                    <Button onClick={handleCloseDeleteModal} variant="outlined" color="primary" disabled={isLoading}>
+                        Cancel
+                    </Button>
+                    <Button
+                        disabled={isLoading}
+                        onClick={() => {
+                            if (selectedTag) handleDeleteTag(selectedTag);
+                        }}
+                        variant="contained"
+                        color="error"
+                        sx={{ bgcolor: "error.main", "&:hover": { bgcolor: "error.dark" } }}
+                        startIcon={<DeleteIcon/>}
+                    >
+                        {isLoading ? <CircularProgress size={24} sx={{ ml: 2 }}/> : "Delete"} 
+                    </Button>
                 </DialogActions>
             </Dialog>
 
-            {/* Add New Tag Modal */}
+            {/* =================================== Add New Tag Modal =================================== */}
             <Dialog
                 open={openAddTagModal}
                 onClose={handleCloseAddTagModal}
@@ -217,74 +252,77 @@ const DisplayTags = ({showTags=true, tagz}:{showTags?: boolean | undefined; tagz
                 fullWidth
             >
                 <DialogTitle sx={{ display: "flex", alignItems: "center" }}>
-                <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                    Add New Tag
-                </Typography>
-                <IconButton
-                    onClick={handleCloseAddTagModal}
-                    sx={{
-                    color: "white",
-                    backgroundColor: "#FF6B6B",
-                    width: "48px",
-                    height: "48px",
-                    "&:hover": {
-                        backgroundColor: "darkred",
-                    },
-                    borderRadius: "8px",
+                    <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+                        Add New Tag
+                    </Typography>
+                    <IconButton
+                        disabled={isLoading}
+                        onClick={handleCloseAddTagModal}
+                        sx={{
+                            color: "white",
+                            backgroundColor: "#FF6B6B",
+                            width: "48px",
+                            height: "48px",
+                            "&:hover": {
+                                backgroundColor: "darkred",
+                            },
+                            borderRadius: "8px",
+                        }}
+                    >
+                        <CloseIcon fontSize="medium" />
+                    </IconButton>
+                </DialogTitle>
+                <DialogContent 
+                    dividers 
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                            handleAddTag()
+                        }
                     }}
                 >
-                    <CloseIcon fontSize="medium" />
-                </IconButton>
-                </DialogTitle>
-                <DialogContent dividers>
-                <TextField
-                    margin="dense"
-                    label="Arabic"
-                    name="ar"
-                    value={tagFields.ar}
-                    onChange={handleFieldChange}
-                    fullWidth
-                    variant="outlined"
-                />
-                <TextField
-                    margin="dense"
-                    label="English"
-                    name="en"
-                    value={tagFields.en}
-                    onChange={handleFieldChange}
-                    fullWidth
-                    variant="outlined"
-                />
-                {/* <TextField
-                    margin="dense"
-                    label="Type"
-                    name="type"
-                    value={tagFields.type}
-                    onChange={handleFieldChange}
-                    fullWidth
-                    variant="outlined"
-                /> */}
+                    <TextField
+                        disabled={isLoading}
+                        margin="dense"
+                        label="Arabic"
+                        name="ar"
+                        value={tagFields.ar}
+                        onChange={handleFieldChange}
+                        fullWidth
+                        variant="outlined"
+                    />
+                    <TextField
+                        disabled={isLoading}
+                        margin="dense"
+                        label="English"
+                        name="en"
+                        value={tagFields.en}
+                        onChange={handleFieldChange}
+                        fullWidth
+                        variant="outlined"
+                    />
                 </DialogContent>
                 <DialogActions sx={{ padding: "16px" }}>
-                <Button
-                    onClick={handleCloseAddTagModal}
-                    variant="outlined"
-                    color="primary"
-                >
-                    Cancel
-                </Button>
-                <Button
-                    onClick={handleAddTag}
-                    variant="contained"
-                    color="primary"
-                    startIcon={<SaveIcon />}
-                >
-                    Add
-                </Button>
+                    <Button
+                        onClick={handleCloseAddTagModal}
+                        disabled={isLoading}
+                        variant="outlined"
+                        color="primary"
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        onClick={handleAddTag}
+                        disabled={isLoading}
+                        variant="contained"
+                        color="primary"
+                        startIcon={<SaveIcon />}
+                    >
+                        {isLoading ? <CircularProgress size={24} sx={{ ml: 2 }}/> : "Add"} 
+                    </Button>
                 </DialogActions>
             </Dialog>
 
-            {/* Edit Tag Modal */}
+            {/* =========================================== Edit Tag Modal =========================================== */}
             <Dialog
                 open={openEditTagModal}
                 onClose={handleCloseEditTagModal}
@@ -292,70 +330,73 @@ const DisplayTags = ({showTags=true, tagz}:{showTags?: boolean | undefined; tagz
                 fullWidth
             >
                 <DialogTitle sx={{ display: "flex", alignItems: "center" }}>
-                <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                    Edit Tag
-                </Typography>
-                <IconButton onClick={handleCloseEditTagModal} sx={{
-                    color: "white",
-                    backgroundColor: "#FF6B6B",
-                    width: "48px",
-                    height: "48px",
-                    "&:hover": {
-                        backgroundColor: "darkred",
-                    },
-                    borderRadius: "8px",
-                    }}>
-                    <CloseIcon fontSize="medium" />
-                </IconButton>
+                    <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+                        Edit Tag
+                    </Typography>
+                    <IconButton 
+                        onClick={handleCloseEditTagModal} 
+                        disabled={isLoading}
+                        sx={{
+                            color: "white",
+                            backgroundColor: "#FF6B6B",
+                            width: "48px",
+                            height: "48px",
+                            "&:hover": {
+                                backgroundColor: "darkred",
+                            },
+                            borderRadius: "8px",
+                        }}
+                    >
+                        <CloseIcon fontSize="medium" />
+                    </IconButton>
                 </DialogTitle>
-                <DialogContent dividers>
-                <TextField
-                    margin="dense"
-                    label="Arabic"
-                    name="ar"
-                    value={tagFields.ar}
-                    onChange={handleFieldChange}
-                    fullWidth
-                    variant="outlined"
-                />
-                <TextField
-                    margin="dense"
-                    label="English"
-                    name="en"
-                    value={tagFields.en}
-                    onChange={handleFieldChange}
-                    fullWidth
-                    variant="outlined"
-                />
-                {/* <TextField
-                    margin="dense"
-                    label="Type"
-                    name="type"
-                    value={tagFields.type}
-                    onChange={handleFieldChange}
-                    fullWidth
-                    variant="outlined"
-                /> */}
+                <DialogContent 
+                    dividers 
+                    onKeyDown={async (e) => {
+                        if (e.key === 'Enter') {
+                            await handleEditTag(tagFields)
+                        }
+                    }}
+                >
+                    <TextField
+                        disabled={isLoading}
+                        margin="dense"
+                        label="Arabic"
+                        name="ar"
+                        value={tagFields.ar}
+                        onChange={handleFieldChange}
+                        fullWidth
+                        variant="outlined"
+                    />
+                    <TextField
+                        disabled={isLoading}
+                        margin="dense"
+                        label="English"
+                        name="en"
+                        value={tagFields.en}
+                        onChange={handleFieldChange}
+                        fullWidth
+                        variant="outlined"
+                    />
                 </DialogContent>
                 <DialogActions sx={{ padding: "16px" }}>
-                <Button
-                    onClick={handleCloseEditTagModal}
-                    variant="outlined"
-                    color="primary"
-                >
-                    Cancel
-                </Button>
-                <Button
-                    onClick={() => {
-                    console.log("Tag edited", tagFields);
-                    handleCloseEditTagModal();
-                    }}
-                    variant="contained"
-                    color="primary"
-                    startIcon={<SaveIcon />}
-                >
-                    Save
-                </Button>
+                    <Button
+                        onClick={handleCloseEditTagModal}
+                        disabled={isLoading}
+                        variant="outlined"
+                        color="primary"
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        onClick={() => handleEditTag(tagFields)}
+                        disabled={isLoading}
+                        variant="contained"
+                        color="primary"
+                        startIcon={<SaveIcon />}
+                    >
+                        {isLoading ? <CircularProgress size={24} sx={{ ml: 2 }}/> : "Save"} 
+                    </Button>
                 </DialogActions>
             </Dialog>
         </>
