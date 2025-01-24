@@ -1,71 +1,60 @@
+/* eslint-disable no-console */
 const httpStatus = require('http-status');
 const { logger } = require('../config/logger');
 const { Tag, Op, Sequelize } = require('../models');
 const ApiError = require('../utils/ApiError');
 
-const addTagsToTheVerses = async (suraNo, verseNo, wordNo, segment, source, statusId, en, ar, type, actionId) => {
+const addTagsToTheVerses = async (suraNo, ayaNo, category, arabic, userId) => {
   try {
-    await Tag.create({
+    const insertedTag = await Tag.create({
       suraNo,
-      verseNo,
-      wordNo,
-      segment,
-      source,
-      statusId,
-      en,
-      ar,
-      type,
-      actionId,
+      ayaNo,
+      category,
+      arabic,
+      actionId: 1,
+      statusId: 1,
+      userId,
     });
+    return insertedTag.dataValues.id;
   } catch (error) {
     logger.error(error);
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, `Insert Query Issue`);
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, `Tag Insert Query Issue`);
   }
 };
 
-const updateTagsRowUsingTagId = async (tagId, suraNo, verseNo, wordNo, segment, en, ar, type, actionId) => {
+const updateTagsRowUsingTagId = async (id, suraNo, ayaNo, category, arabic, userId) => {
   try {
-    logger.debug(tagId, suraNo, verseNo, wordNo, segment, en, ar, type, actionId);
-
-    const [updatedRowCount, updatedRows] = await Tag.update(
+    const [updatedRowCount] = await Tag.update(
+      { category, arabic, actionId: 3, userId, statusId: 1 },
       {
-        suraNo,
-        verseNo,
-        wordNo,
-        segment,
-        en,
-        ar,
-        type,
-        actionId,
-      },
-      {
-        where: { id: tagId },
-        returning: true,
+        where: { id, suraNo, ayaNo },
       }
     );
-
     if (updatedRowCount === 0) {
-      logger.warn(`No tag found with id ${tagId} to update.`);
-      return null;
+      return { success: false, message: `No tag found with id ${id} to update.` };
     }
-
-    logger.info(`Tag with id ${tagId} updated successfully.`);
-    return updatedRows;
+    return { success: true, message: `Tag with id ${id} updated successfully.` };
   } catch (error) {
     logger.error(`Error updating tag: ${error.message}`);
     throw new ApiError(httpStatus.CONFLICT, `ISSUE IN UPDATING VALUES`);
   }
 };
 
-const deleteTagUsingTagId = async (tagId) => {
+const deleteTagUsingTagId = async (tagId, role, userId) => {
   try {
-    const deletedRowCount = await Tag.destroy({
-      where: { id: tagId },
-    });
-
-    if (deletedRowCount === 0) {
-      logger.warn(`No tag found with ID ${tagId} to delete.`);
+    const [updatedCount] = await Tag.update(
+      { actionId: 2, userId, statusId: 1 },
+      {
+        where: { id: tagId },
+      }
+    );
+    if (updatedCount > 0) {
+      await Tag.destroy({
+        where: { id: tagId },
+        // ...(role === 1 && { force: true }),
+      });
     }
+    return updatedCount > 0;
   } catch (error) {
     logger.error(`Error deleting tag: ${error.message}`);
     throw new ApiError(httpStatus.CONFLICT, `ISSUE IN DELETING VALUES`);
@@ -80,12 +69,12 @@ const changeTagsStatsusUsingId = async (tagId, statusId) => {
       },
       {
         where: { id: tagId },
-        returning: true,
       }
     );
     if (updatedRowCount === 0) {
-      logger.warn(`No tag found with ID ${tagId} to delete.`);
+      return { message: `No tag found with ID ${tagId} to Update.`, success: false };
     }
+    return { message: `Tag's ${tagId} Status Updated To ${statusId}`, success: true };
   } catch (error) {
     logger.error(`Error deleting tag: ${error.message}`);
     throw new ApiError(httpStatus.CONFLICT, `ISSUE IN DELETING VALUES`);
@@ -123,6 +112,7 @@ const suraAndAyaByTagMatch = async (term, suraNo = undefined, ayaNo = undefined)
     order: [
       ['suraNo', 'ASC'],
       ['ayaNo', 'ASC'],
+      ['id', 'ASC'],
     ],
   });
   return result.map((r) => r.dataValues);
@@ -130,7 +120,7 @@ const suraAndAyaByTagMatch = async (term, suraNo = undefined, ayaNo = undefined)
 
 const tagsRelatedToSurahAndAyah = async (suraAyaList) => {
   const result = await Tag.findAll({
-    attributes: ['suraNo', 'ayaNo', [Sequelize.col('category'), 'en'], [Sequelize.col('arabic'), 'ar']],
+    attributes: ['id', 'suraNo', 'ayaNo', [Sequelize.col('category'), 'en'], [Sequelize.col('arabic'), 'ar']],
     where: {
       ...(suraAyaList[0].ayaNo
         ? { [Op.or]: suraAyaList.map(({ suraNo, ayaNo }) => ({ suraNo, ayaNo })) }
@@ -139,6 +129,7 @@ const tagsRelatedToSurahAndAyah = async (suraAyaList) => {
     order: [
       ['suraNo', 'ASC'],
       ['ayaNo', 'ASC'],
+      ['id', 'ASC'],
     ],
   });
   return result.map((r) => r.dataValues);
