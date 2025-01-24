@@ -192,7 +192,7 @@ const SurahAyahList = () => {
                                         verses={verse} 
                                     />
                                     <Box>
-                                        <DisplayTags tagz={verse.tags || []} />
+                                        <DisplayTags tagz={verse.tags || []} Chapter={verse.ayat[0].Chapter as number} Verse={verse.ayat[0].Verse as number} />
                                     </Box>
                                 </Box>
                             );

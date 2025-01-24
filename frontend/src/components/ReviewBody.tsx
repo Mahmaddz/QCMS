@@ -76,7 +76,15 @@ export default function ReviewBody({ verses, showTags, selectedKeywords, selecte
       >
         {userRole !== USER.PUBLIC && (
           <InsertCommentTwoToneIcon
-            sx={{ color: "primary.main" }}
+            sx={{
+              color: "primary.main",
+              cursor: "pointer",
+              transition: 'all ease 0.1s',
+              "&:hover": {
+                color: "primary.dark",
+                transform: "scale(1.1)",
+              },
+            }}
             onClick={handleOpenCommentDialog}
           />
         )}
@@ -104,7 +112,7 @@ export default function ReviewBody({ verses, showTags, selectedKeywords, selecte
             gap: 0.5,
             cursor: "pointer",
             "&:hover": {
-              color: "primary.dark"
+              color: "primary.dark",
             },
             marginTop: { xs: 2, sm: 0 }
           }}
@@ -116,6 +124,7 @@ export default function ReviewBody({ verses, showTags, selectedKeywords, selecte
               color: "primary.main",
               transition: "all 0.3s ease",
               "&:hover": {
+                transform: "scale(1.1)",
                 color: "primary.dark",
               },
             }}
@@ -133,7 +142,7 @@ export default function ReviewBody({ verses, showTags, selectedKeywords, selecte
         </Box>
       </Box>
 
-      <DisplayTags showTags={showTags} tagz={verses.tags || []} />
+      <DisplayTags showTags={showTags} tagz={verses.tags || []} Chapter={verses.ayat[0].Chapter as number} Verse={verses.ayat[0].Verse as number}/>
 
       { /* comment dialog */}
       <Dialog
