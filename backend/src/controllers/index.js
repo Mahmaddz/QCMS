@@ -8,3 +8,4 @@ module.exports.wordsController = require('./words.controller');
 module.exports.tagsController = require('./tags.controller');
 module.exports.languageController = require('./language.controller');
 module.exports.khadijaController = require('./khadija.controller');
+module.exports.commentController = require('./comment.controller');

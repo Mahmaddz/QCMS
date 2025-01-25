@@ -9,6 +9,7 @@ const ayatRoute = require('./ayat.route');
 const wordsRoute = require('./words.route');
 const tagRoute = require('./tag.route');
 const languageRoute = require('./language.route');
+const commentRoute = require('./comment.route');
 const config = require('../../config/config');
 
 const router = express.Router();
@@ -49,6 +50,10 @@ const defaultRoutes = [
   {
     path: '/quran-languages',
     route: languageRoute,
+  },
+  {
+    path: '/comments',
+    route: commentRoute,
   },
 ];
 
