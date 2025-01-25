@@ -10,5 +10,6 @@ router.route('/add').post(auth('admin', 'reviewer'), validate(tagValidation.addT
 router.route('/delete').delete(auth('admin', 'reviewer'), validate(tagValidation.deleteTag), tagsController.deleteTag);
 router.route('/update').patch(auth('admin', 'reviewer'), validate(tagValidation.updateTag), tagsController.updateTag);
 router.route('/change-status').patch(auth('admin'), validate(tagValidation.changeTagStatus), tagsController.changeTagStatus);
+router.route('/review').get(auth('admin'), tagsController.getTagReviewData);
 
 module.exports = router;

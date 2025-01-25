@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 const httpStatus = require('http-status');
 const { logger } = require('../config/logger');
-const { Tag, Op, Sequelize } = require('../models');
+const { Tag, Op, Sequelize, Status, Action, Verse } = require('../models');
 const ApiError = require('../utils/ApiError');
 
 const addTagsToTheVerses = async (suraNo, ayaNo, category, arabic, userId) => {
@@ -24,8 +24,19 @@ const addTagsToTheVerses = async (suraNo, ayaNo, category, arabic, userId) => {
 
 const updateTagsRowUsingTagId = async (id, suraNo, ayaNo, category, arabic, userId) => {
   try {
+    const previousRow = await Tag.findOne({
+      where: { id, suraNo, ayaNo },
+    });
     const [updatedRowCount] = await Tag.update(
-      { category, arabic, actionId: 3, userId, statusId: 1 },
+      {
+        category,
+        arabic,
+        actionId: 3,
+        userId,
+        statusId: 1,
+        categoryOld: previousRow.dataValues.category,
+        arabicOld: previousRow.dataValues.arabic,
+      },
       {
         where: { id, suraNo, ayaNo },
       }
@@ -40,7 +51,7 @@ const updateTagsRowUsingTagId = async (id, suraNo, ayaNo, category, arabic, user
   }
 };
 
-const deleteTagUsingTagId = async (tagId, role, userId) => {
+const deleteTagUsingTagId = async (tagId, userId, forceDelete = false) => {
   try {
     const [updatedCount] = await Tag.update(
       { actionId: 2, userId, statusId: 1 },
@@ -48,10 +59,10 @@ const deleteTagUsingTagId = async (tagId, role, userId) => {
         where: { id: tagId },
       }
     );
-    if (updatedCount > 0) {
+    if (updatedCount > 0 && forceDelete) {
       await Tag.destroy({
         where: { id: tagId },
-        // ...(role === 1 && { force: true }),
+        force: true,
       });
     }
     return updatedCount > 0;
@@ -63,17 +74,44 @@ const deleteTagUsingTagId = async (tagId, role, userId) => {
 
 const changeTagsStatsusUsingId = async (tagId, statusId) => {
   try {
-    const [updatedRowCount] = await Tag.update(
-      {
-        statusId,
-      },
-      {
-        where: { id: tagId },
-      }
-    );
+    let updatedRowCount = 0;
+
+    const previousRow = await Tag.findOne({
+      where: { id: tagId },
+    });
+
+    const { actionId, categoryOld, arabicOld } = previousRow.dataValues;
+
+    if (actionId === 3 && statusId === 3) {
+      const [URC] = await Tag.update(
+        {
+          statusId: 2,
+          category: categoryOld,
+          arabic: arabicOld,
+        },
+        {
+          where: { id: tagId },
+        }
+      );
+      updatedRowCount = URC;
+    }
+
+    if (statusId === 2 || (statusId === 3 && actionId !== 3)) {
+      const [URC] = await Tag.update(
+        {
+          statusId,
+        },
+        {
+          where: { id: tagId },
+        }
+      );
+      updatedRowCount = URC;
+    }
+
     if (updatedRowCount === 0) {
       return { message: `No tag found with ID ${tagId} to Update.`, success: false };
     }
+
     return { message: `Tag's ${tagId} Status Updated To ${statusId}`, success: true };
   } catch (error) {
     logger.error(`Error deleting tag: ${error.message}`);
@@ -125,6 +163,7 @@ const tagsRelatedToSurahAndAyah = async (suraAyaList) => {
       ...(suraAyaList[0].ayaNo
         ? { [Op.or]: suraAyaList.map(({ suraNo, ayaNo }) => ({ suraNo, ayaNo })) }
         : { suraNo: suraAyaList[0].suraNo }),
+      statusId: 2,
     },
     order: [
       ['suraNo', 'ASC'],
@@ -135,6 +174,53 @@ const tagsRelatedToSurahAndAyah = async (suraAyaList) => {
   return result.map((r) => r.dataValues);
 };
 
+const listOfSubmittedTags = async () => {
+  const result = await Tag.findAll({
+    attributes: [
+      'id',
+      'suraNo',
+      'ayaNo',
+      'categoryOld',
+      'arabicOld',
+      [Sequelize.col('userId'), 'user'],
+      [Sequelize.col('category'), 'en'],
+      [Sequelize.col('arabic'), 'ar'],
+      [Sequelize.col('action.actionDef'), 'actions'],
+      [Sequelize.col('status.statusDef'), 'statuses'],
+      [Sequelize.fn('MAX', Sequelize.col('verseBySura.emlaeyTextDiacritics')), 'ayaText'],
+    ],
+    include: [
+      {
+        model: Action,
+        as: 'action',
+        attributes: [],
+      },
+      {
+        model: Status,
+        as: 'status',
+        attributes: [],
+      },
+      {
+        model: Verse,
+        as: 'verseBySura',
+        attributes: [],
+      },
+      {
+        model: Verse,
+        as: 'verseByAya',
+        attributes: [],
+      },
+    ],
+    where: {
+      statusId: 1,
+    },
+    group: ['Tag.id', 'action.id', 'status.id'],
+    order: [['id', 'DESC']],
+    paranoid: false,
+  });
+  return result.map((item) => item.get({ plain: true }));
+};
+
 module.exports = {
   addTagsToTheVerses,
   updateTagsRowUsingTagId,
@@ -142,4 +228,5 @@ module.exports = {
   changeTagsStatsusUsingId,
   suraAndAyaByTagMatch,
   tagsRelatedToSurahAndAyah,
+  listOfSubmittedTags,
 };

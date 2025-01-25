@@ -22,6 +22,7 @@ const updateTag = {
 const deleteTag = {
   body: Joi.object().keys({
     tagId: Joi.number().required(),
+    forceDelete: Joi.boolean().required(),
   }),
 };
 

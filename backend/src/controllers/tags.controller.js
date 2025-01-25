@@ -20,13 +20,12 @@ const addTag = catchAsync(async (req, res) => {
 });
 
 const deleteTag = catchAsync(async (req, res) => {
-  const { tagId } = req.body;
+  const { tagId, forceDelete } = req.body;
   const userID = req.user.id;
-  const role = req.user.roleID;
-  if (!role) {
+  if (!userID) {
     throw new ApiError(httpStatus.BAD_REQUEST, `Role Not Found`);
   }
-  const isDeleted = await tagsServices.deleteTagUsingTagId(tagId, role, userID);
+  const isDeleted = await tagsServices.deleteTagUsingTagId(tagId, userID, forceDelete);
   return res.status(isDeleted ? httpStatus.OK : httpStatus.NOT_FOUND).json({
     success: true,
     message: isDeleted ? `TagId: ${tagId} deleted successfully` : `TagId: ${tagId} 404`,
@@ -45,9 +44,23 @@ const changeTagStatus = catchAsync(async (req, res) => {
   return res.status(httpStatus.OK).json(response);
 });
 
+const getTagReviewData = catchAsync(async (req, res) => {
+  const data = await tagsServices.listOfSubmittedTags();
+  return res.status(httpStatus.OK).json({
+    success: true,
+    data: data.map((d) => ({
+      ...d,
+      details: d.actions.includes('Update')
+        ? { en: `${d.categoryOld} => ${d.en}`, ar: `${d.arabicOld} => ${d.ar}` }
+        : { en: d.en, ar: d.ar },
+    })),
+  });
+});
+
 module.exports = {
   addTag,
   deleteTag,
   updateTag,
   changeTagStatus,
+  getTagReviewData,
 };
