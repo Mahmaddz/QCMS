@@ -1,7 +1,5 @@
-/* eslint-disable no-restricted-syntax */
 /* eslint-disable no-await-in-loop */
-/* eslint-disable no-case-declarations */
-/* eslint-disable no-console */
+/* eslint-disable no-restricted-syntax */
 const httpStatus = require('http-status');
 const { logger } = require('../config/logger');
 const catchAsync = require('../utils/catchAsync');
@@ -26,7 +24,6 @@ const fileUpload = catchAsync(async (req, res) => {
       const dataSet = await fileServices.getDataFromSheet(sheet);
       isSheetFound = true;
 
-      logger.info(`Verifying ${sheetName} Column .....`);
       const validRecords = await fileServices.hasRequiredColumns(
         await fileServices.getRequiredColumns(sheetName.split('-')[0].split('+')[0]),
         await fileServices.getSheetColumnNames(sheet)
@@ -35,7 +32,7 @@ const fileUpload = catchAsync(async (req, res) => {
       if (!validRecords) {
         throw new ApiError(httpStatus.CONFLICT, `No Valid Record For This "${sheetName}" Sheet Found`);
       }
-      logger.info(`Columns ${sheetName} Verified .....`);
+      logger.info(`Starting Insert Process => ${sheetName} Sheet`);
 
       switch (sheetName) {
         case 'verses':
