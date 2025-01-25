@@ -7,20 +7,25 @@ module.exports = (sequelize, DataTypes) => {
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
-    static associate() {
-      // Action.hasMany(models.Tags, {
-      //   foreignKey: 'actionId',
-      //   as: 'tagAction',
-      // });
+    static associate(models) {
+      Action.hasMany(models.Tag, { foreignKey: 'actionId', as: 'tags' });
     }
   }
   Action.init(
     {
-      actionDef: DataTypes.STRING,
+      id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+      },
+      actionDef: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
     },
     {
       sequelize,
       modelName: 'Action',
+      tableName: 'Action',
     }
   );
   return Action;

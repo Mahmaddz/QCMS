@@ -27,16 +27,16 @@ module.exports = (sequelize, DataTypes) => {
       //   as: 'quranas',
       // });
       // VERSE (one) ASSOCIATION WITH TAGS (many)
-      // Verse.hasMany(models.Tag, {
-      //   foreignKey: 'suraNo',
-      //   sourceKey: 'suraNo',
-      //   as: 'tags',
-      // });
-      // Verse.hasMany(models.Tag, {
-      //   foreignKey: 'ayaNo',
-      //   sourceKey: 'ayaNo',
-      //   as: 'tagsByAya',
-      // });
+      Verse.hasMany(models.Tag, {
+        foreignKey: 'suraNo',
+        sourceKey: 'suraNo',
+        as: 'tagsBySura',
+      });
+      Verse.hasMany(models.Tag, {
+        foreignKey: 'ayaNo',
+        sourceKey: 'ayaNo',
+        as: 'tagsByAya',
+      });
     }
   }
   Verse.init(

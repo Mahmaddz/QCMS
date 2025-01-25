@@ -20,13 +20,18 @@ module.exports = (sequelize, DataTypes) => {
 
     static associate(models) {
       Users.belongsTo(models.Roles, {
-        foreignKey: 'roleID', // Change this from 'id' to 'roleID'
-        as: 'role', // Use a singular alias for clarity
+        foreignKey: 'roleID',
+        as: 'role',
       });
       Users.hasMany(models.Token, {
-        foreignKey: 'userId', // This should match the foreign key in the Token model
+        foreignKey: 'userId',
         as: 'tokens',
       });
+      Users.hasMany(models.Tag, { foreignKey: 'userId', as: 'tags' });
+      // Users.hasMany(models.Comment, {
+      //   foreignKey: 'userId',
+      //   as: 'userComments',
+      // });
     }
   }
   Users.init(

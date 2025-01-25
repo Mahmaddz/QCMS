@@ -8,11 +8,9 @@ module.exports = {
       },
       suraNo: {
         type: Sequelize.INTEGER,
-        allowNull: true,
       },
       ayaNo: {
         type: Sequelize.INTEGER,
-        allowNull: true,
       },
       jozz: {
         type: Sequelize.INTEGER,
@@ -55,12 +53,6 @@ module.exports = {
         type: Sequelize.DATE,
       },
     });
-
-    // await queryInterface.addConstraint('Verses', {
-    //   fields: ['suraNo', 'ayaNo'],
-    //   type: 'primary key',
-    //   name: 'primary_suraNo_ayaNo',
-    // });
   },
 
   async down(queryInterface) {

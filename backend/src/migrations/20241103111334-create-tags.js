@@ -19,6 +19,36 @@ module.exports = {
       arabic: {
         type: Sequelize.STRING,
       },
+      categoryOld: {
+        type: Sequelize.STRING,
+      },
+      arabicOld: {
+        type: Sequelize.STRING,
+      },
+      userId: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+        references: {
+          model: 'Users',
+          key: 'id',
+        },
+      },
+      actionId: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+        references: {
+          model: 'Action',
+          key: 'id',
+        },
+      },
+      statusId: {
+        type: Sequelize.INTEGER,
+        references: {
+          model: 'Statuses',
+          key: 'id',
+        },
+        defaultValue: 2,
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
