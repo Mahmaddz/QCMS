@@ -60,9 +60,9 @@ const FileUploader = ({ title }: { title: string }) => {
         const fileType = title.split(" ")[0].trim().toLowerCase();
         const response = await uploadXlsFile(fileType as nature, formData);
         if (response.success) {
-            formData.delete('file');
+            // formData.delete('file');
             setLoading(false);
-            setFiles(() => []);
+            // setFiles(() => []);
         }
         else {
             formData.delete('file');

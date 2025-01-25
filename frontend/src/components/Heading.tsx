@@ -1,7 +1,7 @@
-import { Box, Typography } from "@mui/material";
+import { Box, CircularProgress, Typography } from "@mui/material";
 import { HeadingProps } from "../interfaces/Heading";
 
-export default function Heading ({data, horizontalPosition='center'}: HeadingProps) {
+export default function Heading ({data, horizontalPosition='center', isLoading=false}: HeadingProps) {
     return (
         <Box sx={{ padding: '30px', display: 'flex', justifyContent: horizontalPosition, width: '85%', margin: 'auto' }}>
             <Typography
@@ -14,6 +14,9 @@ export default function Heading ({data, horizontalPosition='center'}: HeadingPro
             >
                 {data}
             </Typography>
+            {
+                isLoading && <CircularProgress size={30} sx={{ ml: 2 }} />
+            }
         </Box>
     );
 }

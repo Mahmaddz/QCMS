@@ -48,6 +48,7 @@ const DisplayTags = ({showTags=true, tagz, Chapter, Verse}:{showTags?: boolean |
     };
 
     const handleDeleteTag = async (tagToDelete: Tagz) => {
+        if (!tagToDelete.id) return;
         setIsLoading(true);
         const response = await deleteTagAgainstAya(tagToDelete.id);
         if (response.success) {
@@ -69,6 +70,7 @@ const DisplayTags = ({showTags=true, tagz, Chapter, Verse}:{showTags?: boolean |
     };
 
     const handleEditTag = async (tagToEdit: Tagz) => {
+        if (!tagToEdit.id) return;
         setIsLoading(true);
         const response = await editTagAgainstAya(tagToEdit.id, Chapter, Verse, tagToEdit.en, tagToEdit.ar);
         if (response.success) {
