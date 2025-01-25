@@ -18,13 +18,15 @@ const sequelize = new Sequelize(`${PG_CONNECTION_URL}`, {
     acquire: 30000,
     idle: 10000,
   },
-  dialectOptions: {
-    ssl: {
-      require: true,
-      rejectUnauthorized: false,
-      connectTimeout: 60000,
+  ...(config.pgDB.vars.host !== 'localhost' && {
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false,
+        connectTimeout: 60000,
+      },
     },
-  },
+  }),
   individualHooks: true,
 });
 
