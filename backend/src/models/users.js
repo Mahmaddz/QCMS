@@ -28,10 +28,10 @@ module.exports = (sequelize, DataTypes) => {
         as: 'tokens',
       });
       Users.hasMany(models.Tag, { foreignKey: 'userId', as: 'tags' });
-      // Users.hasMany(models.Comment, {
-      //   foreignKey: 'userId',
-      //   as: 'userComments',
-      // });
+      Users.hasMany(models.Comment, {
+        foreignKey: 'userId',
+        as: 'comments',
+      });
     }
   }
   Users.init(
