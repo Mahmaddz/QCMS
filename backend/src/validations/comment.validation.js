@@ -17,6 +17,7 @@ const getComment = {
 
 const editComment = {
   body: Joi.object().keys({
+    id: Joi.number().required(),
     suraNo: Joi.number().required(),
     ayaNo: Joi.number().required(),
     text: Joi.string().required(),

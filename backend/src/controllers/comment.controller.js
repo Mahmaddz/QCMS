@@ -1,10 +1,15 @@
 const httpStatus = require('http-status');
 const catchAsync = require('../utils/catchAsync');
 const { commentServices } = require('../services');
+const ApiError = require('../utils/ApiError');
 
 const addComment = catchAsync(async (req, res) => {
   const { suraNo, ayaNo, text } = req.body;
-  const insertedCommentId = await commentServices.insertComment(suraNo, ayaNo, text);
+  const userId = req.user.id;
+  if (!userId) {
+    throw new ApiError(httpStatus.METHOD_NOT_ALLOWED, `UserId not Found`);
+  }
+  const insertedCommentId = await commentServices.insertComment(suraNo, ayaNo, text, userId);
   return res.status(httpStatus.OK).json({
     success: true,
     insertedCommentId,
@@ -22,8 +27,8 @@ const getComments = catchAsync(async (req, res) => {
 });
 
 const updateComment = catchAsync(async (req, res) => {
-  const { suraNo, ayaNo, text } = req.body;
-  const isEdited = await commentServices.editComment(suraNo, ayaNo, text);
+  const { id, suraNo, ayaNo, text } = req.body;
+  const isEdited = await commentServices.editComment(id, suraNo, ayaNo, text);
   return res.status(httpStatus.OK).json({
     success: true,
     message: isEdited ? 'Comment Edited' : 'Comment Not Found',

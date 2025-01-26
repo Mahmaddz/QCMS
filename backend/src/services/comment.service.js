@@ -1,12 +1,18 @@
+/* eslint-disable no-console */
 const httpStatus = require('http-status');
 const { logger } = require('../config/logger');
-// const { Sequelize, Op, Comment } = require('../models');
+const { Comment, Users, Sequelize } = require('../models');
 const ApiError = require('../utils/ApiError');
 
-const insertComment = async (suraNo, ayaNo, text) => {
+const insertComment = async (suraNo, ayaNo, commentText, userId) => {
   try {
-    logger.info(suraNo, ayaNo, text);
-    return 2;
+    const insertedComment = await Comment.create({
+      suraNo,
+      ayaNo,
+      commentText,
+      userId,
+    });
+    return insertedComment.dataValues.id;
   } catch (error) {
     logger.error(error.message);
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
@@ -15,18 +21,42 @@ const insertComment = async (suraNo, ayaNo, text) => {
 
 const getComments = async (suraNo, ayaNo) => {
   try {
-    logger.info(suraNo, ayaNo);
-    return [{ userId: 1, commentText: 'nofil' }];
+    const result = await Comment.findAll({
+      attributes: [
+        'id',
+        'suraNo',
+        'ayaNo',
+        'commentText',
+        'userId',
+        'createdAt',
+        'updatedAt',
+        [Sequelize.col('user.email'), 'email'],
+      ],
+      where: { suraNo, ayaNo },
+      include: [
+        {
+          model: Users,
+          as: 'user',
+          attributes: [],
+        },
+      ],
+      order: [
+        ['createdAt', 'ASC'],
+        ['updatedAt', 'ASC'],
+      ],
+    });
+    return result.map((item) => item.dataValues);
   } catch (error) {
     logger.error(error.message);
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
   }
 };
 
-const editComment = async (suraNo, ayaNo, text) => {
+const editComment = async (id, suraNo, ayaNo, commentText) => {
   try {
-    logger.info(suraNo, ayaNo, text);
-    return true;
+    console.log(id, suraNo, ayaNo, commentText);
+    const [updatedRows] = await Comment.update({ commentText }, { where: { id, suraNo, ayaNo } });
+    return updatedRows > 0;
   } catch (error) {
     logger.error(error.message);
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
@@ -35,8 +65,13 @@ const editComment = async (suraNo, ayaNo, text) => {
 
 const deleteComment = async (id) => {
   try {
-    logger.info(id);
-    return { suraNo: 1, ayaNo: 1 };
+    const comment = await Comment.findOne({ where: { id } });
+    if (!comment) {
+      throw new ApiError(httpStatus.NOT_FOUND, `Comment ID: ${id} not found`);
+    }
+    const { suraNo, ayaNo } = comment;
+    await Comment.destroy({ where: { id } });
+    return { suraNo, ayaNo };
   } catch (error) {
     logger.error(error.message);
     throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
