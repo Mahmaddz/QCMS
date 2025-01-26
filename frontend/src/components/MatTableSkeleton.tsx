@@ -1,5 +1,5 @@
-import { Box, Skeleton } from "@mui/material";
-import uniqueID from "../utils/helper/UniqueID";
+import { Box, Skeleton, TableCell, TableRow } from "@mui/material";
+// import uniqueID from "../utils/helper/UniqueID";
 
 const MatTableSkeleton = ({ rows = 5, columns = 4 }: { rows?: number; columns?: number }) => {
     console.log(rows, columns);
@@ -8,12 +8,29 @@ const MatTableSkeleton = ({ rows = 5, columns = 4 }: { rows?: number; columns?: 
             sx={{
                 height: "max-content",
                 width: '70%',
-                margin: '0 auto'
+                margin: '0 auto',
+                display: 'grid',
+                placeContent: 'center'
             }}
         >
-            {[...Array(10)].map(() => (
-                <Skeleton key={uniqueID()} variant="rectangular" sx={{ my: 4, mx: 1, }} />
-            ))}
+            {
+                [...Array(rows)].map((row, index) => (
+                    <TableRow key={index}>
+                        <TableCell component="th" scope="row">
+                            <Skeleton animation="wave" variant="text" />
+                        </TableCell>
+                        <TableCell>
+                            <Skeleton animation="wave" variant="text" />
+                        </TableCell>
+                        <TableCell>
+                            <Skeleton animation="wave" variant="text" />
+                        </TableCell>
+                        <TableCell>
+                            <Skeleton animation="wave" variant="text" />
+                        </TableCell>
+                    </TableRow>
+                ))
+            }
         </Box>
         // <Box
         //     sx={{
