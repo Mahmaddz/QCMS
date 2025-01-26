@@ -5,7 +5,6 @@ import { TagReviewCol } from "../utils/Table/TagReviewer/Columns";
 import Heading from "../components/Heading";
 import { getTagReviewData } from "../services/Tags/getTagReviewData.service";
 import { TagDetails } from "../interfaces/TagDetails";
-import MatTableSkeleton from "../components/MatTableSkeleton";
 
 export default function TagReview() {
 
@@ -26,12 +25,8 @@ export default function TagReview() {
     return (
         <React.Fragment>
             <Header />
-            <Heading data={"Tag Review"} horizontalPosition="left" isLoading={isLoading}/>
-            {
-                isLoading 
-                ? <MatTableSkeleton/> 
-                : <MatTable rowz={tagDetails} columnz={TagReviewCol()}/>
-            }
+            <Heading data={"Tag Review"} horizontalPosition="left"/>
+            <MatTable rowz={tagDetails} columnz={TagReviewCol()} isLoading={isLoading}/>
         </React.Fragment>
     );
 }

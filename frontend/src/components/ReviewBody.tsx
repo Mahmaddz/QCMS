@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dialog,DialogTitle,DialogContent,DialogActions,Typography,TextField,Button,IconButton,Box,Chip } from "@mui/material";
+import { Dialog,DialogTitle,DialogContent,Typography,TextField,Button,IconButton,Box, CircularProgress } from "@mui/material";
 import {
   Save as SaveIcon,
 } from "@mui/icons-material";
@@ -11,9 +11,12 @@ import { USER } from "../utils/UserRoles";
 import { useAuth } from "../context/Auth/useAuth";
 import CloseIcon from "@mui/icons-material/Close";
 import { openNewTab } from "../utils/functions/openNewTab";
-import uniqueID from "../utils/helper/UniqueID";
 import VersePart from "./VersePart";
 import DisplayTags from "./DisplayTags";
+import CommentBox from "./CommentBox";
+import { Comment } from "../interfaces/Comment";
+import { insertComment } from "../services/Comments/insertComment.service";
+import { getAllComments } from "../services/Comments/getAllComments.service";
 
 const StyledReplyTwoToneIcon = styled(ReplyTwoToneIcon)({
   transform: "scale(-1, 1)"
@@ -21,21 +24,50 @@ const StyledReplyTwoToneIcon = styled(ReplyTwoToneIcon)({
 
 export default function ReviewBody({ verses, showTags, selectedKeywords, selectedLanguage, searchMethod }: ReviewBodyProps) {
 
-  const { userRole } = useAuth();
-  const [openCommentDialog, setOpenCommentDialog] = useState(false);
-  const [comments, setComments] = useState<string[]>([]);
-  const [newComment, setNewComment] = useState("");
+  const Chapter: number = verses.ayat[0].Chapter as number;
+  const Verse: number = verses.ayat[0].Verse as number;
 
-  const handleOpenCommentDialog = () => setOpenCommentDialog(true);
+  const { userRole, user } = useAuth();
+  const [openCommentDialog, setOpenCommentDialog] = useState(false);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [newComment, setNewComment] = useState("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const handleOpenCommentDialog = async () => {
+    setOpenCommentDialog(true);
+    setIsLoading(true);
+    const response = await getAllComments(Chapter, Verse);
+    if (response.success) {
+      setComments(response.data);
+      setIsLoading(false);
+    }
+  };
+
   const handleCloseCommentDialog = () => {
+    setComments(() => []);
     setOpenCommentDialog(false);
     setNewComment("");
   };
 
-  const handleAddComment = () => {
+  const handleAddComment = async () => {
+    setIsLoading(true);
     if (newComment.trim()) {
-      setComments([...comments, newComment]);
-      setNewComment("");
+      const response = await insertComment(Chapter, Verse, newComment);
+      if (response.success) {
+        const newCommentObj: Comment = {
+          id: response.insertedCommentId,
+          ayaNo: Verse,
+          suraNo: Chapter,
+          commentText: newComment,
+          email: user?.email || '',
+          userId: user?.id || 0,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        setComments((prevComments) => [...prevComments, newCommentObj]);
+        setNewComment("");
+        setIsLoading(false);
+      }
     }
   };
 
@@ -142,82 +174,122 @@ export default function ReviewBody({ verses, showTags, selectedKeywords, selecte
         </Box>
       </Box>
 
-      <DisplayTags showTags={showTags} tagz={verses.tags || []} Chapter={verses.ayat[0].Chapter as number} Verse={verses.ayat[0].Verse as number}/>
+      <DisplayTags showTags={showTags} tagz={verses.tags || []} Chapter={Chapter} Verse={Verse}/>
 
       { /* comment dialog */}
       <Dialog
-        open={openCommentDialog}
-        onClose={handleCloseCommentDialog}
-        maxWidth="sm"
+  open={openCommentDialog}
+  onClose={handleCloseCommentDialog}
+  maxWidth="sm"
+  fullWidth
+  fullScreen={window.innerWidth <= 600} // Enable fullscreen for small screens
+>
+  <DialogTitle
+    sx={{
+      display: "flex",
+      alignItems: "center",
+      padding: "8px 16px", // Reduce padding for better fit
+    }}
+  >
+    <Typography
+      variant="h6"
+      component="div"
+      sx={{ flexGrow: 1, fontSize: "1rem" }} // Smaller font size
+    >
+      Comment Section ({Chapter}:{Verse})
+    </Typography>
+    <IconButton
+      onClick={handleCloseCommentDialog}
+      sx={{
+        color: "white",
+        backgroundColor: "#FF6B6B",
+        width: "40px", // Adjust size for mobile
+        height: "40px",
+        "&:hover": {
+          backgroundColor: "darkred",
+        },
+        borderRadius: "8px",
+      }}
+    >
+      <CloseIcon fontSize="small" />
+    </IconButton>
+  </DialogTitle>
+  <DialogContent
+    dividers
+    sx={{
+      display: "flex",
+      flexDirection: "column",
+      height: "80vh",
+      padding: "8px", // Reduce padding for compactness
+    }}
+  >
+    <Box
+      sx={{
+        flex: 1,
+        overflowY: "auto",
+        marginBottom: 1,
+        padding: "8px", // Add slight padding for spacing
+      }}
+    >
+      <CommentBox
+        comments={comments}
+        setComments={setComments}
+        isLoading={isLoading}
+        setIsLoading={setIsLoading}
+      />
+    </Box>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column", // Stack elements on small screens
+        gap: 1,
+        borderTop: "1px solid #ccc",
+        paddingTop: 1,
+      }}
+    >
+      <TextField
+        margin="dense"
+        label="Add a comment"
+        value={newComment}
+        onChange={(e) => setNewComment(e.target.value)}
         fullWidth
+        variant="outlined"
+        multiline
+        minRows={1}
+        maxRows={4}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            handleAddComment();
+            setNewComment('');
+          }
+        }}
+        sx={{
+          fontSize: "0.9rem", // Adjust font size
+        }}
+      />
+      <Button
+        onClick={handleAddComment}
+        variant="contained"
+        color="primary"
+        disabled={isLoading}
+        startIcon={
+          isLoading ? (
+            <CircularProgress size={20} color="inherit" />
+          ) : (
+            <SaveIcon />
+          )
+        }
+        sx={{
+          fontSize: "0.9rem", // Adjust font size
+          padding: "6px 12px", // Reduce padding
+        }}
       >
-        <DialogTitle sx={{ display: "flex", alignItems: "center" }}>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Comment Section
-          </Typography>
-          <IconButton onClick={handleCloseCommentDialog} sx={{
-              color: "white",
-              backgroundColor: "#FF6B6B",
-              width: "48px",
-              height: "48px",
-              "&:hover": {
-                backgroundColor: "darkred",
-              },
-              borderRadius: "8px",
-            }}>
-            <CloseIcon fontSize="medium" />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent dividers>
-          <TextField
-            margin="dense"
-            label="Add a comment"
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-            fullWidth
-            variant="outlined"
-          />
-          <Box sx={{ marginTop: 2 }}>
-            <Typography variant="subtitle1" gutterBottom>
-              Previous Comments:
-            </Typography>
-            {comments.length > 0 ? (
-              comments.map((comment) => (
-                <Chip
-                  key={uniqueID()}
-                  label={comment}
-                  variant="outlined"
-                  sx={{
-                    margin: "4px",
-                    backgroundColor: "#f5f5f5",
-                  }}
-                />
-              ))
-            ) : (
-              <Typography variant="body2" color="text.secondary">
-                No comments yet.
-              </Typography>
-            )}
-          </Box>
-        </DialogContent>
-        <DialogActions sx={{ padding: "16px" }}>
-          <Button
-            onClick={handleCloseCommentDialog}
-            variant="outlined"
-            color="primary"
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleAddComment}
-            variant="contained"
-            color="primary"
-            startIcon={<SaveIcon />}
-          >
-            Add Comment
-          </Button>
-        </DialogActions>
-      </Dialog>
+        Add Comment
+      </Button>
+    </Box>
+  </DialogContent>
+</Dialog>
+
     </Box>
   );
 }

@@ -158,38 +158,89 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords, currentSearchM
             <LanguageSelect listOfLanguages={listOfLanguages} handleChange={(item: LanguageType) => setSelectedLanguages(item)}/>
 
             {
-                searchData?.length && verseWords.length === 0 && 
+                searchData?.length && verseWords.length === 0 &&
                 Array.from({ length: 5 }).map((_, index) => (
-                    <Box
-                        key={index}
-                        sx={{
-                            display: 'flex',
-                            alignItems: 'center',
+                    <Box 
+                        key={index} 
+                        sx={{ 
+                            marginBottom: 4, 
+                            backgroundColor: "#f9f9f9",
+                            boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)", 
+                            borderBottom: "1px solid #E0E0E0",
                             padding: { xs: 2, sm: 4 },
-                            gap: { xs: 1, sm: 2 },
-                            borderBottom: '1px solid #E0E0E0',
-                            flexDirection: { xs: 'column', sm: 'row' },
-                            backgroundColor: '#f9f9f9',
-                            boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
+                            gap: { xs: 2, sm: 4 },
+                            flexDirection: { xs: "column", sm: "row" },
                             borderRadius: 2,
-                            width: '70%',
-                            margin: '0 auto'
+                            width: { xs: "90%", sm: "70%" },
+                            margin: "0 auto",
+                            marginTop: 4
                         }}
                     >
-                        <Skeleton variant="rectangular" width={120} height={30} />
                         <Box
                             sx={{
-                                flexGrow: 1,
-                                paddingRight: 9,
-                                textAlign: { xs: 'center', sm: 'center' },
-                                marginLeft: { sm: 2, xs: 6 },
-                                marginRight: { sm: 2 },
+                                display: "flex",
+                                alignItems: "center",
                             }}
                         >
-                            <Skeleton variant="text" width="100%" height={40} />
-                            <Skeleton variant="text" width="90%" height={20} />
+                            <Skeleton
+                                variant="rectangular"
+                                width={80}
+                                height={30}
+                                sx={{
+                                    alignSelf: { xs: "center", sm: "flex-start" },
+                                }}
+                            />
+                            <Box
+                                sx={{
+                                    flexGrow: 1,
+                                    width: "100%",
+                                    textAlign: { xs: "center", sm: "left" },
+                                    marginX: { xs: 0, sm: 2 },
+                                    marginTop: { xs: 2, sm: 0 },
+                                }}
+                            >
+                                <Skeleton
+                                    variant="text"
+                                    width="90%"
+                                    height={40}
+                                    sx={{
+                                        marginX: { xs: "auto", sm: 0 },
+                                    }}
+                                />
+                                <Skeleton
+                                    variant="text"
+                                    width="80%"
+                                    height={20}
+                                    sx={{
+                                    marginTop: 1,
+                                        marginX: { xs: "auto", sm: 0 },
+                                    }}
+                                />
+                            </Box>
+                            <Skeleton variant="circular" width={32} height={32} />
                         </Box>
-                        <Skeleton variant="circular" width={32} height={32} />
+                        <Box
+                            sx={{
+                                display: "flex",
+                                flexWrap: "wrap",
+                                gap: { xs: 1, sm: 2 },
+                                marginTop: 2,
+                                justifyContent: "center",
+                            }}
+                        >
+                            {Array.from({ length: 6 }).map((_, chipIndex) => (
+                                <Skeleton
+                                    key={chipIndex}
+                                    variant="rounded"
+                                    width={120}
+                                    height={32}
+                                    sx={{
+                                        borderRadius: "16px",
+                                        backgroundColor: "#e0e0e0",
+                                    }}
+                                />
+                            ))}
+                        </Box>
                     </Box>
                 ))
             }
