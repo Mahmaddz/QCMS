@@ -106,9 +106,8 @@ const resetPassword = async (userId, currentPassword, newPassword) => {
 const verifyEmail = async (verifyEmailToken) => {
   try {
     const verifyEmailTokenDoc = await tokenService.verifyToken(verifyEmailToken, tokenTypes.VERIFY_EMAIL);
-    console.log(verifyEmailTokenDoc);
+    // logger.info(`http://localhost:3000/v1/auth/verify-email?token=${verifyEmailTokenDoc}`);
     const user = await userService.getUserById(verifyEmailTokenDoc.user.id);
-    console.log(user);
     if (!user) {
       throw new Error();
     }

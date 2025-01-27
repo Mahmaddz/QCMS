@@ -30,7 +30,7 @@ const getComments = async (suraNo, ayaNo) => {
         'userId',
         'createdAt',
         'updatedAt',
-        [Sequelize.col('user.email'), 'email'],
+        [Sequelize.col('user.username'), 'username'],
       ],
       where: { suraNo, ayaNo },
       include: [
@@ -54,7 +54,6 @@ const getComments = async (suraNo, ayaNo) => {
 
 const editComment = async (id, suraNo, ayaNo, commentText) => {
   try {
-    console.log(id, suraNo, ayaNo, commentText);
     const [updatedRows] = await Comment.update({ commentText }, { where: { id, suraNo, ayaNo } });
     return updatedRows > 0;
   } catch (error) {

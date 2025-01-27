@@ -4,6 +4,8 @@ const catchAsync = require('../utils/catchAsync');
 const { authService, userService, tokenService, emailService } = require('../services');
 const ApiError = require('../utils/ApiError');
 const { generateRandomString } = require('../utils/utilFunc');
+const { logger } = require('../config/logger');
+const { baseUrl } = require('../constant/baseUrl');
 
 const register = catchAsync(async (req, res) => {
   const { password, confirmPassword } = req.body;
@@ -11,7 +13,7 @@ const register = catchAsync(async (req, res) => {
   if (password !== confirmPassword) throw new ApiError(httpStatus.CONFLICT, 'Password and Confirm Password must be same');
   const user = await userService.createUser(req.body);
   const verifyEmailToken = await tokenService.generateVerifyEmailToken(user);
-  console.log('verifyEmailToken', verifyEmailToken);
+  logger.info(`${baseUrl}/v1/auth/verify-email?token=${verifyEmailToken}`);
   // await emailService.sendVerificationEmail(req.user.email, verifyEmailToken);
   return res.status(httpStatus.CREATED).send({ success: true, message: 'User Created' });
 });

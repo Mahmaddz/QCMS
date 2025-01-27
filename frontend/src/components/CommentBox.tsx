@@ -29,59 +29,58 @@ const CommentBox = ({ comments = [], setComments, isLoading, setIsLoading }: { c
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-    const [editingComment, setEditingComment] = useState<Comment | null>(null);
+    const [selectedComment, setSelectedComment] = useState<Comment | null>(null);
     const [editText, setEditText] = useState<string>("");
     const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
-    const [commentToDelete, setCommentToDelete] = useState<Comment | null>(null);
 
     const handleDeleteClick = (comment: Comment) => {
-        setCommentToDelete(comment);
+        setSelectedComment(comment);
         setDeleteDialogOpen(true);
     };
 
     const handleCancelDelete = () => {
         setDeleteDialogOpen(false);
-        setCommentToDelete(null);
+        setSelectedComment(null);
     };
 
     const handleConfirmDelete = async () => {
         setIsLoading(true);
-        if (commentToDelete) {
-            const response = await removeComment(commentToDelete.id as number);
+        if (selectedComment) {
+            const response = await removeComment(selectedComment.id as number);
             if (response.success) {
                 setComments((prev) =>
-                    prev.filter((comment) => comment.id !== commentToDelete.id)
+                    prev.filter((comment) => comment.id !== selectedComment.id)
                 );
                 setIsLoading(false);
                 setDeleteDialogOpen(false);
-                setCommentToDelete(null);
+                setSelectedComment(null);
             }
             else {
                 setIsLoading(false);
                 setDeleteDialogOpen(false);
-                setCommentToDelete(null);
+                setSelectedComment(null);
             }
         }
     };
 
     const onEdit = (comment: Comment) => {
-        setEditingComment(comment);
+        setSelectedComment(comment);
         setEditText(comment.commentText);
     };
 
     const handleUpdate = async () => {
         setIsLoading(true);
-        if (editingComment) {
-            const response = await modifyComment(editingComment.id as number, editingComment.suraNo as number, editingComment.ayaNo as number, editText);
+        if (selectedComment) {
+            const response = await modifyComment(selectedComment.id as number, selectedComment.suraNo as number, selectedComment.ayaNo as number, editText);
             if (response.success) {
                 setComments((prev) =>
                     prev.map((comment) =>
-                        comment.id === editingComment.id
+                        comment.id === selectedComment.id
                         ? { ...comment, commentText: editText }
                         : comment
                     )
                 );
-                setEditingComment(null);
+                setSelectedComment(null);
                 setEditText("");
             }
             setIsLoading(false);
@@ -89,7 +88,7 @@ const CommentBox = ({ comments = [], setComments, isLoading, setIsLoading }: { c
     };
 
     const handleCancel = () => {
-        setEditingComment(null);
+        setSelectedComment(null);
         setEditText("");
     };
 
@@ -129,9 +128,9 @@ const CommentBox = ({ comments = [], setComments, isLoading, setIsLoading }: { c
                                     color: "#444",
                                 }}
                             >
-                                {`${comment.userId}- ${comment.email}`}
+                                {`${comment.userId}- ${comment.username}`}
                             </Typography>
-                            {editingComment?.id === comment.id ? (
+                            {selectedComment?.id === comment.id ? (
                                 <Box sx={{ marginTop: "8px" }}>
                                     <TextField
                                         fullWidth
@@ -191,7 +190,7 @@ const CommentBox = ({ comments = [], setComments, isLoading, setIsLoading }: { c
                             {
                                 <Box sx={{ display: "flex", gap: 1 }}>
                                     {
-                                        user?.id === comment.userId && editingComment?.id !== comment.id &&
+                                        user?.id === comment.userId && selectedComment?.id !== comment.id &&
                                         <>
                                             <IconButton
                                                 onClick={() => onEdit(comment)}

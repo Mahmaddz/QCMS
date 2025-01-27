@@ -59,7 +59,7 @@ export default function ReviewBody({ verses, showTags, selectedKeywords, selecte
           ayaNo: Verse,
           suraNo: Chapter,
           commentText: newComment,
-          email: user?.email || '',
+          username: user?.username || '',
           userId: user?.id || 0,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),

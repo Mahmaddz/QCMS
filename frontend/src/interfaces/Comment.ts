@@ -3,7 +3,7 @@ export interface Comment {
     commentText: string;
     updatedAt?: string;
     createdAt?: string;
-    email: string;
+    username: string;
     userId: number;
     suraNo: number;
     ayaNo: number;
