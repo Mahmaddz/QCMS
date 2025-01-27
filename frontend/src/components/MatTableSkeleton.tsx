@@ -14,7 +14,7 @@ const MatTableSkeleton = ({ rows = 5, columns = 4 }: { rows?: number; columns?: 
             }}
         >
             {
-                [...Array(rows)].map((row, index) => (
+                [...Array(rows)].map((_, index) => (
                     <TableRow key={index}>
                         <TableCell component="th" scope="row">
                             <Skeleton animation="wave" variant="text" />
