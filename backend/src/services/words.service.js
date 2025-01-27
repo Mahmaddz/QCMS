@@ -178,6 +178,7 @@ const getSuggestedWords = async (keywords) => {
   }
   const matchQuery = keywords.map((keyword) => `*${keyword}*`).join(' | ');
   let r = [];
+
   try {
     const { results } = await sphql
       .getQueryBuilder()
@@ -191,7 +192,8 @@ const getSuggestedWords = async (keywords) => {
     console.error(error);
     r = [];
   }
-  return new Set(r.map((re) => re.word));
+
+  return Array.from(new Set(r.map((re) => re.word)));
 };
 
 const getWordsByLemma = async (wordsArray) => {
