@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 const httpStatus = require('http-status');
 const { logger } = require('../config/logger');
-const { Tag, Op, Sequelize, Status, Action, Verse } = require('../models');
+const { Tag, Op, Sequelize, Status, Action, Verse, Users } = require('../models');
 const ApiError = require('../utils/ApiError');
 
 const addTagsToTheVerses = async (suraNo, ayaNo, category, arabic, userId) => {
@@ -182,7 +182,7 @@ const listOfSubmittedTags = async () => {
       'ayaNo',
       'categoryOld',
       'arabicOld',
-      [Sequelize.col('userId'), 'user'],
+      [Sequelize.col('user.username'), 'username'],
       [Sequelize.col('category'), 'en'],
       [Sequelize.col('arabic'), 'ar'],
       [Sequelize.col('action.actionDef'), 'actions'],
@@ -193,6 +193,11 @@ const listOfSubmittedTags = async () => {
       {
         model: Action,
         as: 'action',
+        attributes: [],
+      },
+      {
+        model: Users,
+        as: 'user',
         attributes: [],
       },
       {
@@ -214,7 +219,7 @@ const listOfSubmittedTags = async () => {
     where: {
       statusId: 1,
     },
-    group: ['Tag.id', 'action.id', 'status.id'],
+    group: ['Tag.id', 'action.id', 'status.id', 'user.id', 'user.username'],
     order: [['id', 'DESC']],
     paranoid: false,
   });

@@ -66,7 +66,7 @@ export const TagReviewCol = (): GridColDef[] => [
   { field: 'suraNo', headerName: 'Sora', flex: 0.3, headerAlign: 'center', editable: false },
   { field: 'ayaNo', headerName: 'Aya', type: 'number', flex: 0.3, headerAlign: 'center', editable: false },
   { field: 'actions', headerName: 'Type', flex: 0.5, headerAlign: 'center', editable: false },
-  { field: 'user', headerName: 'User', type: 'number', flex: 0.3, headerAlign: 'center', editable: false },
+  { field: 'username', headerName: 'User', flex: 0.7, headerAlign: 'center', editable: false },
   {
     field: 'details',
     headerName: 'Details',
