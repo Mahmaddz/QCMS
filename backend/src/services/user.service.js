@@ -10,7 +10,7 @@ const rolesServices = require('./roles.service');
  * @returns {Promise<User>}
  */
 const createUser = async (userBody) => {
-  const { email, password } = userBody;
+  const { email, password, username } = userBody;
   const existingUser = await Users.findOne({ where: { email } });
 
   if (existingUser) {
@@ -18,6 +18,7 @@ const createUser = async (userBody) => {
   }
 
   return Users.create({
+    username,
     email,
     password,
     roleID: 2,

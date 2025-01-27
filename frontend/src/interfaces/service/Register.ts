@@ -6,5 +6,5 @@ export interface ResRegister extends ErrorResponse {
 }
 
 export interface ReqRegister {
-    (email: STRING, password: STRING, confirmedPassword: STRING): Promise<ResRegister>;
+    (email: STRING, password: STRING, confirmedPassword: STRING, username: STRING): Promise<ResRegister>;
 }

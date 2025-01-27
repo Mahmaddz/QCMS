@@ -12,26 +12,37 @@ import Toaster from "../utils/helper/Toaster";
 import { validateEmail } from "../utils/functions/validateEmail";
 
 export default function Register() {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
-    const [loading, setLoading] = useState(false); // Step 1: Add loading state
+    const [userData, setUserData] = useState<{email: string, password: string; confirmPassword: string; username: string}>({email: "", password: "", confirmPassword: "", username: ""});
+    const [loading, setLoading] = useState(false); 
+    
+    const handleSetUserData = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setUserData((prev) => ({
+            ...prev,
+            [name]: value,
+        }))
+    }
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
-        if (!validateEmail(email)) {
+        if (!(userData.confirmPassword && userData.email && userData.password && userData.username)) {
+            Toaster('Empty Fields Detected', "error");
+            return;
+        }
+
+        if (!validateEmail(userData.email)) {
             Toaster('Email is not valid', "error");
             return;
         }
 
-        if (password !== confirmPassword) {
+        if (userData?.password !== userData?.confirmPassword) {
             Toaster("Password & Confirmed-Password must be same")
             return;
         }
 
         setLoading(true);
-        const res = await registerUser(email, password, confirmPassword);
+        const res = await registerUser(userData.email, userData.password, userData.confirmPassword, userData.username);
 
         if (res?.isError) {
             setLoading(false);
@@ -40,9 +51,7 @@ export default function Register() {
         
         if (res.success) {
             setLoading(false);
-            setEmail("");
-            setPassword("");
-            setConfirmPassword("");
+            setUserData({email: "", password: "", confirmPassword: "", username: ""});
         }
     };
 
@@ -105,14 +114,37 @@ export default function Register() {
                         margin="normal"
                         required
                         fullWidth
+                        id="username"
+                        label="Username"
+                        name="username"
+                        autoComplete="username"
+                        autoFocus
+                        variant="outlined"
+                        value={userData.username}
+                        onChange={handleSetUserData}
+                        InputLabelProps={{
+                            style: { color: "#666" },
+                        }}
+                        sx={{
+                            "& .MuiOutlinedInput-root": {
+                                "&:hover fieldset": {
+                                    borderColor: "#4285f4",
+                                },
+                            },
+                        }}
+                    />
+                    <TextField
+                        margin="normal"
+                        required
+                        fullWidth
                         id="email"
                         label="Email Address"
                         name="email"
                         autoComplete="email"
                         autoFocus
                         variant="outlined"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        value={userData.email}
+                        onChange={handleSetUserData}
                         InputLabelProps={{
                             style: { color: "#666" },
                         }}
@@ -134,8 +166,8 @@ export default function Register() {
                         id="password"
                         autoComplete="new-password"
                         variant="outlined"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        value={userData.password}
+                        onChange={handleSetUserData}
                         InputLabelProps={{
                             style: { color: "#666" },
                         }}
@@ -157,8 +189,8 @@ export default function Register() {
                         id="confirmPassword"
                         autoComplete="new-password"
                         variant="outlined"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        value={userData.confirmPassword}
+                        onChange={handleSetUserData}
                         InputLabelProps={{
                             style: { color: "#666" },
                         }}
