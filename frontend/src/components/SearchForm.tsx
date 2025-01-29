@@ -1,45 +1,55 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { Box, Button, Checkbox, FormControlLabel, InputAdornment, TextField, Typography, CircularProgress, Chip } from '@mui/material';
+import { Box, Button, Checkbox, FormControlLabel, TextField, Typography, CircularProgress, Chip, Autocomplete } from '@mui/material';
 import React, { useState, useEffect } from 'react';
 import { FilterStateParams, SearchFormParam } from '../interfaces/SearchForm';
 import { getQuranaInfo } from '../services/Search/getQuranaInfo.service';
 import Toaster from '../utils/helper/Toaster';
 // import { getAyatInfo } from '../services/Search/getAyatInfo.service';
 import { searchAyats } from '../services/Search/getAyats.service';
-import FilterAltIcon from '@mui/icons-material/FilterAlt';
+// import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import uniqueID from '../utils/helper/UniqueID';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import RemoveCircleOutlineOutlinedIcon from '@mui/icons-material/RemoveCircleOutlineOutlined';
 import { getKhadijaReference } from '../services/Search/getKhadijaReference.service';
 import { getAyatsByTag } from '../services/Search/getAyatsByTags.service';
+import { surahData } from '../utils/functions/surahData';
 
-const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selectedKeywords, setSelectedKeywords, setCurrentSearchMethod }: SearchFormParam) => {
+const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selectedKeywords, setSelectedKeywords, setCurrentSearchMethod, setSearchParams }: SearchFormParam) => {
+
+    const toSearch = searchParam?.get('search') || "";
+    const toChk = searchParam?.get('chkbox') || 'isWord';
+    const toSurah = searchParam?.get('surah') || 0;
+    const toAya = searchParam?.get('aya') || 0;
 
     const [relatedSearch, setRelatedSearch] = useState<{word: {word: string, count: number | string}, isSelected: boolean}[]>([]);
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [searchedCount, setSearchedCount] = useState<number>(-1);
     const [checked, setChecked] = useState(2);
     const [loading, setLoading] = useState(false);
-    const [filter, setFilter] = useState<FilterStateParams>({ surah: 0, aya: 0 });
-    const [search, setSearch] = useState<string>(toSearch || "");
+    const [filter, setFilter] = useState<FilterStateParams>({ surah: toSurah, aya: toAya });
+    const [search, setSearch] = useState<string>(toSearch);
     const [chkbox, setChkBox] = useState({
         isLemma: false,
-        isTag: false,
-        isReference: false,
-        isDefault: true,
+        isTag: toChk.split(' ').includes('isTag'),
+        isReference: toChk.split(' ').includes('isReference'),
+        isWord: toChk.split(' ').includes('isWord'),
         isQurana: false,
         isQurany: false
     }); 
     const [rootLemmaData, setRootLemmaData] = useState<{ root: string; lemmas: { [lemma: string]: {word: string, count: string | number}[]; }; }[]>([]);
 
+    const filteredCheckBoxes =  Object.entries(chkbox).filter(([, value]) => value).map(([key]) => key).join(' ');
+
     useEffect(() => {
-        if (toSearch) {
-            (async () => {
-                await getResult(undefined);
-            })()
-        }
-    }, [toSearch])
+        if (toSearch.length === 0) return ;
+
+        const time = setTimeout(async () => {
+            await getResult(undefined);
+        }, 2000);
+
+        return () => clearTimeout(time);
+    }, [])
 
     const handleChangeSearch = (value: string) => { 
         setSearch(value);
@@ -52,7 +62,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
     useEffect(() => {
         setCurrentSearchMethod((prev) => ({
             ...prev,
-            method: Object.entries(chkbox).filter(([, value]) => value === true).map(([key]) => key).join(' '),
+            method: filteredCheckBoxes,
         }));
     }, [chkbox])
 
@@ -86,13 +96,15 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleResultantResponse = (data: any[]) => {
         setLoading(false);
-        const uniqueData = filterUniqueBySura(data);
+        // const previousResult = searchData || [];
+        const uniqueData = filterUniqueBySura([...data]);
         const searchResult = !data[0]?.wordId ? uniqueData : data;
         setSearchedResult((prev) => {
             const tempData = prev?.length ? [ ...prev, ...searchResult] : [...searchResult] // filterUniqueBySura();
-            setSearchedCount(tempData.length || 0);
+            setSearchedCount(tempData?.length || 0);
             return tempData.sort((a, b) => (a.suraNo - b.suraNo) || (a.ayaNo - b.ayaNo));
         });
+        // setSearchedCount(searchData?.length || 0);
     }
 
     const getReferenceData = async () => {
@@ -115,15 +127,15 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
 
         setLoading(true);
         setSuggestions([]);
-        setSearchedResult([]);
-        setSearchedCount(0);
+        setSearchedResult(()=>[]);
+        // setSearchedCount(0);
         setSelectedKeywords([]);
         setRelatedSearch([]);
         setRootLemmaData([]);
 
-        setChecked(Object.values(chkbox).filter(value => value === true).length);
+        setChecked(Object.values(chkbox).filter(value => value === true).length + 1);
 
-        if (!(chkbox.isLemma || chkbox.isQurana || chkbox.isQurany || chkbox.isTag || chkbox.isDefault || chkbox.isReference)) {
+        if (!(chkbox.isLemma || chkbox.isQurana || chkbox.isQurany || chkbox.isTag || chkbox.isWord || chkbox.isReference)) {
             Toaster("Click on Checkbox", "info")
             setLoading(false);
             // const response = await getAyatInfo(search || toSearch as string, filter.aya as string || null, filter.surah as string || null);
@@ -134,7 +146,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
             //     setLoading(false);
             // }
         }
-        if(chkbox.isDefault) {
+        if(chkbox.isWord) {
             const response = await searchAyats(search, [], filter.surah as string, filter.aya as string);
             if (response.success) {
                 setLoading(false);
@@ -191,8 +203,8 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
         window.scrollTo({ top: 0, behavior: 'smooth', left: 10 });
         if(!(chkbox.isLemma || chkbox.isQurana || chkbox.isQurany || chkbox.isTag)) {
             setLoading(true);
-            setSearchedResult([]);
-            setSearchedCount(0);
+            setSearchedResult(()=>[]);
+            // setSearchedCount(0);
             const response = await searchAyats("", selectedKeywords, filter.surah as string, filter.aya as string);
             if (response.success) {
                 // setLoading(false);
@@ -247,6 +259,47 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
         }
     }
 
+    useEffect(() => {
+        const newParams = new URLSearchParams(searchParam);
+
+        if (search) {
+            newParams.set('search', search);
+        } else {
+            newParams.delete('search');
+        }
+
+        if (filter.surah && filter.surah !== 0) {
+            newParams.set('surah', filter.surah as string);
+        } else {
+            newParams.delete('surah');
+        }
+
+        if (filter.aya && filter.aya !== 0) {
+            newParams.set('aya', filter.aya as string);
+        } else {
+            newParams.delete('aya');
+        }
+
+        if (filteredCheckBoxes.length > 0) {
+            newParams.set('chkbox', filteredCheckBoxes);
+        } else {
+            newParams.delete('chkbox');
+        }
+
+        setSearchParams(newParams);
+    }, [search, chkbox, filter, filteredCheckBoxes])
+
+    const surahOptions = Object.entries(surahData).map(([key, surah]) => ({
+        label: `${key}. ${surah.english} (${surah.arabic})`,
+        value: key,
+    }));
+
+    const ayaCount = filter.surah ? surahData[filter.surah]?.ayahs ?? 0 : 0;
+    const ayaOptions = Array.from({ length: ayaCount }, (_, i) => ({
+        label: (i + 1).toString(),
+        value: (i + 1).toString(),
+    }));
+
     return (
         <>
             <Box 
@@ -290,10 +343,10 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
                                 backgroundColor: '#ffffff',
                             },
                             '& .MuiInputBase-input': {
-                                fontSize: '20px',
+                                fontSize: { xs: '16px', sm: '20px' },
                             },
                             '& .MuiInputLabel-root': {
-                                fontSize: '16px',
+                                fontSize: { xs: '14px', sm: '16px' },
                             },
                         }}
                     />
@@ -305,42 +358,35 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
                             flexWrap: 'wrap', 
                         }}
                     >
-                        <TextField
-                            label="Surah"
-                            variant="filled"
-                            fullWidth
-                            value={filter?.surah}
-                            onChange={(e) => setFilter((prev) => ({ ...prev, surah: e.target.value }))}
-                            InputProps={{
-                                endAdornment: (
-                                <InputAdornment position="end">
-                                    <FilterAltIcon />
-                                </InputAdornment>
-                                ),
-                            }}
-                            sx={{
-                                backgroundColor: '#ffffff',
-                                borderRadius: '0px',
-                                flex: '1 1 45%', 
-                            }}
-                        />
-                        <TextField
-                            label="Aya"
-                            variant="filled"
-                            fullWidth
-                            value={filter?.aya}
-                            onChange={(e) => setFilter((prev) => ({ ...prev, aya: e.target.value }))}
-                            InputProps={{
-                                endAdornment: (
-                                <InputAdornment position="end">
-                                    <FilterAltIcon />
-                                </InputAdornment>
-                                ),
-                            }}
+                        <Autocomplete
+                            options={surahOptions}
+                            getOptionLabel={(option) => option.label}
+                            value={surahOptions.find((option) => option.value === filter.surah) || null}
+                            onChange={(_, newValue) => setFilter({ surah: newValue?.value || null, aya: null })}
+                            renderInput={(params) => <TextField {...params} label="Surah" variant="filled" />}
                             sx={{
                                 backgroundColor: '#ffffff',
                                 borderRadius: '0px',
                                 flex: '1 1 45%',
+                                '& .MuiInputBase-root': {
+                                    fontSize: { xs: '14px', sm: '16px' },
+                                },
+                            }}
+                        />
+                        <Autocomplete
+                            options={ayaOptions}
+                            getOptionLabel={(option) => option.label}
+                            value={ayaOptions.find((option) => option.value === filter.aya) || null}
+                            onChange={(_, newValue) => setFilter((prev) => ({ ...prev, aya: newValue?.value || null }))}
+                            renderInput={(params) => <TextField {...params} label="Aya" variant="filled" />}
+                            disabled={!filter.surah}
+                            sx={{
+                                backgroundColor: '#ffffff',
+                                borderRadius: '0px',
+                                flex: '1 1 45%',
+                                '& .MuiInputBase-root': {
+                                    fontSize: { xs: '14px', sm: '16px' },
+                                },
                             }}
                         />
                     </Box>
@@ -359,8 +405,8 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, toSearch, selected
                     <Box sx={{ display: 'flex', flexDirection: {xs: 'row', sm: 'column'}, gap: '5px' }}>
                         <FormControlLabel
                             control={<Checkbox />}
-                            name='isDefault'
-                            checked={chkbox.isDefault}
+                            name='isWord'
+                            checked={chkbox.isWord}
                             onChange={handleChangeCheckBoxes}
                             label="Word"
                             sx={{ '& .MuiFormControlLabel-label': { fontWeight: '500' } }}

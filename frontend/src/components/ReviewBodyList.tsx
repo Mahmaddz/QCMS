@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useRef, useState } from "react";
-import { Box, Divider, IconButton, Pagination, Skeleton, Tooltip, Typography, CircularProgress } from "@mui/material";
+import { Box, Divider, IconButton, Pagination, Skeleton, Tooltip, FormControl, Select, MenuItem, InputLabel, SelectChangeEvent } from "@mui/material";
 import { RBL_Params } from "../interfaces/ReviewBodyList";
 import uniqueID from "../utils/helper/UniqueID";
 import { Tags } from "../utils/Table/ReviewTabs/Tags";
@@ -8,26 +8,17 @@ import ReviewBody from "./ReviewBody";
 import { getAyaWords } from "../services/Ayaat/getAyaWords";
 import { VerseWordsArr } from "../interfaces/ReviewBody";
 import { ArrowBack, ArrowForward, FirstPage, LastPage } from "@mui/icons-material";
-import { UniqueColorGenerator } from "../utils/functions/UniqueColorGenerator";
+// import { UniqueColorGenerator } from "../utils/functions/UniqueColorGenerator";
 import { getAllLanguages } from "../services/Language/getLanguages";
 import { LanguageType } from "../interfaces/Language";
 import LanguageSelect from "./LanguageSelect";
 
 const ReviewBodyList = ({ showTags, searchData, selectedKeywords, currentSearchMethod }: RBL_Params) => {
-    const itemsPerPage = 10;
+    const [itemsPerPage, setItemsPerPage] = useState<number>(10);
+    const listOfItemsPerPage = [5,10,15,20,25,30];
     const [currentPage, setCurrentPage] = useState(1);
     const dividerRef = useRef<HTMLDivElement | null>(null);
     const [verseWords, setVerseWords] = useState<VerseWordsArr[]>([]);
-    const [wordsWithColor, setWordsWithColor] = useState<{word: string, color: string}[]>([]);
-    const colorGenerator = new UniqueColorGenerator();
-
-
-    useEffect(() => {
-        setWordsWithColor(selectedKeywords.map(val => ({ 
-            word: val, 
-            color: colorGenerator.getSearchTypeColor(currentSearchMethod, val),
-        })));
-    }, [selectedKeywords])
     
     const [listOfLanguages, setListOfLanguages] = useState<LanguageType[]>([]);
     const [selectedLanguage, setSelectedLanguages] = useState<LanguageType>();
@@ -66,22 +57,14 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords, currentSearchM
                 setVerseWords([]);
                 return;
             }
-        
-            colorGenerator.reset();
-            const uniqueVerseWords = new Map<string, VerseWordsArr>();
-            const position: { [key: string]: string[] } = {};
-            const words: { [key: string]: string[] } = {};
-        
+            const verses: VerseWordsArr[] = [];
             const responses = await Promise.all(
                 paginatedData.map((p) => handleGetAyaWordsAPI(p.suraNo, p.ayaNo))
             );
-        
             for (let i = 0; i < paginatedData.length; i++) {
                 const p = paginatedData[i];
                 const response = responses[i];
-        
                 if (!response.success) continue;
-
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const transformedAya = response.ayat.map((aya: any) => ({
                     Chapter: aya.Chapter,
@@ -91,33 +74,17 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords, currentSearchM
                     word: aya.word,
                     wordUndiacritizedNoHamza: aya.wordUndiacritizedNoHamza,
                 }));
-        
-                const key = `${p.suraNo}-${p.ayaNo}`;
-                const uniqueKey = `${transformedAya[0].Chapter}-${transformedAya[0].Verse}`;
-        
-                if (!position[key]) position[key] = [];
-                if (!words[key]) words[key] = [];
-                if (p.wordId) position[key].push(p.wordId.toString());
-                if (p.arabicWord) words[key].push(p.arabicWord.toString());
-        
-                const existingEntry = uniqueVerseWords.get(uniqueKey);
-        
-                if (existingEntry) {
-                    existingEntry.wordId = position[key];
-                    existingEntry.arabicWord = words[key];
-                } else {
-                    uniqueVerseWords.set(uniqueKey, {
-                        ayat: transformedAya,
-                        suraName: `${transformedAya[0].Chapter}:${transformedAya[0].Verse} - ${response.suraName}`,
-                        translation: response.translation,
-                        arabicWord: words[key],
-                        conceptArabic: p.conceptArabic,
-                        wordId: position[key],
-                        tags: response.tags,
-                    });
-                }
+                verses.push({
+                    ayat: transformedAya,
+                    suraName: `${transformedAya[0].Chapter}:${transformedAya[0].Verse} - ${response.suraName}`,
+                    translation: response.translation,
+                    arabicWord: p.arabicWords,
+                    conceptArabic: p.conceptArabic,
+                    wordId: p.wordIds,
+                    tags: response.tags,
+                });
             }
-            setVerseWords(Array.from(uniqueVerseWords.values()));
+            setVerseWords(verses);
         };
 
         const time = setTimeout(() => {
@@ -125,7 +92,7 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords, currentSearchM
         }, 1000);
 
         return () => clearTimeout(time);
-    }, [currentPage, searchData]);
+    }, [currentPage, searchData, itemsPerPage]);
     
 
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -136,16 +103,33 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords, currentSearchM
     const handlePageChange = (_event: React.ChangeEvent<unknown>, newPage: number) => {
         setCurrentPage(newPage);
     };
+
+    const handleItemsPerPageChange = (event: SelectChangeEvent<number>) => {
+        setItemsPerPage(event.target.value as number);
+    };
     
 
     return (
         <>
             {
                 searchData?.length !== 0 &&
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', padding: '10px', width: '85%', gap: 3, marginTop: { sm: -8, xs: -6 } }}>
-                    <Typography variant="body2" sx={{ color: 'primary.main'}}>
-                        {totalPages !== 0 && <><b>Verses: </b>{" "}{verseWords.length || <CircularProgress size={17}/>}</> }
-                    </Typography>
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', padding: '10px', width: '85%', gap: 3, marginTop: { sm: -5, xs: -6 } }}>
+                    <FormControl sx={{ minWidth: 120 }}>
+                        <InputLabel id={uniqueID()}>Verses per page</InputLabel>
+                        <Select
+                            labelId={uniqueID()}
+                            value={itemsPerPage}
+                            onChange={handleItemsPerPageChange}
+                            label="Items per page"
+                            sx={{ height: 40 }}
+                            >
+                            {listOfItemsPerPage.map((item, index) => (
+                                <MenuItem key={index} value={item}>
+                                    {item}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
                 </Box>
             }
 
@@ -251,7 +235,7 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords, currentSearchM
                     verses={verse}
                     tags={Tags}
                     showTags={showTags}
-                    selectedKeywords={wordsWithColor}
+                    selectedKeywords={selectedKeywords}
                     selectedLanguage={selectedLanguage?.code || 0}
                     searchMethod={currentSearchMethod}
                 />
@@ -264,15 +248,24 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords, currentSearchM
                     alignItems="center"
                     mt={3}
                     mb={10}
+                    flexDirection="row"
+                    flexWrap="wrap"
+                    gap={2}
+                    sx={{
+                        '@media (max-width: 600px)': {
+                            flexDirection: 'column',
+                        },
+                    }}
                 >
                     <Tooltip title="First Page" arrow>
                         <span>
                             <IconButton
                                 onClick={(e) => handlePageChange(e, 1)}
                                 sx={{
-                                    color: currentPage === 1 ? "gray" : "primary.main",
-                                    transition: "transform 0.3s ease",
-                                    "&:hover": { transform: "scale(1.1)" },
+                                    color: currentPage === 1 ? 'gray' : 'primary.main',
+                                    transition: 'transform 0.3s ease',
+                                    '&:hover': { transform: 'scale(1.1)' },
+                                    fontSize: { xs: '1.2rem', sm: '1.5rem' },
                                 }}
                                 disabled={currentPage === 1}
                             >
@@ -280,15 +273,15 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords, currentSearchM
                             </IconButton>
                         </span>
                     </Tooltip>
-
                     <Tooltip title="Previous Page" arrow>
                         <span>
                             <IconButton
                                 onClick={(e) => handlePageChange(e, currentPage - 1)}
                                 sx={{
-                                    color: currentPage === 1 ? "gray" : "primary.main",
-                                    transition: "transform 0.3s ease",
-                                    "&:hover": { transform: "scale(1.1)" },
+                                    color: currentPage === 1 ? 'gray' : 'primary.main',
+                                    transition: 'transform 0.3s ease',
+                                    '&:hover': { transform: 'scale(1.1)' },
+                                    fontSize: { xs: '1.2rem', sm: '1.5rem' },
                                 }}
                                 disabled={currentPage === 1}
                             >
@@ -296,7 +289,6 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords, currentSearchM
                             </IconButton>
                         </span>
                     </Tooltip>
-
                     <Pagination
                         count={totalPages}
                         page={currentPage}
@@ -307,33 +299,33 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords, currentSearchM
                         siblingCount={1}
                         boundaryCount={1}
                         sx={{
-                            "& .MuiPaginationItem-root": {
-                                fontSize: "1rem",
-                                fontWeight: "bold",
-                                transition: "all 0.3s ease",
-                                "&:hover": {
-                                    backgroundColor: "primary.light",
-                                    color: "white",
+                            '& .MuiPaginationItem-root': {
+                                fontSize: { xs: '0.875rem', sm: '1rem' },
+                                fontWeight: 'bold',
+                                transition: 'all 0.3s ease',
+                                '&:hover': {
+                                    backgroundColor: 'primary.light',
+                                    color: 'white',
                                 },
                             },
-                            "& .Mui-selected": {
-                                backgroundColor: "primary.main",
-                                color: "white",
-                                "&:hover": {
-                                    backgroundColor: "primary.dark",
+                            '& .Mui-selected': {
+                                backgroundColor: 'primary.main',
+                                color: 'white',
+                                '&:hover': {
+                                    backgroundColor: 'primary.dark',
                                 },
                             },
                         }}
                     />
-
                     <Tooltip title="Next Page" arrow>
                         <span>
                             <IconButton
                                 onClick={(e) => handlePageChange(e, currentPage + 1)}
                                 sx={{
-                                    color: currentPage === totalPages ? "gray" : "primary.main",
-                                    transition: "transform 0.3s ease",
-                                    "&:hover": { transform: "scale(1.1)" },
+                                    color: currentPage === totalPages ? 'gray' : 'primary.main',
+                                    transition: 'transform 0.3s ease',
+                                    '&:hover': { transform: 'scale(1.1)' },
+                                    fontSize: { xs: '1.2rem', sm: '1.5rem' },
                                 }}
                                 disabled={currentPage === totalPages}
                             >
@@ -341,15 +333,15 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords, currentSearchM
                             </IconButton>
                         </span>
                     </Tooltip>
-                
                     <Tooltip title="Last Page" arrow>
                         <span>
                             <IconButton
                                 onClick={(e) => handlePageChange(e, totalPages)}
                                 sx={{
-                                    color: currentPage === totalPages ? "gray" : "primary.main",
-                                    transition: "transform 0.3s ease",
-                                    "&:hover": { transform: "scale(1.1)" },
+                                    color: currentPage === totalPages ? 'gray' : 'primary.main',
+                                    transition: 'transform 0.3s ease',
+                                    '&:hover': { transform: 'scale(1.1)' },
+                                    fontSize: { xs: '1.2rem', sm: '1.5rem' },
                                 }}
                                 disabled={currentPage === totalPages}
                             >

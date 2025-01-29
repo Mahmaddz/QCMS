@@ -8,7 +8,7 @@ import { ReviewBodyProps } from '../interfaces/ReviewBody'
 import { Marker } from "react-mark.js";
 // import DisplayTags from './DisplayTags'
 
-const VersePart = ({ verses, selectedKeywords, selectedLanguage, searchMethod }: ReviewBodyProps) => {
+const VersePart = ({ verses, selectedKeywords, selectedLanguage, searchMethod, displayNumbers=false }: ReviewBodyProps) => {
 
     const normalizeText = (str: string[]) => (
         str.map(singleWord => 
@@ -27,20 +27,20 @@ const VersePart = ({ verses, selectedKeywords, selectedLanguage, searchMethod }:
         openNewTab('/', data);
     }
 
-    const isCharacterInArabicWord = (position: string) => {
+    const isCharacterInArabicWord = (position: number) => {
         return verses.wordId?.includes(position);
     }
 
-    const getColorForMatchWord = (word1: string, word2: string) => {
+    const matchArabicWord = (word1: string, word2: string) => {
         return ArabicServices.removeTashkeel(word1) === ArabicServices.removeTashkeel(word2)
     }
 
-    const getColor = (word: string, position: number) => {
-        if (searchMethod?.method.split(' ').includes('isReference') && isCharacterInArabicWord(position.toString())) {
-            return 'text.primary';
-        }
-        if (searchMethod?.method.split(' ').includes('isDefault')) {
-            return selectedKeywords?.filter(select => getColorForMatchWord(select.word, word))[0]?.color || 'text.primary';
+    const getColor = (word: string) => {
+        // if (searchMethod?.method.split(' ').includes('isReference') && isCharacterInArabicWord(position.toString())) {
+        //     return 'text.primary';
+        // }
+        if (searchMethod?.method.split(' ').includes('isWord')) {
+            return selectedKeywords?.filter(select => matchArabicWord(select, word))[0] && 'red' || 'text.primary';
         }
         return 'text.primary';
     };
@@ -54,8 +54,36 @@ const VersePart = ({ verses, selectedKeywords, selectedLanguage, searchMethod }:
                     textAlign: "center",
                     marginLeft: { xs: 2, sm: 6 },
                     marginRight: { xs: 2, sm: 2 },
+                    position: "relative",
                 }}
             >
+                {
+                    displayNumbers && (
+                        <Box
+                            sx={{
+                                position: "absolute",
+                                top: 5,
+                                right: { xs: -19, sm: 5 },
+                                width: { xs: 30, sm: 50 },
+                                height: { xs: 30, sm: 50 },
+                                borderRadius: "50%",
+                                backgroundColor: "#1976d2",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                color: "#fff",
+                                fontSize: "14px",
+                                fontWeight: "bold",
+                                boxShadow: "0 2px 5px rgba(0, 0, 0, 0.2)",
+                                marginLeft: 8,
+                            }}
+                        >
+                            <Typography sx={{ fontSize: { sm: "18px", xs: "10px" }, fontWeight: "bold" }}>
+                                {verses.ayat[0].Verse}
+                            </Typography>
+                        </Box>
+                    )
+                }
                 <Box
                     sx={{
                         display: 'flex',
@@ -91,7 +119,7 @@ const VersePart = ({ verses, selectedKeywords, selectedLanguage, searchMethod }:
                                     >
                                         <b>Stem Pattern:</b> {verse.Stem_pattern}
                                     </Typography>
-                                    {isCharacterInArabicWord(`${index + 1}`) &&
+                                    {isCharacterInArabicWord(index + 1) &&
                                         verses?.conceptArabic && (
                                             <Typography
                                                 key={uniqueID()}
@@ -114,7 +142,7 @@ const VersePart = ({ verses, selectedKeywords, selectedLanguage, searchMethod }:
                                 variant="h5"
                                 sx={{
                                     fontWeight: 500,
-                                    color: getColor(verse.word, index + 1),
+                                    color: getColor(verse.word),
                                     fontSize: { xs: '1.2rem', sm: '2.125rem' },
                                     cursor: 'pointer',
                                     textAlign: 'center',
@@ -128,7 +156,7 @@ const VersePart = ({ verses, selectedKeywords, selectedLanguage, searchMethod }:
                                 }}
                                 onClick={() => handleShowResultAgainstTerm(verse.word)}
                             >
-                                {verses.wordId?.includes(`${index + 1}`) ? (
+                                {verses.wordId?.includes(index + 1) ? (
                                     <Marker mark={normalizeText(verses.arabicWord || [])}>
                                         {verse.word}
                                     </Marker>
