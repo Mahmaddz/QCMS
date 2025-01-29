@@ -16,6 +16,7 @@ export default function Register() {
     const [loading, setLoading] = useState(false); 
     
     const handleSetUserData = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        e.preventDefault();
         const { name, value } = e.target;
         setUserData((prev) => ({
             ...prev,
@@ -122,9 +123,6 @@ export default function Register() {
                         variant="outlined"
                         value={userData.username}
                         onChange={handleSetUserData}
-                        InputLabelProps={{
-                            style: { color: "#666" },
-                        }}
                         sx={{
                             "& .MuiOutlinedInput-root": {
                                 "&:hover fieldset": {
@@ -141,13 +139,9 @@ export default function Register() {
                         label="Email Address"
                         name="email"
                         autoComplete="email"
-                        autoFocus
                         variant="outlined"
                         value={userData.email}
                         onChange={handleSetUserData}
-                        InputLabelProps={{
-                            style: { color: "#666" },
-                        }}
                         sx={{
                             "& .MuiOutlinedInput-root": {
                                 "&:hover fieldset": {
@@ -168,9 +162,6 @@ export default function Register() {
                         variant="outlined"
                         value={userData.password}
                         onChange={handleSetUserData}
-                        InputLabelProps={{
-                            style: { color: "#666" },
-                        }}
                         sx={{
                             "& .MuiOutlinedInput-root": {
                                 "&:hover fieldset": {
@@ -191,9 +182,6 @@ export default function Register() {
                         variant="outlined"
                         value={userData.confirmPassword}
                         onChange={handleSetUserData}
-                        InputLabelProps={{
-                            style: { color: "#666" },
-                        }}
                         sx={{
                             "& .MuiOutlinedInput-root": {
                                 "&:hover fieldset": {
@@ -216,17 +204,17 @@ export default function Register() {
                             },
                             textTransform: "none",
                             fontSize: "1.1rem",
-                            position: "relative", // Add position relative
+                            position: "relative",
                             "@media (max-width: 600px)": {
                                 mt: 2,
                                 mb: 1.5,
                                 py: 1,
                             },
                         }}
-                        disabled={loading} // Disable button when loading
+                        disabled={loading}
                     >
                         {loading ? (
-                            <CircularProgress size={24} sx={{ position: "absolute", color: "#fff" }} /> // Loader
+                            <CircularProgress size={24} sx={{ position: "absolute", color: "#fff" }} />
                         ) : (
                             "Register"
                         )}

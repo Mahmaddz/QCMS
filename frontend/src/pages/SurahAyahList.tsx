@@ -14,6 +14,7 @@ import VersePart from '../components/VersePart';
 import { AyaTranslationWithIds, VerseWords, VerseWordsArr } from '../interfaces/ReviewBody';
 import DisplayTags from '../components/DisplayTags';
 import { Tagz } from '../interfaces/SurahAyaInfo';
+import uniqueID from '../utils/helper/UniqueID';
 
 const SurahAyahList = () => {
     const [searchParam] = useSearchParams();
@@ -101,6 +102,7 @@ const SurahAyahList = () => {
             <LanguageSelect listOfLanguages={listOfLanguages} handleChange={handleLanguageChange}/>
 
             <Box
+                key={uniqueID()}
                 sx={{
                     padding: 3,
                     backgroundColor: '#ffffff',
@@ -111,6 +113,7 @@ const SurahAyahList = () => {
             >
                 {surahInfo?.araNm ? (
                     <Typography
+                        key={uniqueID()}
                         variant="h3"
                         sx={{
                             textAlign: 'center',
@@ -124,15 +127,17 @@ const SurahAyahList = () => {
                     </Typography>
                 ) : (
                     <Skeleton
+                        key={uniqueID()}
                         variant="text"
                         width="20%"
-                        height={50}
+                        height={70}
                         sx={{ margin: '0 auto 2rem' }}
                     />
                 )}
 
                 {surahInfo?.engNm ? (
                     <Typography
+                        key={uniqueID()}
                         variant="h4"
                         sx={{
                             textAlign: 'center',
@@ -145,6 +150,7 @@ const SurahAyahList = () => {
                     </Typography>
                 ) : (
                     <Skeleton
+                        key={uniqueID()}
                         variant="text"
                         width="10%"
                         height={40}
@@ -154,6 +160,7 @@ const SurahAyahList = () => {
 
                 {surahInfo?.verses ? (
                     <Box
+                        key={uniqueID()}
                         sx={{
                             display: 'flex',
                             flexDirection: 'column',
@@ -169,7 +176,7 @@ const SurahAyahList = () => {
             
                             return (
                                 <Box
-                                    key={index}
+                                    key={uniqueID()}
                                     ref={isTarget ? targetRef : null}
                                     sx={{
                                         width: '100%',
@@ -190,6 +197,7 @@ const SurahAyahList = () => {
                                     <VersePart 
                                         selectedLanguage={selectedLanguage?.code || 'en'} 
                                         verses={verse} 
+                                        displayNumbers={true}
                                     />
                                     <Box>
                                         <DisplayTags tagz={verse.tags || []} Chapter={verse.ayat[0].Chapter as number} Verse={verse.ayat[0].Verse as number} />
@@ -199,18 +207,13 @@ const SurahAyahList = () => {
                         })}
                     </Box>
                 ) : (
-                    Array.from({ length: 5 }).map((_, index) => (
+                    Array.from({ length: 5 }).map(() => (
                         <Box
-                            key={index}
+                            key={uniqueID()}
                             sx={{
-                                display: 'flex',
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                                padding: 3,
-                                width: '70%',
+                                width: '60%',
                                 margin: '0 auto',
-                                marginBottom: 2,
-                                borderRadius: 4,
+                                height: 'auto',
                                 boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)',
                                 backgroundColor: '#f5f5f5',
                                 '@media (max-width:600px)': {
@@ -219,19 +222,50 @@ const SurahAyahList = () => {
                                 },
                             }}
                         >
-                            <Skeleton
-                                variant="rectangular"
-                                width="10%"
-                                height={50}
-                                sx={{ marginRight: 3 }}
-                            />
-                            <Box sx={{ flex: 1 }}>
+                            <Box
+                                key={uniqueID()}
+                                sx={{
+                                    display: 'flex',
+                                    flexDirection: { sm: 'row', xs: 'column' },
+                                    alignItems: 'center',
+                                    padding: 3,
+                                    margin: '0 auto',
+                                    borderRadius: 4,
+                                }}
+                            >
+                                <Box sx={{ flex: 1, margin: '0 auto', justifyItems: 'center' }} key={uniqueID()}>
+                                    <Skeleton
+                                        key={uniqueID()}
+                                        width="50%"
+                                        height={50}
+                                        sx={{ marginBottom: 1 }}
+                                    />
+                                    <Skeleton width="30%" height={20} />
+                                </Box>
                                 <Skeleton
-                                    width="90%"
-                                    height={30}
-                                    sx={{ marginBottom: 1 }}
+                                    key={uniqueID()}
+                                    variant="circular"
+                                    width={50}
+                                    height={50}
+                                    sx={{ marginRight: 3 }}
                                 />
-                                <Skeleton width="80%" height={20} />
+                            </Box>
+                            <Box display={'flex'} width={'90%'} marginTop={0} marginBottom={3} key={uniqueID()}>
+                                {Array.from({ length: 3 }).map(() => (
+                                    <Skeleton
+                                        key={uniqueID()}
+                                        variant="rounded"
+                                        width={120}
+                                        height={32}
+                                        sx={{
+                                            gap: 3,
+                                            borderRadius: "16px",
+                                            backgroundColor: "#e0e0e0",
+                                            marginBottom: 4,
+                                            marginLeft: 2,
+                                        }}
+                                    />
+                                ))}
                             </Box>
                         </Box>
                     ))

@@ -54,6 +54,10 @@ const LanguageSelect = React.memo(({ listOfLanguages = [], handleChange }: { lis
                 sx={{
                     width: 300,
                     marginRight: 1,
+                    fontSize: '16px',
+                    '@media (max-width: 600px)': {
+                        width: 200,
+                    },
                     '& .MuiOutlinedInput-root': {
                         borderRadius: isOpen ? '8px' : '',
                         border: 'none',
@@ -66,6 +70,11 @@ const LanguageSelect = React.memo(({ listOfLanguages = [], handleChange }: { lis
                             borderColor: '#1976d2',
                             boxShadow: '0 0 5px rgba(25, 118, 210, 0.5)',
                         },
+                        '@media (max-width: 600px)': {
+                            fontSize: '14px',
+                            padding: '8px',
+                            height: '36px',
+                        },
                     },
                 }}
                 renderInput={(params) => (
@@ -77,12 +86,30 @@ const LanguageSelect = React.memo(({ listOfLanguages = [], handleChange }: { lis
                             startAdornment: (
                                 <InputAdornment position="start">
                                     {isLoading ? (
-                                        <CircularProgress style={{ color: '#1976d2' }} size={20} />
+                                        <CircularProgress
+                                            style={{ color: '#1976d2' }}
+                                            size={20}
+                                        />
                                     ) : (
-                                        <TranslateIcon style={{ color: '#1976d2' }} />
+                                        <TranslateIcon
+                                            sx={{
+                                                fontSize: '24px',
+                                                '@media (max-width: 600px)': {
+                                                    fontSize: '18px',
+                                                },
+                                            }}
+                                        />
                                     )}
                                 </InputAdornment>
                             ),
+                        }}
+                        sx={{
+                            '& .MuiInputLabel-root': {
+                                fontSize: '16px',
+                                '@media (max-width: 600px)': {
+                                    fontSize: '14px',
+                                },
+                            },
                         }}
                     />
                 )}
@@ -108,9 +135,31 @@ const LanguageSelect = React.memo(({ listOfLanguages = [], handleChange }: { lis
                         backgroundColor: isOpen ? '#145a9e' : '#e0e0e0',
                         transform: 'scale(1.1)',
                     },
+                    '@media (max-width: 600px)': {
+                        width: 30,
+                        height: 30,
+                    },
                 }}
             >
-                {isOpen ? <KeyboardArrowLeftIcon fontSize="large" /> : <KeyboardArrowRightIcon fontSize="large" />}
+                {isOpen ? (
+                    <KeyboardArrowLeftIcon
+                        sx={{
+                            fontSize: 'large',
+                            '@media (max-width: 600px)': {
+                                fontSize: 'small',
+                            },
+                        }}
+                    />
+                ) : (
+                    <KeyboardArrowRightIcon
+                        sx={{
+                            fontSize: 'large',
+                            '@media (max-width: 600px)': {
+                                fontSize: 'small',
+                            },
+                        }}
+                    />
+                )}
             </Box>
         </Box>
     );
