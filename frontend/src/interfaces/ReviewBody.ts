@@ -7,9 +7,10 @@ export interface ReviewBodyProps {
     id?: number;
     role?: number;
     showTags?: boolean;
-    selectedKeywords?: { word: string, color: string }[]; //\\
+    selectedKeywords?: string[]; //\\
     selectedLanguage: number | string | undefined; //\\
-    searchMethod?: CurrentSearch
+    searchMethod?: CurrentSearch;
+    displayNumbers?: boolean;
 }
 
 export interface VerseWords {
@@ -38,6 +39,6 @@ export interface VerseWordsArr {
     translation: AyaTranslationWithIds[];
     conceptArabic?: string;
     arabicWord?: string[];
-    wordId?: string | string[];
+    wordId?: number[];
     tags?: Tagz[]
 }

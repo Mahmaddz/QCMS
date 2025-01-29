@@ -15,8 +15,12 @@ import {
 import { addTagAgainstAya } from "../services/Tags/addTag.service";
 import { deleteTagAgainstAya } from "../services/Tags/deleteTag.service";
 import { editTagAgainstAya } from "../services/Tags/editTag.service";
+import Toaster from "../utils/helper/Toaster";
+import { CurrentSearch } from "../interfaces/SearchForm";
+import { Marker } from "react-mark.js";
+import { ArabicServices } from "arabic-services";
 
-const DisplayTags = ({showTags=true, tagz, Chapter, Verse}:{showTags?: boolean | undefined; tagz: Tagz[]; Chapter: number, Verse: number}) => {
+const DisplayTags = ({showTags=true, tagz, Chapter, Verse, searchMethod}:{showTags?: boolean | undefined; tagz: Tagz[]; Chapter: number, Verse: number, searchMethod?: CurrentSearch;}) => {
     const { userRole } = useAuth();
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -43,8 +47,14 @@ const DisplayTags = ({showTags=true, tagz, Chapter, Verse}:{showTags?: boolean |
     };
 
     const handleFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        e.preventDefault();
         const { name, value } = e.target;
-        setTagFields((prev) => ({ ...prev, [name]: value }));
+        if ((name === 'en' && /[a-zA-Z]/.test(value)) || (name === 'ar' && /[\u0600-\u06FF]/.test(value))) {
+            setTagFields((prev) => ({ ...prev, [name]: value }));
+        }
+        else {
+            Toaster('Wrong Input', 'error');
+        }
     };
 
     const handleDeleteTag = async (tagToDelete: Tagz) => {
@@ -168,9 +178,11 @@ const DisplayTags = ({showTags=true, tagz, Chapter, Verse}:{showTags?: boolean |
 
                             <Chip
                                 label={
-                                    <span>
-                                        <strong>Arabic:</strong> {tag.ar}, <strong>English:</strong> {tag.en}
-                                    </span>
+                                    <Marker mark={searchMethod?.method.includes('isReference') ? ArabicServices.removeTashkeel(searchMethod?.search || '') : undefined} options={{className: 'custom-marker'}}>
+                                        <span style={{ whiteSpace: "normal", wordBreak: "break-word", display: "block" }}>
+                                            <strong>Arabic:</strong> {tag.ar}, <strong>English:</strong> {tag.en}
+                                        </span>
+                                    </Marker>
                                 }
                                 variant="outlined"
                                 sx={{
@@ -178,6 +190,14 @@ const DisplayTags = ({showTags=true, tagz, Chapter, Verse}:{showTags?: boolean |
                                     backgroundColor: "#f5f5f5",
                                     boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
                                     transition: "transform 0.3s ease",
+                                    maxWidth: "100%",
+                                    height: 'auto',
+                                    padding: {sm: 1, xs: 0.4},
+                                    "& .MuiChip-label": {
+                                        whiteSpace: "normal",
+                                        wordBreak: "break-word",
+                                        display: "block",
+                                    },
                                     "&:hover": {
                                         transform: "scale(1.05)",
                                     },

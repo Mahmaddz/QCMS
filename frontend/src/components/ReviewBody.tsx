@@ -174,122 +174,121 @@ export default function ReviewBody({ verses, showTags, selectedKeywords, selecte
         </Box>
       </Box>
 
-      <DisplayTags showTags={showTags} tagz={verses.tags || []} Chapter={Chapter} Verse={Verse}/>
+      <DisplayTags showTags={showTags} tagz={verses.tags || []} Chapter={Chapter} Verse={Verse} searchMethod={searchMethod}/>
 
       { /* comment dialog */}
       <Dialog
-  open={openCommentDialog}
-  onClose={handleCloseCommentDialog}
-  maxWidth="sm"
-  fullWidth
-  fullScreen={window.innerWidth <= 600} // Enable fullscreen for small screens
->
-  <DialogTitle
-    sx={{
-      display: "flex",
-      alignItems: "center",
-      padding: "8px 16px", // Reduce padding for better fit
-    }}
-  >
-    <Typography
-      variant="h6"
-      component="div"
-      sx={{ flexGrow: 1, fontSize: "1rem" }} // Smaller font size
-    >
-      Comment Section ({Chapter}:{Verse})
-    </Typography>
-    <IconButton
-      onClick={handleCloseCommentDialog}
-      sx={{
-        color: "white",
-        backgroundColor: "#FF6B6B",
-        width: "40px", // Adjust size for mobile
-        height: "40px",
-        "&:hover": {
-          backgroundColor: "darkred",
-        },
-        borderRadius: "8px",
-      }}
-    >
-      <CloseIcon fontSize="small" />
-    </IconButton>
-  </DialogTitle>
-  <DialogContent
-    dividers
-    sx={{
-      display: "flex",
-      flexDirection: "column",
-      height: "80vh",
-      padding: "8px", // Reduce padding for compactness
-    }}
-  >
-    <Box
-      sx={{
-        flex: 1,
-        overflowY: "auto",
-        marginBottom: 1,
-        padding: "8px", // Add slight padding for spacing
-      }}
-    >
-      <CommentBox
-        comments={comments}
-        setComments={setComments}
-        isLoading={isLoading}
-        setIsLoading={setIsLoading}
-      />
-    </Box>
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column", // Stack elements on small screens
-        gap: 1,
-        borderTop: "1px solid #ccc",
-        paddingTop: 1,
-      }}
-    >
-      <TextField
-        margin="dense"
-        label="Add a comment"
-        value={newComment}
-        onChange={(e) => setNewComment(e.target.value)}
+        open={openCommentDialog}
+        onClose={handleCloseCommentDialog}
+        maxWidth="sm"
         fullWidth
-        variant="outlined"
-        multiline
-        minRows={1}
-        maxRows={4}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            handleAddComment();
-            setNewComment('');
-          }
-        }}
-        sx={{
-          fontSize: "0.9rem", // Adjust font size
-        }}
-      />
-      <Button
-        onClick={handleAddComment}
-        variant="contained"
-        color="primary"
-        disabled={isLoading}
-        startIcon={
-          isLoading ? (
-            <CircularProgress size={20} color="inherit" />
-          ) : (
-            <SaveIcon />
-          )
-        }
-        sx={{
-          fontSize: "0.9rem", // Adjust font size
-          padding: "6px 12px", // Reduce padding
-        }}
+        fullScreen={window.innerWidth <= 600} // Enable fullscreen for small screens
       >
-        Add Comment
-      </Button>
-    </Box>
-  </DialogContent>
-</Dialog>
-
+        <DialogTitle
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            padding: "8px 16px", // Reduce padding for better fit
+          }}
+        >
+          <Typography
+            variant="h6"
+            component="div"
+            sx={{ flexGrow: 1, fontSize: "1rem" }} // Smaller font size
+          >
+            Comment Section ({Chapter}:{Verse})
+          </Typography>
+          <IconButton
+            onClick={handleCloseCommentDialog}
+            sx={{
+              color: "white",
+              backgroundColor: "#FF6B6B",
+              width: "40px", // Adjust size for mobile
+              height: "40px",
+              "&:hover": {
+                backgroundColor: "darkred",
+              },
+              borderRadius: "8px",
+            }}
+          >
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent
+          dividers
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            height: "80vh",
+            padding: "8px", // Reduce padding for compactness
+          }}
+        >
+          <Box
+            sx={{
+              flex: 1,
+              overflowY: "auto",
+              marginBottom: 1,
+              padding: "8px", // Add slight padding for spacing
+            }}
+          >
+            <CommentBox
+              comments={comments}
+              setComments={setComments}
+              isLoading={isLoading}
+              setIsLoading={setIsLoading}
+            />
+          </Box>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column", // Stack elements on small screens
+              gap: 1,
+              borderTop: "1px solid #ccc",
+              paddingTop: 1,
+            }}
+          >
+            <TextField
+              margin="dense"
+              label="Add a comment"
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              fullWidth
+              variant="outlined"
+              multiline
+              minRows={1}
+              maxRows={4}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleAddComment();
+                  setNewComment('');
+                }
+              }}
+              sx={{
+                fontSize: "0.9rem", // Adjust font size
+              }}
+            />
+            <Button
+              onClick={handleAddComment}
+              variant="contained"
+              color="primary"
+              disabled={isLoading}
+              startIcon={
+                isLoading ? (
+                  <CircularProgress size={20} color="inherit" />
+                ) : (
+                  <SaveIcon />
+                )
+              }
+              sx={{
+                fontSize: "0.9rem", // Adjust font size
+                padding: "6px 12px", // Reduce padding
+              }}
+            >
+              Add Comment
+            </Button>
+          </Box>
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 }
