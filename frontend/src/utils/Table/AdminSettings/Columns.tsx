@@ -5,14 +5,15 @@ import { Roles } from '../../../interfaces/service/GetRoles';
 import { useState } from 'react';
 
 export const AS_Columns = ({ changeUserRole, roles }: ASColumnsParams): GridColDef[] => [
-    { field: 'id', headerName: 'ID', flex: 0.5, headerAlign: "center" },
-    { field: 'email', headerName: 'Email', flex: 1, headerAlign: "center" },
-    { field: 'role', headerName: 'Role', flex: 0.5, headerAlign: "center" },
+    { field: 'id', headerName: 'ID', flex: 0.5, headerAlign: "center", resizable: false },
+    { field: 'email', headerName: 'Email', flex: 1, headerAlign: "center", resizable: false },
+    { field: 'role', headerName: 'Role', flex: 0.5, headerAlign: "center", resizable: false },
     {
         field: 'action',
         headerName: 'Action',
         flex: 1,
         headerAlign: "center",
+        resizable: false,
         renderCell: (params) => (
             <ActionButtons
                 id={params.row.id}
@@ -51,21 +52,21 @@ const ActionButtons = ({ id, singleRow, roles, changeUserRole }: ActionButtonsPr
     };
 
     const handleRoleChange = (event: SelectChangeEvent<string>) => {
-        console.log(singleRow);
         setSelectedRole(event.target.value);
     };
 
     return (
         <Stack
             direction={isMobile ? "column" : "row"}
-            spacing={isMobile ? 1 : 2}
+            spacing={isMobile ? 0.5 : 1}
             alignItems="center"
             justifyContent="center"
             sx={{
-                padding: isMobile ? '8px 0' : '8px 16px',
-                borderRadius: 2,
+                padding: isMobile ? '4px 0' : '4px 8px',
+                borderRadius: 1,
                 backgroundColor: '#f7f7f7',
                 boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+                fontSize: '0.875rem',
             }}
         >
             <Select
@@ -74,11 +75,12 @@ const ActionButtons = ({ id, singleRow, roles, changeUserRole }: ActionButtonsPr
                 size="small"
                 fullWidth={isMobile}
                 sx={{
-                    minWidth: isMobile ? '100%' : '150px',
-                    borderRadius: '8px',
+                    minWidth: isMobile ? '100%' : '120px',
+                    borderRadius: '4px',
                     backgroundColor: '#fff',
                     '& .MuiSelect-select': {
-                        padding: '8px 12px',
+                        padding: '4px 8px',
+                        fontSize: '0.875rem',
                     },
                 }}
             >
@@ -95,12 +97,13 @@ const ActionButtons = ({ id, singleRow, roles, changeUserRole }: ActionButtonsPr
                 onClick={handleChangeRoleSubmit}
                 fullWidth={isMobile}
                 sx={{
-                    padding: '6px 16px',
-                    borderRadius: '8px',
+                    padding: '4px 12px',
+                    borderRadius: '4px',
                     backgroundColor: '#007bff',
                     '&:hover': {
                         backgroundColor: '#0056b3',
                     },
+                    fontSize: '0.875rem',
                 }}
             >
                 Change Role

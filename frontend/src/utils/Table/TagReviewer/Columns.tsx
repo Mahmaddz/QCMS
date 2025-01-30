@@ -47,7 +47,7 @@ const handleActionSubmit = async (row: TagDetails, selectedAction: string) => {
   }
 };
 
-export const TagReviewCol = (): GridColDef[] => [
+export const TagReviewCol = (setTagDetails: React.Dispatch<React.SetStateAction<TagDetails[]>>): GridColDef[] => [
   { field: 'id', headerName: 'ID', flex: 0.3, headerAlign: 'center' },
   {
     field: 'ayaText',
@@ -111,7 +111,10 @@ export const TagReviewCol = (): GridColDef[] => [
             onClick={async () => {
               setIsLoading(true);
               const isSuccess = await handleActionSubmit(params.row, selectedAction);
-              setIsLoading(!isSuccess);
+              if (isSuccess) {
+                setTagDetails((prev) => prev.filter(p => p.id !== params.row.id));
+              }
+              setIsLoading(false);
             }}
             size="small"
             variant="contained"

@@ -13,15 +13,17 @@ const errorHandler = (error: any) => {
         const { response, status } = error;
         const text = response?.data?.error?.message || responseMessages[response.status];
 
-        if (status === 401) {
-            localStorage.removeItem("accessToken");
-            localStorage.removeItem("refreshToken");
-        }
-
         if (response.status >= 300 && response.status < 400) {
             Toaster(text, "info")
         }
         else if (status>=400 && status<500) {
+            if (status === 401) {
+                localStorage.removeItem("accessToken");
+                localStorage.removeItem("refreshToken");
+                window.history.pushState(null, '', '/');
+                window.history.go(1);
+                window.location.replace('/');
+            }
             Toaster(text, "warn")
             return response.data;
         }

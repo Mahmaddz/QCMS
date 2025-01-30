@@ -26,7 +26,7 @@ export default function TagReview() {
         <React.Fragment>
             <Header />
             <Heading data={"Tag Review"} horizontalPosition="left"/>
-            <MatTable rowz={tagDetails} columnz={TagReviewCol()} isLoading={isLoading}/>
+            <MatTable rowz={tagDetails} columnz={TagReviewCol(setTagDetails)} isLoading={isLoading}/>
         </React.Fragment>
     );
 }

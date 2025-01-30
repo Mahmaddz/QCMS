@@ -49,7 +49,7 @@ const DisplayTags = ({showTags=true, tagz, Chapter, Verse, searchMethod}:{showTa
     const handleFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         e.preventDefault();
         const { name, value } = e.target;
-        if ((name === 'en' && /[a-zA-Z]/.test(value)) || (name === 'ar' && /[\u0600-\u06FF]/.test(value))) {
+        if ((name === 'en' && /[a-zA-Z]/.test(value)) || (name === 'ar' && /[\u0600-\u06FF]/.test(value)) || value === '') {
             setTagFields((prev) => ({ ...prev, [name]: value }));
         }
         else {
@@ -178,7 +178,7 @@ const DisplayTags = ({showTags=true, tagz, Chapter, Verse, searchMethod}:{showTa
 
                             <Chip
                                 label={
-                                    <Marker mark={searchMethod?.method.includes('isReference') ? ArabicServices.removeTashkeel(searchMethod?.search || '') : undefined} options={{className: 'custom-marker'}}>
+                                    <Marker mark={searchMethod?.method.includes('isTag') ? ArabicServices.removeTashkeel(searchMethod?.search || '') : undefined} options={{className: 'custom-marker'}}>
                                         <span style={{ whiteSpace: "normal", wordBreak: "break-word", display: "block" }}>
                                             <strong>Arabic:</strong> {tag.ar}, <strong>English:</strong> {tag.en}
                                         </span>
