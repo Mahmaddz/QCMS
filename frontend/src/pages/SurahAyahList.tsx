@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Header from '../layout/Header';
-import { Box, Typography, Skeleton, } from '@mui/material';
+import { Box, Typography, Skeleton } from '@mui/material';
 // import { getCompleteSura } from '../services/Ayaat/getCompleteSura';
 import { CompleteSurah } from '../interfaces/SurahAyaList';
 import StatusBar from '../components/Statusbar';
@@ -15,6 +15,7 @@ import { AyaTranslationWithIds, VerseWords, VerseWordsArr } from '../interfaces/
 import DisplayTags from '../components/DisplayTags';
 import { Tagz } from '../interfaces/SurahAyaInfo';
 import uniqueID from '../utils/helper/UniqueID';
+// import CommentDialog from '../components/CommentDialog';
 
 const SurahAyahList = () => {
     const [searchParam] = useSearchParams();
@@ -23,6 +24,11 @@ const SurahAyahList = () => {
     const [surahInfo, setSurahInfo] = useState<CompleteSurah>({ araNm: '', aya: '', engNm: '', sura: ""  });
     const [listOfLanguages, setListOfLanguages] = useState<LanguageType[]>([]);
     const [selectedLanguage, setSelectedLanguages] = useState<LanguageType | undefined>();
+
+    // const [openCommentDialog, setOpenCommentDialog] = useState(false);
+    // const handleOpenCommentDialog = () => {
+    //     setOpenCommentDialog(true);
+    // }
 
     useEffect(() => {
         // EXTRACTING VALUES
@@ -193,7 +199,10 @@ const SurahAyahList = () => {
                                             boxShadow: '0 6px 15px rgba(0, 0, 0, 0.2)',
                                         },
                                     }}
-                                >
+                                > 
+                                    {/* <Button onClick={handleOpenCommentDialog}>
+                                        Open
+                                    </Button> */}
                                     <VersePart 
                                         selectedLanguage={selectedLanguage?.code || 'en'} 
                                         verses={verse} 
@@ -202,6 +211,10 @@ const SurahAyahList = () => {
                                     <Box>
                                         <DisplayTags tagz={verse.tags || []} Chapter={verse.ayat[0].Chapter as number} Verse={verse.ayat[0].Verse as number} />
                                     </Box>
+                                    {/* {
+                                        openCommentDialog &&
+                                        <CommentDialog Chapter={verse.ayat[0].Chapter as number} Verse={verse.ayat[0].Verse as number} openCommentDialog={openCommentDialog} setOpenCommentDialog={setOpenCommentDialog}/>
+                                    } */}
                                 </Box>
                             );
                         })}

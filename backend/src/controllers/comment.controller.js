@@ -13,7 +13,7 @@ const addComment = catchAsync(async (req, res) => {
   return res.status(httpStatus.OK).json({
     success: true,
     insertedCommentId,
-    message: `Comment added @ ${suraNo}:${ayaNo}`,
+    message: `Comment added (${suraNo}:${ayaNo})`,
   });
 });
 
@@ -23,6 +23,7 @@ const getComments = catchAsync(async (req, res) => {
   return res.status(httpStatus.OK).json({
     success: true,
     data,
+    message: data.length > 0 ? 'Comments Loaded' : 'No Comments Found',
   });
 });
 
@@ -40,7 +41,7 @@ const removeComment = catchAsync(async (req, res) => {
   const { suraNo, ayaNo } = await commentServices.deleteComment(id);
   return res.status(httpStatus.OK).json({
     success: true,
-    message: `Comment deleted @ ${suraNo}:${ayaNo}`,
+    message: `Comment deleted (${suraNo}:${ayaNo}) successfully`,
   });
 });
 
