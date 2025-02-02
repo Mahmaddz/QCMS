@@ -5,6 +5,7 @@ const addComment = {
     suraNo: Joi.number().required(),
     ayaNo: Joi.number().required(),
     text: Joi.string().required(),
+    tagId: Joi.number().required(),
   }),
 };
 
@@ -12,6 +13,7 @@ const getComment = {
   query: Joi.object().keys({
     suraNo: Joi.number().required(),
     ayaNo: Joi.number().required(),
+    tagId: Joi.number().required(),
   }),
 };
 
@@ -21,6 +23,7 @@ const editComment = {
     suraNo: Joi.number().required(),
     ayaNo: Joi.number().required(),
     text: Joi.string().required(),
+    tagId: Joi.number().required(),
   }),
 };
 

@@ -12,6 +12,7 @@ import {
     DialogTitle,
     CircularProgress,
     useMediaQuery,
+    Skeleton,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import EditIcon from "@mui/icons-material/Edit";
@@ -24,7 +25,7 @@ import { removeComment } from "../services/Comments/deleteComment.service";
 import { modifyComment } from "../services/Comments/updateComment.service";
 import { USER } from "../utils/UserRoles";
 
-const CommentBox = ({ comments = [], setComments, isLoading, setIsLoading }: { comments: Comment[]; setComments: React.Dispatch<React.SetStateAction<Comment[]>>; setIsLoading: React.Dispatch<React.SetStateAction<boolean>>; isLoading: boolean}) => {
+const CommentBox = ({ comments = [], setComments, isLoading, setIsLoading, tagId }: { comments: Comment[]; setComments: React.Dispatch<React.SetStateAction<Comment[]>>; setIsLoading: React.Dispatch<React.SetStateAction<boolean>>; isLoading: boolean; tagId: number}) => {
     const { user } = useAuth();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -71,7 +72,7 @@ const CommentBox = ({ comments = [], setComments, isLoading, setIsLoading }: { c
     const handleUpdate = async () => {
         setIsLoading(true);
         if (selectedComment) {
-            const response = await modifyComment(selectedComment.id as number, selectedComment.suraNo as number, selectedComment.ayaNo as number, editText);
+            const response = await modifyComment(selectedComment.id as number, selectedComment.suraNo as number, selectedComment.ayaNo as number, editText, tagId);
             if (response.success) {
                 setComments((prev) =>
                     prev.map((comment) =>
@@ -110,132 +111,166 @@ const CommentBox = ({ comments = [], setComments, isLoading, setIsLoading }: { c
                     margin: "0 auto",
                 }}
             >
-            {comments.map((comment, index) => (
-                <Box key={index} sx={{ marginBottom: 4 }}>
-                    <Box
-                        sx={{
-                            display: "flex",
-                            flexDirection: isMobile ? "column" : "row",
-                            alignItems: isMobile ? "flex-start" : "center",
-                            gap: 2,
-                        }}
-                    >
-                        <Box sx={{ flex: 1 }}>
-                            <Typography
-                                variant="h6"
+            {
+                isLoading ? (
+                    [...Array(3)].map((_, index) => (
+                        <Box key={index} sx={{ marginBottom: 4 }}>
+                            <Box
                                 sx={{
-                                    fontWeight: "bold",
-                                    color: "#444",
+                                    display: "flex",
+                                    flexDirection: isMobile ? "column" : "row",
+                                    alignItems: isMobile ? "flex-start" : "center",
+                                    gap: 2,
                                 }}
                             >
-                                {`${comment.userId}- ${comment.username}`}
-                            </Typography>
-                            {selectedComment?.id === comment.id ? (
-                                <Box sx={{ marginTop: "8px" }}>
-                                    <TextField
-                                        fullWidth
-                                        value={editText}
-                                        onChange={(e) => setEditText(e.target.value)}
-                                        variant="outlined"
-                                        size="small"
-                                        sx={{ marginBottom: "8px" }}
-                                        multiline
-                                        minRows={1}
-                                        maxRows={5}
-                                    />
-                                    <Box sx={{ display: "flex", gap: 2 }}>
-                                        <Button
-                                            variant="contained"
-                                            color="primary"
-                                            onClick={handleUpdate}
-                                        >
-                                            Update
-                                        </Button>
-                                        <Button
-                                            variant="outlined"
-                                            color="secondary"
-                                            onClick={handleCancel}
-                                        >
-                                            Cancel
-                                        </Button>
-                                    </Box>
+                                <Box sx={{ flex: 1 }}>
+                                    <Skeleton variant="text" width={120} height={24} />
+                                    <Skeleton variant="rectangular" width="100%" height={60} sx={{ marginTop: 1 }} />
+                                    <Skeleton variant="text" width={80} height={18} sx={{ marginTop: 1 }} />
                                 </Box>
-                            ) : (
-                                <>
-                                    <Typography
-                                        variant="body1"
-                                        sx={{
-                                            color: "#555",
-                                            marginTop: "8px",
-                                        }}
-                                    >
-                                        {comment.commentText}
-                                    </Typography>
-                                    {
-                                        comment.createdAt &&
-                                        <Typography
-                                            variant="caption"
-                                            sx={{
-                                                color: "gray",
-                                                marginTop: "10px",
-                                                display: "block",
-                                            }}
-                                        >
-                                            posted at {getPostedDate(comment.createdAt, comment.updatedAt)}
-                                        </Typography>
-                                    }
-                                </>
-                            )}
-                            </Box>
-                            {
                                 <Box sx={{ display: "flex", gap: 1 }}>
-                                    {
-                                        user?.id === comment.userId && selectedComment?.id !== comment.id &&
-                                        <>
-                                            <IconButton
-                                                onClick={() => onEdit(comment)}
-                                                sx={{
-                                                    color: "#FFB74D",
-                                                    "&:hover": {
-                                                        color: "#FF9800",
-                                                    },
-                                                }}
-                                            >
-                                                <EditIcon />
-                                            </IconButton>
-                                            <IconButton
-                                                onClick={() => handleDeleteClick(comment)}
-                                                sx={{
-                                                    color: "#FF6B6B",
-                                                    "&:hover": {
-                                                        color: "#D32F2F",
-                                                    },
-                                                }}
-                                            >
-                                                <DeleteIcon />
-                                            </IconButton>
-                                        </>
-                                    }
-                                    {
-                                        user?.id === comment.userId || user?.roleID === USER.ADMIN &&
-                                        <IconButton
-                                            onClick={() => handleDeleteClick(comment)}
+                                    <Skeleton variant="circular" width={30} height={30} />
+                                    <Skeleton variant="circular" width={30} height={30} />
+                                </Box>
+                            </Box>
+                            <Divider sx={{ my: 2 }} />
+                        </Box>
+                    ))
+                ) : (
+                    comments.length === 0 ? (
+                        <Typography variant="h4" textAlign={'center'} fontStyle={'italic'}>
+                            No Comments Found
+                        </Typography>
+                    ) : (
+                        comments?.map((comment, index) => (
+                            <Box key={index} sx={{ marginBottom: 4 }}>
+                                <Box
+                                    sx={{
+                                        display: "flex",
+                                        flexDirection: isMobile ? "column" : "row",
+                                        alignItems: isMobile ? "flex-start" : "center",
+                                        gap: 2,
+                                    }}
+                                >
+                                    <Box sx={{ flex: 1 }}>
+                                        <Typography
+                                            variant="h6"
                                             sx={{
-                                                color: "#FF6B6B",
-                                                "&:hover": {
-                                                    color: "#D32F2F",
-                                                },
+                                                fontWeight: "bold",
+                                                color: "#444",
                                             }}
                                         >
-                                            <DeleteIcon />
-                                        </IconButton>
-                                    }
-                                </Box>
-                            }
-                        </Box>
-                    <Divider sx={{ my: 2 }} />
-                </Box>
-            ))}
+                                            {comment.username}
+                                        </Typography>
+                                        {selectedComment?.id === comment.id && editText ? (
+                                            <Box sx={{ marginTop: "8px" }}>
+                                                <TextField
+                                                    fullWidth
+                                                    value={editText}
+                                                    onChange={(e) => setEditText(e.target.value)}
+                                                    variant="outlined"
+                                                    size="small"
+                                                    sx={{ marginBottom: "8px" }}
+                                                    multiline
+                                                    minRows={1}
+                                                    maxRows={5}
+                                                />
+                                                <Box sx={{ display: "flex", gap: 2 }}>
+                                                    <Button
+                                                        variant="contained"
+                                                        color="primary"
+                                                        onClick={handleUpdate}
+                                                    >
+                                                        Update
+                                                    </Button>
+                                                    <Button
+                                                        variant="outlined"
+                                                        color="secondary"
+                                                        onClick={handleCancel}
+                                                    >
+                                                        Cancel
+                                                    </Button>
+                                                </Box>
+                                            </Box>
+                                        ) : (
+                                            <>
+                                                <Typography
+                                                    variant="body1"
+                                                    sx={{
+                                                        color: "#555",
+                                                        marginTop: "8px",
+                                                    }}
+                                                >
+                                                    {comment.commentText}
+                                                </Typography>
+                                                {
+                                                    comment.createdAt &&
+                                                    <Typography
+                                                        variant="caption"
+                                                        sx={{
+                                                            color: "gray",
+                                                            marginTop: "10px",
+                                                            display: "block",
+                                                        }}
+                                                    >
+                                                        posted at {getPostedDate(comment.createdAt, comment.updatedAt)}
+                                                    </Typography>
+                                                }
+                                            </>
+                                        )}
+                                        </Box>
+                                        {
+                                            <Box sx={{ display: "flex", gap: 1 }}>
+                                                {
+                                                    user?.id === comment.userId && selectedComment?.id !== comment.id &&
+                                                    <>
+                                                        <IconButton
+                                                            onClick={() => onEdit(comment)}
+                                                            sx={{
+                                                                color: "#FFB74D",
+                                                                "&:hover": {
+                                                                    color: "#FF9800",
+                                                                },
+                                                            }}
+                                                        >
+                                                            <EditIcon />
+                                                        </IconButton>
+                                                        <IconButton
+                                                            onClick={() => handleDeleteClick(comment)}
+                                                            sx={{
+                                                                color: "#FF6B6B",
+                                                                "&:hover": {
+                                                                    color: "#D32F2F",
+                                                                },
+                                                            }}
+                                                        >
+                                                            <DeleteIcon />
+                                                        </IconButton>
+                                                    </>
+                                                }
+                                                {
+                                                    user?.id === comment.userId || user?.roleID === USER.ADMIN &&
+                                                    <IconButton
+                                                        onClick={() => handleDeleteClick(comment)}
+                                                        sx={{
+                                                            color: "#FF6B6B",
+                                                            "&:hover": {
+                                                                color: "#D32F2F",
+                                                            },
+                                                        }}
+                                                    >
+                                                        <DeleteIcon />
+                                                    </IconButton>
+                                                }
+                                            </Box>
+                                        }
+                                    </Box>
+                                <Divider sx={{ my: 2 }} />
+                            </Box>
+                        ))
+                    )
+                )
+            }
             </Paper>
 
             <Dialog

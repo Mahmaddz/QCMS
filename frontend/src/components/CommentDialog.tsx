@@ -8,7 +8,7 @@ import { getAllComments } from "../services/Comments/getAllComments.service";
 import { useAuth } from '../context/Auth/useAuth';
 import { Comment } from '../interfaces/Comment';
 
-const CommentDialog = ({ Chapter, Verse, setOpenCommentDialog, openCommentDialog }:{ Chapter: number, Verse: number, openCommentDialog: boolean, setOpenCommentDialog: React.Dispatch<React.SetStateAction<boolean>> }) => {
+const CommentDialog = ({ Chapter, Verse, setOpenCommentDialog, openCommentDialog, tagId }:{ Chapter: number, Verse: number, openCommentDialog: boolean, setOpenCommentDialog: React.Dispatch<React.SetStateAction<boolean>>, tagId: number }) => {
 
     const { user } = useAuth();
     const [comments, setComments] = useState<Comment[]>([]);
@@ -19,13 +19,13 @@ const CommentDialog = ({ Chapter, Verse, setOpenCommentDialog, openCommentDialog
         (async () => {
             setOpenCommentDialog(true);
             setIsLoading(true);
-            const response = await getAllComments(Chapter, Verse);
+            const response = await getAllComments(Chapter, Verse, tagId);
             if (response.success) {
                 setComments(response.data);
                 setIsLoading(false);
-            }   
+            }
         })()
-    }, [Chapter, Verse, setOpenCommentDialog])
+    }, [Chapter, Verse, setOpenCommentDialog, tagId])
     
     const handleCloseCommentDialog = () => {
         setComments(() => []);
@@ -36,7 +36,7 @@ const CommentDialog = ({ Chapter, Verse, setOpenCommentDialog, openCommentDialog
     const handleAddComment = async () => {
         setIsLoading(true);
         if (newComment.trim()) {
-            const response = await insertComment(Chapter, Verse, newComment);
+            const response = await insertComment(Chapter, Verse, newComment, tagId);
             if (response.success) {
                 const newCommentObj: Comment = {
                     id: response.insertedCommentId,
@@ -45,6 +45,7 @@ const CommentDialog = ({ Chapter, Verse, setOpenCommentDialog, openCommentDialog
                     commentText: newComment,
                     username: user?.username || '',
                     userId: user?.id || 0,
+                    tagId,
                     createdAt: new Date().toISOString(),
                     updatedAt: new Date().toISOString(),
                 };
@@ -115,6 +116,7 @@ const CommentDialog = ({ Chapter, Verse, setOpenCommentDialog, openCommentDialog
                         setComments={setComments}
                         isLoading={isLoading}
                         setIsLoading={setIsLoading}
+                        tagId={tagId}
                     />
                 </Box>
                 <Box

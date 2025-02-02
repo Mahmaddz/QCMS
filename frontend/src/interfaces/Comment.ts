@@ -7,4 +7,5 @@ export interface Comment {
     userId: number;
     suraNo: number;
     ayaNo: number;
+    tagId?: number;
 }

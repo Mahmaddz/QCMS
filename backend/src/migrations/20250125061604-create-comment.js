@@ -16,6 +16,13 @@ module.exports = {
       commentText: {
         type: Sequelize.STRING,
       },
+      tagId: {
+        type: Sequelize.INTEGER,
+        references: {
+          model: 'Tags',
+          key: 'id',
+        },
+      },
       userId: {
         type: Sequelize.INTEGER,
         references: {

@@ -4,13 +4,14 @@ const { logger } = require('../config/logger');
 const { Comment, Users, Sequelize } = require('../models');
 const ApiError = require('../utils/ApiError');
 
-const insertComment = async (suraNo, ayaNo, commentText, userId) => {
+const insertComment = async (suraNo, ayaNo, commentText, userId, tagId) => {
   try {
     const insertedComment = await Comment.create({
       suraNo,
       ayaNo,
       commentText,
       userId,
+      tagId,
     });
     return insertedComment.dataValues.id;
   } catch (error) {
@@ -19,7 +20,7 @@ const insertComment = async (suraNo, ayaNo, commentText, userId) => {
   }
 };
 
-const getComments = async (suraNo, ayaNo) => {
+const getComments = async (suraNo, ayaNo, tagId) => {
   try {
     const result = await Comment.findAll({
       attributes: [
@@ -32,7 +33,7 @@ const getComments = async (suraNo, ayaNo) => {
         'updatedAt',
         [Sequelize.col('user.username'), 'username'],
       ],
-      where: { suraNo, ayaNo },
+      where: { suraNo, ayaNo, tagId },
       include: [
         {
           model: Users,
@@ -52,9 +53,9 @@ const getComments = async (suraNo, ayaNo) => {
   }
 };
 
-const editComment = async (id, suraNo, ayaNo, commentText) => {
+const editComment = async (id, suraNo, ayaNo, commentText, tagId) => {
   try {
-    const [updatedRows] = await Comment.update({ commentText }, { where: { id, suraNo, ayaNo } });
+    const [updatedRows] = await Comment.update({ commentText }, { where: { id, suraNo, ayaNo, tagId } });
     return updatedRows > 0;
   } catch (error) {
     logger.error(error.message);

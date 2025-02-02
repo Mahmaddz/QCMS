@@ -7,6 +7,10 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'userId',
         as: 'user',
       });
+      Comment.belongsTo(models.Tag, {
+        foreignKey: 'tagId',
+        as: 'tag',
+      });
     }
   }
   Comment.init(
