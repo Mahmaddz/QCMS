@@ -18,7 +18,7 @@ const addTagsToTheVerses = async (suraNo, ayaNo, category, arabic, userId) => {
     return insertedTag.dataValues.id;
   } catch (error) {
     logger.error(error);
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, `Tag Insert Query Issue`);
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
   }
 };
 
@@ -34,8 +34,10 @@ const updateTagsRowUsingTagId = async (id, suraNo, ayaNo, category, arabic, user
         actionId: 3,
         userId,
         statusId: 1,
-        categoryOld: previousRow.dataValues.category,
-        arabicOld: previousRow.dataValues.arabic,
+        ...(previousRow.dataValues.statusId === 2 && {
+          categoryOld: previousRow.dataValues.category,
+          arabicOld: previousRow.dataValues.arabic,
+        }),
       },
       {
         where: { id, suraNo, ayaNo },
@@ -44,10 +46,10 @@ const updateTagsRowUsingTagId = async (id, suraNo, ayaNo, category, arabic, user
     if (updatedRowCount === 0) {
       return { success: false, message: `No tag found with id ${id} to update.` };
     }
-    return { success: true, message: `Tag with id ${id} updated successfully.` };
+    return { success: true, message: `Tag at ${suraNo}:${ayaNo} updated successfully.` };
   } catch (error) {
     logger.error(`Error updating tag: ${error.message}`);
-    throw new ApiError(httpStatus.CONFLICT, `ISSUE IN UPDATING VALUES`);
+    throw new ApiError(httpStatus.CONFLICT, error.message);
   }
 };
 
@@ -68,7 +70,7 @@ const deleteTagUsingTagId = async (tagId, userId, forceDelete = false) => {
     return updatedCount > 0;
   } catch (error) {
     logger.error(`Error deleting tag: ${error.message}`);
-    throw new ApiError(httpStatus.CONFLICT, `ISSUE IN DELETING VALUES`);
+    throw new ApiError(httpStatus.CONFLICT, error.message);
   }
 };
 
@@ -112,10 +114,10 @@ const changeTagsStatsusUsingId = async (tagId, statusId) => {
       return { message: `No tag found with ID ${tagId} to Update.`, success: false };
     }
 
-    return { message: `Tag's ${tagId} Status Updated To ${statusId}`, success: true };
+    return { message: `Tag's Status Updated.`, success: true };
   } catch (error) {
     logger.error(`Error deleting tag: ${error.message}`);
-    throw new ApiError(httpStatus.CONFLICT, `ISSUE IN DELETING VALUES`);
+    throw new ApiError(httpStatus.CONFLICT, error.message);
   }
 };
 
@@ -137,15 +139,7 @@ const suraAndAyaByTagMatch = async (term, suraNo = undefined, ayaNo = undefined)
         [Op.iLike]: { [Op.any]: term.split(' ').map((t) => `%${t}%`) },
       },
       ...(suraNo && { suraNo }),
-      ...(ayaNo
-        ? {
-            ayaNo,
-          }
-        : {
-            ayaNo: {
-              [Op.ne]: 0,
-            },
-          }),
+      ...(ayaNo ? { ayaNo } : { ayaNo: { [Op.ne]: 0 } }),
     },
     order: [
       ['suraNo', 'ASC'],

@@ -19,11 +19,20 @@ import Toaster from "../utils/helper/Toaster";
 import { CurrentSearch } from "../interfaces/SearchForm";
 import { Marker } from "react-mark.js";
 import { ArabicServices } from "arabic-services";
+import CommentDialog from "./CommentDialog";
 
 const DisplayTags = ({showTags=true, tagz, Chapter, Verse, searchMethod}:{showTags?: boolean | undefined; tagz: Tagz[]; Chapter: number, Verse: number, searchMethod?: CurrentSearch;}) => {
     const { userRole } = useAuth();
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
+
+    const [openCommentDialog, setOpenCommentDialog] = useState(false);
+    const handleOpenCommentDialog = (tag: Tagz) => {
+        if (userRole !== USER.PUBLIC) {
+            setOpenCommentDialog(true);
+            setSelectedTag(tag);
+        }
+    }
 
     const [tags, setTags] = useState(tagz);
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
@@ -107,26 +116,48 @@ const DisplayTags = ({showTags=true, tagz, Chapter, Verse, searchMethod}:{showTa
                     marginTop: "20px",
                     paddingBottom: "10px",
                     gap: "20px",
+                    marginLeft: { xs: -4 },
                 }}
             >
                 {userRole !== USER.PUBLIC && showTags && (
-                    <AddCircleTwoToneIcon
+                    <Box
+                        marginLeft={2}
                         sx={{
-                            position: "absolute",
-                            top: "-10px",
-                            right: "-10px",
-                            fontSize: "32px",
-                            color: "primary.main",
-                            cursor: "pointer",
-                            transition: "transform 0.3s ease",
-                            "&:hover": {
-                                transform: "scale(1.2)",
-                            },
+                            marginLeft: 2,
+                            marginBottom: { xs: 2 },
+                            width: { sm: 10 },
                         }}
-                        onClick={handleOpenAddTagModal}
-                    />
+                    >
+                        <AddCircleTwoToneIcon
+                            sx={{
+                                position: "absolute",
+                                top: "-10px",
+                                right: "-10px",
+                                fontSize: "32px",
+                                color: "primary.main",
+                                cursor: "pointer",
+                                transition: "transform 0.3s ease",
+                                marginRight: 2,
+                                "&:hover": {
+                                    transform: "scale(1.2)",
+                                },
+                            }}
+                            onClick={handleOpenAddTagModal}
+                        />
+                    </Box>
                 )}
 
+                <Box
+                    sx={{
+                        marginLeft: { sm: 8 },   
+                        display: 'flex',
+                        flexDirection: 'row',
+                        gap: 2,
+                        width: '90%',
+                        padding: { sm: 1 },
+                        flexWrap: 'wrap',
+                    }}
+                >
                 {showTags && (
                     tags && tags?.length > 0 ? (
                         tags.map((tag) => (
@@ -174,7 +205,7 @@ const DisplayTags = ({showTags=true, tagz, Chapter, Verse, searchMethod}:{showTa
                                         }}
                                     />
                                 </>
-                            )}
+                            )} 
 
                             <Chip
                                 label={
@@ -185,7 +216,11 @@ const DisplayTags = ({showTags=true, tagz, Chapter, Verse, searchMethod}:{showTa
                                     </Marker>
                                 }
                                 variant="outlined"
+                                onClick={()=>handleOpenCommentDialog(tag)}
                                 sx={{
+                                    ...(userRole !== USER.ADMIN && {
+                                        cursor: 'pointer',
+                                    }),
                                     borderRadius: "16px",
                                     backgroundColor: "#f5f5f5",
                                     boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
@@ -211,7 +246,13 @@ const DisplayTags = ({showTags=true, tagz, Chapter, Verse, searchMethod}:{showTa
                         </Typography>
                     )
                 )}
+                </Box>
             </Box>
+
+            {
+                openCommentDialog &&
+                <CommentDialog tagId={selectedTag?.id || 0} Chapter={Chapter} Verse={Verse} openCommentDialog={openCommentDialog} setOpenCommentDialog={setOpenCommentDialog}/>
+            }
 
             {/* ===================================== Deletion Confirmation Modal ===================================== */}
             <Dialog
