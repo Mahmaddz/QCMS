@@ -128,7 +128,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
         setLoading(true);
         setSuggestions([]);
         setSearchedResult(()=>[]);
-        // setSearchedCount(0);
+        setSearchedCount(0);
         setSelectedKeywords([]);
         setRelatedSearch([]);
         setRootLemmaData([]);
@@ -204,7 +204,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
         if(!(chkbox.isLemma || chkbox.isQurana || chkbox.isQurany || chkbox.isTag)) {
             setLoading(true);
             setSearchedResult(()=>[]);
-            // setSearchedCount(0);
+            setSearchedCount(0);
             const response = await searchAyats("", selectedKeywords, filter.surah as string, filter.aya as string);
             if (response.success) {
                 // setLoading(false);
@@ -566,7 +566,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
                     ) : searchedCount > 0 ? (
                         <>
                             <Box component="span" sx={{ fontWeight: 'bold' }}>
-                                {searchedCount}
+                                {loading ? <CircularProgress size={20} color="inherit" /> : searchedCount}
                             </Box>{" "}
                             Match Found
                         </>

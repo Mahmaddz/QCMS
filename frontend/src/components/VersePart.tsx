@@ -1,6 +1,6 @@
 /* eslint-disable no-misleading-character-class */
 import { Box, Tooltip, Typography } from '@mui/material'
-import React, { memo } from 'react'
+import React, { memo, useMemo } from 'react'
 import uniqueID from '../utils/helper/UniqueID'
 import { ArabicServices } from 'arabic-services'
 import { openNewTab } from '../utils/functions/openNewTab'
@@ -9,6 +9,8 @@ import { Marker } from "react-mark.js";
 // import DisplayTags from './DisplayTags'
 
 const VersePart = ({ verses, selectedKeywords, selectedLanguage, searchMethod, displayNumbers=false }: ReviewBodyProps) => {
+
+    const translation = useMemo(() => verses.translation.filter((verse) => verse.language.code === selectedLanguage)[0]?.text || '', [selectedLanguage, verses.translation]);
 
     const normalizeText = (str: string[]) => (
         str.map(singleWord => 
@@ -156,13 +158,9 @@ const VersePart = ({ verses, selectedKeywords, selectedLanguage, searchMethod, d
                                 }}
                                 onClick={() => handleShowResultAgainstTerm(verse.word)}
                             >
-                                {verses.wordId?.includes(index + 1) ? (
-                                    <Marker mark={normalizeText(verses.arabicWord || [])}>
-                                        {verse.word}
-                                    </Marker>
-                                ) : (
-                                    verse.word
-                                )}
+                                <Marker mark={verses.wordId?.includes(index + 1) ? normalizeText(verses.arabicWord || []) : undefined}>
+                                    {verse.word}
+                                </Marker>
                             </Typography>
                         </Tooltip>
                     ))}
@@ -180,7 +178,7 @@ const VersePart = ({ verses, selectedKeywords, selectedLanguage, searchMethod, d
                         margin: '0 auto',
                     }}
                 >
-                    {verses.translation.filter((verse) => verse.language.code === selectedLanguage)[0]?.text}
+                    {translation}
                 </Typography>
             </Box>
         </React.Fragment>

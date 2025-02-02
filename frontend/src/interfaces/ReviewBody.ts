@@ -2,8 +2,9 @@ import { CurrentSearch } from "./SearchForm";
 import { Tagz } from "./SurahAyaInfo";
 
 export interface ReviewBodyProps {
+    isSelectedAya?: boolean;
     verses: VerseWordsArr; //\\
-    tags?: ({ en: string; ar: string; type: string } | { label: string })[];
+    tags?: Tagz[];
     id?: number;
     role?: number;
     showTags?: boolean;
@@ -11,6 +12,7 @@ export interface ReviewBodyProps {
     selectedLanguage: number | string | undefined; //\\
     searchMethod?: CurrentSearch;
     displayNumbers?: boolean;
+    verseNumber?: number;
 }
 
 export interface VerseWords {

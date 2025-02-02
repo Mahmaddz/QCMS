@@ -10,25 +10,18 @@ import { LanguageType } from '../interfaces/Language';
 import { getAllLanguages } from '../services/Language/getLanguages';
 import { getAyaWords } from '../services/Ayaat/getAyaWords';
 import Toaster from '../utils/helper/Toaster';
-import VersePart from '../components/VersePart';
 import { AyaTranslationWithIds, VerseWords, VerseWordsArr } from '../interfaces/ReviewBody';
-import DisplayTags from '../components/DisplayTags';
 import { Tagz } from '../interfaces/SurahAyaInfo';
 import uniqueID from '../utils/helper/UniqueID';
-// import CommentDialog from '../components/CommentDialog';
+import ReviewBody from '../components/ReviewBody';
 
 const SurahAyahList = () => {
     const [searchParam] = useSearchParams();
     const targetRef = useRef<HTMLDivElement | null>(null);
-
+    const [isLoading, setIsLoading] = useState<boolean>(true);
     const [surahInfo, setSurahInfo] = useState<CompleteSurah>({ araNm: '', aya: '', engNm: '', sura: ""  });
     const [listOfLanguages, setListOfLanguages] = useState<LanguageType[]>([]);
     const [selectedLanguage, setSelectedLanguages] = useState<LanguageType | undefined>();
-
-    // const [openCommentDialog, setOpenCommentDialog] = useState(false);
-    // const handleOpenCommentDialog = () => {
-    //     setOpenCommentDialog(true);
-    // }
 
     useEffect(() => {
         // EXTRACTING VALUES
@@ -89,6 +82,7 @@ const SurahAyahList = () => {
             if (response.success) {
                 setListOfLanguages(response.data);
                 setSelectedLanguages(response.data[0]);
+                setIsLoading(false);
             }
         })()
         return () => clearTimeout(time);
@@ -164,125 +158,93 @@ const SurahAyahList = () => {
                     />
                 )}
 
-                {surahInfo?.verses ? (
-                    <Box
-                        key={uniqueID()}
-                        sx={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            gap: 4,
-                            padding: 4,
-                            borderRadius: 2,
-                            boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
-                        }}
-                    >
-                        {verses.map((verse, index) => {
+                {
+                    isLoading ? (
+                        Array.from({ length: 5 }).map(() => (
+                            <Box
+                                key={uniqueID()}
+                                sx={{
+                                    width: '60%',
+                                    margin: '0 auto',
+                                    height: 'auto',
+                                    boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)',
+                                    backgroundColor: '#f5f5f5',
+                                    '@media (max-width:600px)': {
+                                        width: '90%',
+                                        padding: 2,
+                                    },
+                                }}
+                            >
+                                <Box
+                                    key={uniqueID()}
+                                    sx={{
+                                        display: 'flex',
+                                        flexDirection: { sm: 'row', xs: 'column' },
+                                        alignItems: 'center',
+                                        padding: 3,
+                                        margin: '0 auto',
+                                        borderRadius: 4,
+                                    }}
+                                >
+                                    <Skeleton
+                                        key={uniqueID()}
+                                        variant="circular"
+                                        width={50}
+                                        height={50}
+                                        sx={{ marginRight: 3 }}
+                                    />
+                                    <Box sx={{ flex: 1, margin: '0 auto', justifyItems: 'center' }} key={uniqueID()}>
+                                        <Skeleton
+                                            key={uniqueID()}
+                                            width="50%"
+                                            height={50}
+                                            sx={{ marginBottom: 1 }}
+                                        />
+                                        <Skeleton width="30%" height={20} />
+                                    </Box>
+                                </Box>
+                                <Box display={'flex'} width={'90%'} marginTop={0} marginBottom={3} key={uniqueID()}>
+                                    {Array.from({ length: 3 }).map(() => (
+                                        <Skeleton
+                                            key={uniqueID()}
+                                            variant="rounded"
+                                            width={120}
+                                            height={32}
+                                            sx={{
+                                                gap: 3,
+                                                borderRadius: "16px",
+                                                backgroundColor: "#e0e0e0",
+                                                marginBottom: 4,
+                                                marginLeft: 2,
+                                            }}
+                                        />
+                                    ))}
+                                </Box>
+                            </Box>
+                        ))
+                    ) : (
+                        verses?.map((verse, index) => {
                             const isTarget = (index + 1) === Number.parseInt(surahInfo.aya as string);
-            
                             return (
                                 <Box
                                     key={uniqueID()}
                                     ref={isTarget ? targetRef : null}
-                                    sx={{
-                                        width: '100%',
-                                        maxWidth: 900,
-                                        padding: 3,
-                                        borderRadius: 2,
-                                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                                        background: isTarget
-                                            ? 'linear-gradient(135deg, #bbdefb,  #81d4fa)'
-                                            : 'linear-gradient(135deg, #e3f2fd, #bbdefb)',
-                                        transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                                        '&:hover': {
-                                            transform: 'scale(1.03)',
-                                            boxShadow: '0 6px 15px rgba(0, 0, 0, 0.2)',
-                                        },
-                                    }}
-                                > 
-                                    {/* <Button onClick={handleOpenCommentDialog}>
-                                        Open
-                                    </Button> */}
-                                    <VersePart 
-                                        selectedLanguage={selectedLanguage?.code || 'en'} 
-                                        verses={verse} 
-                                        displayNumbers={true}
-                                    />
-                                    <Box>
-                                        <DisplayTags tagz={verse.tags || []} Chapter={verse.ayat[0].Chapter as number} Verse={verse.ayat[0].Verse as number} />
-                                    </Box>
-                                    {/* {
-                                        openCommentDialog &&
-                                        <CommentDialog Chapter={verse.ayat[0].Chapter as number} Verse={verse.ayat[0].Verse as number} openCommentDialog={openCommentDialog} setOpenCommentDialog={setOpenCommentDialog}/>
-                                    } */}
-                                </Box>
-                            );
-                        })}
-                    </Box>
-                ) : (
-                    Array.from({ length: 5 }).map(() => (
-                        <Box
-                            key={uniqueID()}
-                            sx={{
-                                width: '60%',
-                                margin: '0 auto',
-                                height: 'auto',
-                                boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)',
-                                backgroundColor: '#f5f5f5',
-                                '@media (max-width:600px)': {
-                                    width: '90%',
-                                    padding: 2,
-                                },
-                            }}
-                        >
-                            <Box
-                                key={uniqueID()}
-                                sx={{
-                                    display: 'flex',
-                                    flexDirection: { sm: 'row', xs: 'column' },
-                                    alignItems: 'center',
-                                    padding: 3,
-                                    margin: '0 auto',
-                                    borderRadius: 4,
-                                }}
-                            >
-                                <Box sx={{ flex: 1, margin: '0 auto', justifyItems: 'center' }} key={uniqueID()}>
-                                    <Skeleton
+                                >
+                                    <ReviewBody
                                         key={uniqueID()}
-                                        width="50%"
-                                        height={50}
-                                        sx={{ marginBottom: 1 }}
+                                        verseNumber={index+1}
+                                        verses={verse}
+                                        tags={verse.tags || []}
+                                        showTags={true}
+                                        selectedKeywords={[]}
+                                        selectedLanguage={selectedLanguage?.code || 0}
+                                        isSelectedAya={isTarget}
                                     />
-                                    <Skeleton width="30%" height={20} />
                                 </Box>
-                                <Skeleton
-                                    key={uniqueID()}
-                                    variant="circular"
-                                    width={50}
-                                    height={50}
-                                    sx={{ marginRight: 3 }}
-                                />
-                            </Box>
-                            <Box display={'flex'} width={'90%'} marginTop={0} marginBottom={3} key={uniqueID()}>
-                                {Array.from({ length: 3 }).map(() => (
-                                    <Skeleton
-                                        key={uniqueID()}
-                                        variant="rounded"
-                                        width={120}
-                                        height={32}
-                                        sx={{
-                                            gap: 3,
-                                            borderRadius: "16px",
-                                            backgroundColor: "#e0e0e0",
-                                            marginBottom: 4,
-                                            marginLeft: 2,
-                                        }}
-                                    />
-                                ))}
-                            </Box>
-                        </Box>
-                    ))
-                )}
+                            )
+                        })
+                    )
+                }
             </Box>
         </>
     );
