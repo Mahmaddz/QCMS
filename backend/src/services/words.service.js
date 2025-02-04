@@ -238,7 +238,9 @@ const getWordsByRoot = async (wordsArray, prefferedLemmas = []) => {
       Verse: {
         [Op.ne]: 0,
       },
-      ...(prefferedLemmas.length && { Lemma: { [Op.in]: prefferedLemmas } }),
+      ...(prefferedLemmas.length && {
+        [Op.or]: [{ Root: { [Op.ne]: '#' } }, { Root: '#', Lemma: { [Op.in]: prefferedLemmas } }],
+      }),
     },
     group: ['wordLastLetterUndiacritizedWithHamza', 'Lemma', 'Root'],
   });

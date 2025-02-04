@@ -144,10 +144,10 @@ const getSuraAndAyaFromMushafUsingTerm = async (term, surah, aya) => {
   const wordsList = await wordsServices.getSuggestedWordsBasedOnTerm(term); // (roots and lemmas) of matched words
   const lemmaList = Object.keys(wordsList.lemmas);
   const otherWords = {
-    lemmasWords: await wordsServices.getWordsByLemma(lemmaList),
-    rootsWords: (await wordsServices.getWordsByRoot(Object.keys(wordsList.roots), lemmaList)).filter(i => i.root !== '#'),
+    lemmasWords: await wordsServices.getWordsByLemma(lemmaList),  
+    rootsWords: (await wordsServices.getWordsByRoot(Object.keys(wordsList.roots), lemmaList)),
   };
-  const resultz = lemmaList.length !== 0 ? await getAyaAndSuraUsingWords(Object.values(wordsList.lemmas).flat(), surah, aya) : [];
+  const resultz = lemmaList.length !== 0 ? await getAyaAndSuraUsingWords(Object.values(otherWords.lemmasWords).flat(), surah, aya) : [];
   return { surahAndAyaList: resultz.surahAndAyaList, wordsList, otherWords };
 };
 

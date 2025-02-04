@@ -150,14 +150,14 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
             const response = await searchAyats(search, [], filter.surah as string, filter.aya as string);
             if (response.success) {
                 setLoading(false);
-                setRootLemmaData(response.otherWords.rootsWords.filter(i => i.root !== '#'));
+                setRootLemmaData(response.otherWords.rootsWords);
                 setSuggestions(response.suggestions || []);
                 const toFind = Array.from(new Set(Object.values(response.words.lemmas).flat()));
                 setTimeout(() => {
                     setSelectedKeywords(toFind);
                 }, 1000)
                 const arrays = [
-                    ...Object.values(response.otherWords.rootsWords.filter(i => i.root !== '#').map(r => Object.values(r.lemmas)).flat())
+                    ...Object.values(response.otherWords.rootsWords.map(r => Object.values(r.lemmas)).flat())
                         .flat()
                         .map(word => ({
                             word,
@@ -166,6 +166,9 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
                 ];
                 setRelatedSearch(Array.from(new Map(arrays.map((item) => [item.word.word, item])).values()) || []);
                 handleResultantResponse(response.data);
+            }
+            else if (!response.success) {
+                setLoading(false);
             }
         }
         if (chkbox.isQurana) {

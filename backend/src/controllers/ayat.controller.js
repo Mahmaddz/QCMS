@@ -7,10 +7,16 @@ const ApiError = require('../utils/ApiError');
 
 const getVersesByTagsMatch = catchAsync(async (req, res) => {
   const { term, surah, aya } = req.query;
-  const data = await ayatServices.getAyatInfoByTags(term, surah, aya);
+  const updatedTerm = ArabicServices.removeTashkeel(term);
+  const data = await ayatServices.getAyatInfoByTags(updatedTerm, surah, aya);
+  let suggestions = [];
+  if (data.length === 0) {
+    suggestions = await wordsServices.getSuggestedWords(updatedTerm.split(' '));
+  }
   return res.status(httpStatus.OK).json({
     success: true,
     data,
+    suggestions,
   });
 });
 
@@ -44,7 +50,7 @@ const searchAyat = catchAsync(async (req, res) => {
     }
   } else {
     const wordArr = wordsServices.splitCommaSeparated(words);
-    result = await ayatServices.getAyaAndSuraUsingWords(wordArr);
+    result = await ayatServices.getAyaAndSuraUsingWords(wordArr, surah, aya);
   }
   res.status(httpStatus.OK).json({
     success: true,
