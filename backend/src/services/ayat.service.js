@@ -113,31 +113,30 @@ const getAyaAndSuraUsingWords = async (words, surah, aya) => {
     attributes: [
       [Sequelize.col('Chapter'), 'suraNo'],
       [Sequelize.col('Verse'), 'ayaNo'],
+      [Sequelize.fn('ARRAY_AGG', Sequelize.col('wordLastLetterUndiacritizedWithHamza')), 'wordsInAya'],
     ],
     where: {
-      wordLastLetterUndiacritizedWithHamza: {
-        [Op.in]: words,
-      },
+      wordLastLetterUndiacritizedWithHamza: { [Op.in]: words },
       is_basmalla: 0,
       is_chapter_name: 0,
-      ...(surah && {
-        Chapter: surah,
-      }),
-      ...(aya ? 
-        {
-          Verse: aya,
-        }
-      : {
-          Verse: {
-            [Op.ne]: 0,
-          },
-        }
-      ),
+      ...(surah && { Chapter: surah }),
+      ...(aya ? { Verse: aya } : { Verse: { [Op.ne]: 0 } } ),
     },
-    group: ['id', 'Chapter', 'Verse'],
-    order: [['id', 'ASC']],
+    group: ['Chapter', 'Verse'],
+    raw: true,
   });
-  return { surahAndAyaList: results || [] };
+
+  const sortedResult = (
+    results
+      .map((row) => {
+        const wordsInAya = row.wordsInAya || [];
+        const uniqueMatches = [...new Set(wordsInAya.filter((word) => words.includes(word)))].length;
+        return { ...row, uniqueMatches };
+      })
+      .sort((a, b) => b.uniqueMatches - a.uniqueMatches)
+  );
+
+  return { surahAndAyaList: sortedResult || [] };
 };
 
 const getSuraAndAyaFromMushafUsingTerm = async (term, surah, aya) => {
@@ -147,7 +146,7 @@ const getSuraAndAyaFromMushafUsingTerm = async (term, surah, aya) => {
     lemmasWords: await wordsServices.getWordsByLemma(lemmaList),  
     rootsWords: (await wordsServices.getWordsByRoot(Object.keys(wordsList.roots), lemmaList)),
   };
-  const resultz = lemmaList.length !== 0 ? await getAyaAndSuraUsingWords(Object.values(lemmaList).flat(), surah, aya) : [];
+  const resultz = lemmaList.length !== 0 ? await getAyaAndSuraUsingWords([...new Set(Object.values(wordsList.lemmas).flat())], surah, aya) : [];
   return { surahAndAyaList: resultz.surahAndAyaList, wordsList, otherWords };
 };
 

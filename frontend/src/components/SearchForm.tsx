@@ -96,15 +96,11 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleResultantResponse = (data: any[]) => {
         setLoading(false);
-        // const previousResult = searchData || [];
-        const uniqueData = filterUniqueBySura([...data]);
-        const searchResult = !data[0]?.wordId ? uniqueData : data;
         setSearchedResult((prev) => {
-            const tempData = prev?.length ? [ ...prev, ...searchResult] : [...searchResult] // filterUniqueBySura();
+            const tempData =  filterUniqueBySura(prev?.length ? [ ...prev, ...data] : [...data]);
             setSearchedCount(tempData?.length || 0);
-            return tempData.sort((a, b) => (a.suraNo - b.suraNo) || (a.ayaNo - b.ayaNo));
+            return filteredCheckBoxes === 'isWord' ? tempData : tempData.sort((a, b) => (a.suraNo - b.suraNo) || (a.ayaNo - b.ayaNo));
         });
-        // setSearchedCount(searchData?.length || 0);
     }
 
     const getReferenceData = async () => {

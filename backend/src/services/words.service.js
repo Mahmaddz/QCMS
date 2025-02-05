@@ -107,7 +107,7 @@ const getSurahAndAyaByCncptArabicWords = async (conceptArabicList) => {
 };
 
 const getSuggestedWordsBasedOnTerm = async (termVal) => {
-  const searchValue = termVal.split(' ');
+  const searchValue = [...new Set(termVal.split(' '))];
 
   const fields = [
     'word',
