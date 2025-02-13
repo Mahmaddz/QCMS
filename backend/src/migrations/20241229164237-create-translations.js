@@ -18,11 +18,11 @@ module.exports = {
         type: Sequelize.TEXT,
         allowNull: false,
       },
-      lang_id: {
+      translatorId: {
         type: Sequelize.INTEGER,
         allowNull: true,
         references: {
-          model: 'Languages',
+          model: 'Translators',
           key: 'id',
         },
         onUpdate: 'CASCADE',

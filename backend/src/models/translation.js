@@ -19,21 +19,21 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.TEXT,
         allowNull: false,
       },
-      lang_id: {
+      translatorId: {
         type: DataTypes.INTEGER,
-        allowNull: false,
       },
     },
     {
       tableName: 'Translations',
+      model: 'Translation',
       timestamps: true,
     }
   );
 
   Translation.associate = (models) => {
-    Translation.belongsTo(models.Language, {
-      foreignKey: 'lang_id',
-      as: 'language',
+    Translation.belongsTo(models.Translator, {
+      foreignKey: 'translatorId',
+      as: 'translator',
     });
   };
 

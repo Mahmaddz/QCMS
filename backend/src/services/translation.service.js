@@ -1,44 +1,50 @@
 const httpStatus = require('http-status');
 const { logger } = require('../config/logger');
-const { Translation, Language } = require('../models');
+const { Translation } = require('../models');
 const ApiError = require('../utils/ApiError');
+const fileServices = require('./file.service');
 
 const getSuraTranslations = async (suraNo, ayaNo = undefined) => {
   try {
     const result = await Translation.findAll({
-      attributes: ['sura', 'aya', 'text'],
-      include: [
-        {
-          model: Language,
-          as: 'language',
-          attributes: ['name', 'code'],
-          required: true,
-        },
-      ],
+      attributes: ['sura', 'aya', 'text', 'translatorId'],
+      // include: [
+      //   {
+      //     model: Translator,
+      //     as: 'translator',
+      //     attributes: ['id'],
+      //     required: true,
+      //   },
+      // ],
       where: {
         sura: suraNo,
         ...(ayaNo && { aya: ayaNo }),
       },
       order: [
-        ['lang_id', 'ASC'],
+        // ['lang_id', 'ASC'],
         ['sura', 'ASC'],
         ['aya', 'ASC'],
       ],
     });
-    return result.map((translation) => {
-      return {
-        sura: translation.sura,
-        aya: translation.aya,
-        text: translation.text,
-        language: translation.language.dataValues,
-      };
-    });
+    return result;
   } catch (error) {
     logger.error(error);
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, `getSuraTranslations failed`);
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
   }
+};
+
+const insertLanguageTranslation = async (data, translatorId) => {
+  const mappedData = data.map((item) => ({
+    sura: item.sura,
+    aya: item.aya,
+    text: item.text,
+    translatorId,
+  }));
+  const isInsertedSuccessfully = await fileServices.insertInBatches(Translation, mappedData);
+  return isInsertedSuccessfully;
 };
 
 module.exports = {
   getSuraTranslations,
+  insertLanguageTranslation,
 };
