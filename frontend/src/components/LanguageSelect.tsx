@@ -5,10 +5,12 @@ import { LanguageType } from '../interfaces/Language';
 import { Autocomplete, Box, InputAdornment, TextField } from '@mui/material';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
+import uniqueID from '../utils/helper/UniqueID';
 
 const LanguageSelect = React.memo(({ listOfLanguages = [], handleChange }: { listOfLanguages: LanguageType[]; handleChange: (item: LanguageType) => void; }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [selectedValue, setSelectedValue] = useState<string | null>(null);
 
     const handleButtonClick = useCallback(() => {
         setIsOpen((prevState) => !prevState);
@@ -17,9 +19,11 @@ const LanguageSelect = React.memo(({ listOfLanguages = [], handleChange }: { lis
     const handleLanguageChange = useCallback(
         (_event: unknown, value: string | null) => {
             setIsLoading(true);
-            const selectedLanguage = listOfLanguages?.find((val) => val.code === value?.split(':')[0]);
+            if (!value) return;
+            const selectedLanguage = listOfLanguages?.find((val) => val.id === Number.parseInt(value[0]));
             if (selectedLanguage) {
                 handleChange(selectedLanguage);
+                setSelectedValue(value);
             }
             setTimeout(() => setIsLoading(false), 500);
         },
@@ -30,7 +34,7 @@ const LanguageSelect = React.memo(({ listOfLanguages = [], handleChange }: { lis
         <Box
             sx={{
                 position: 'fixed',
-                marginTop: 10,
+                marginTop: 20,
                 left: 20,
                 top: 20,
                 padding: 3,
@@ -38,7 +42,7 @@ const LanguageSelect = React.memo(({ listOfLanguages = [], handleChange }: { lis
                 background: '',
                 borderRadius: 2,
                 boxShadow: isOpen ? 3 : '',
-                width: 250,
+                // width: ,
                 zIndex: 1000,
                 display: 'flex',
                 flexDirection: 'row',
@@ -49,12 +53,15 @@ const LanguageSelect = React.memo(({ listOfLanguages = [], handleChange }: { lis
         >
             <Autocomplete
                 disablePortal
-                options={listOfLanguages?.filter((item) => [1, 2, 3, 4, 5].includes(item.id)).map((item) => `${item.code}: ${item.name}`)}
+                key={uniqueID()}
+                options={listOfLanguages?.map((item) => `${item.id} : ${item.language.code} - ${item.authorName} [${item.language.name}]`)}
+                value={selectedValue?.slice(4)}
                 onChange={handleLanguageChange}
                 sx={{
                     width: 300,
                     marginRight: 1,
                     fontSize: '16px',
+                    maxWidth: '100%',
                     '@media (max-width: 600px)': {
                         width: 200,
                     },

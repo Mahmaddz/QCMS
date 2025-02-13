@@ -1,3 +1,9 @@
 export interface LanguageType {
-    id: number, name: string, code: string
+    id: number;
+    authorName: string;
+    language: {
+        id: number;
+        name: string;
+        code: string;
+    }
 }

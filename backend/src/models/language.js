@@ -18,9 +18,9 @@ module.exports = (sequelize, DataTypes) => {
   });
 
   Language.associate = (models) => {
-    Language.hasMany(models.Translation, {
-      foreignKey: 'lang_id',
-      as: 'translations',
+    Language.hasMany(models.Translator, {
+      foreignKey: 'langId', // This is the foreign key in the Translators table
+      as: 'translator', // Alias for the association
     });
   };
 
