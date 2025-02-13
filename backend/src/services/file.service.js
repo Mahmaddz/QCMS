@@ -20,7 +20,6 @@ const insertInBatches = async (model, data, batchSize = BATCH_SIZE) => {
     }
     return successCount === data.length;
   } catch (error) {
-    console.log(error.name);
     if (error.name === 'SequelizeDatabaseError') {
       logger.error(
         `Model: ${model.name}
@@ -31,7 +30,7 @@ const insertInBatches = async (model, data, batchSize = BATCH_SIZE) => {
       );
       throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, `${model.name} || ${error.original.code} || ${error.message}`);
     } else {
-      console.error(error);
+      logger.error(error.message);
       throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, `${error.message}`);
     }
   }
@@ -296,4 +295,5 @@ module.exports = {
   khadijaInsertBulk,
   mushafInsertBulk,
   rkInsertBulk,
+  insertInBatches,
 };
