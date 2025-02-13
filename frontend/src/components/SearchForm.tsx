@@ -318,6 +318,11 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
                 }}
                 onKeyDown={async (e) => {
                     if (e.key === 'Enter') {
+                        setSearchParams(prev => {
+                            const newParams = new URLSearchParams(prev);
+                            newParams.set('currentPage', '1');
+                            return newParams;
+                        });
                         await getResult(e);
                     }
                 }}
@@ -462,7 +467,14 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
                             },
                         }}
                         disabled={loading}
-                        onClick={(e)=>getResult(e)}
+                        onClick={(e)=> {
+                            setSearchParams(prev => {
+                                const newParams = new URLSearchParams(prev);
+                                newParams.set('currentPage','1');
+                                return newParams;
+                            });
+                            getResult(e);
+                        }}
                     >
                         {loading ? <CircularProgress size={24} color="inherit" /> : 'Search'}
                     </Button>
@@ -567,7 +579,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
                             <Box component="span" sx={{ fontWeight: 'bold' }}>
                                 {loading ? <CircularProgress size={20} color="inherit" /> : searchedCount}
                             </Box>{" "}
-                            Match Found
+                            Search Results
                         </>
                     ) : (
                         "Enter values to search"

@@ -8,17 +8,21 @@ import { ReviewBodyProps } from '../interfaces/ReviewBody'
 import { Marker } from "react-mark.js";
 // import DisplayTags from './DisplayTags'
 
-const VersePart = ({ verses, selectedKeywords, selectedLanguage, searchMethod, displayNumbers=false }: ReviewBodyProps) => {
+const VersePart = ({ verses, selectedKeywords, searchMethod, selectedLanguage, displayNumbers=false }: ReviewBodyProps) => {
 
-    const translation = useMemo(() => verses.translation.filter((verse) => verse.language.code === selectedLanguage)[0]?.text || '', [selectedLanguage, verses.translation]);
+    const translation = useMemo(() => verses.translation.filter((verse) => verse.translatorId === selectedLanguage)[0]?.text || '', [selectedLanguage, verses.translation]);
 
     const normalizeText = (str: string[]) => (
         str.map(singleWord => 
             singleWord
                 .replace(/[\u06E6\u0670]/g, "")
+                .replace(/ْ/g, "")
                 .replace(/ى[\u064E\u0653]?/g, "ي")
-                .replace(/ا\u0653/g, "ا") 
+                .replace(/ا\u0653/g, "ا")
+                .replace(/ا۟/g, "ا")
                 .replace(/[\u06E5\u0653]/g, "")
+                .replace(/^لَ/, "")
+                .replace(/[\u06E5\u0653۠]/g, "")
         )
     );
 
@@ -46,6 +50,8 @@ const VersePart = ({ verses, selectedKeywords, selectedLanguage, searchMethod, d
         }
         return 'text.primary';
     };
+
+    const wordSegmentToHighlight = (position: number) => verses.arabicWord?.[verses.wordId?.indexOf(position) || 0] || '' ;
 
     return (
         <React.Fragment>
@@ -96,7 +102,7 @@ const VersePart = ({ verses, selectedKeywords, selectedLanguage, searchMethod, d
                         width: '100%',
                     }}
                 >
-                    {verses.ayat.map((verse, index) => (
+                    {verses.ayat.map((verse, index: number) => (
                         <Tooltip 
                             key={uniqueID()}
                             title={
@@ -133,7 +139,22 @@ const VersePart = ({ verses, selectedKeywords, selectedLanguage, searchMethod, d
                                             >
                                                 <b>Concept Arabic:</b> {verses.conceptArabic}
                                             </Typography>
-                                        )}
+                                        )
+                                    }
+                                    {isCharacterInArabicWord(index + 1) &&
+                                        verses?.conceptArabic && (
+                                            <Typography
+                                                key={uniqueID()}
+                                                sx={{
+                                                    fontSize: { xs: "0.75rem", sm: 18 },
+                                                    fontWeight: 500,
+                                                    lineHeight: 1.5,
+                                                }}
+                                            >
+                                                <b>{`Segment (Testing)`}</b> {wordSegmentToHighlight(index+1)}
+                                            </Typography>
+                                        )
+                                    }
                                 </>
                             }
                             placement="top" 
@@ -155,10 +176,12 @@ const VersePart = ({ verses, selectedKeywords, selectedLanguage, searchMethod, d
                                     '&:active': {
                                         color: 'primary.main',
                                     },
+                                    textDecoration: verses.wordId?.includes(index + 1) ? 'underline' : '',
+                                    textDecorationColor: 'red',
                                 }}
                                 onClick={() => handleShowResultAgainstTerm(verse.word)}
                             >
-                                <Marker mark={verses.wordId?.includes(index + 1) ? normalizeText(verses.arabicWord || []) : undefined}>
+                                <Marker mark={verses.wordId?.includes(index + 1) ? normalizeText([wordSegmentToHighlight(index+1)]) : undefined}>
                                     {verse.word}
                                 </Marker>
                             </Typography>

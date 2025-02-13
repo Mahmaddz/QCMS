@@ -237,7 +237,7 @@ const SurahAyahList = () => {
                                         tags={verse.tags || []}
                                         showTags={true}
                                         selectedKeywords={[]}
-                                        selectedLanguage={selectedLanguage?.code || 0}
+                                        selectedLanguage={selectedLanguage?.id || 0}
                                         isSelectedAya={isTarget}
                                     />
                                 </Box>

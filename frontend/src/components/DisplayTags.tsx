@@ -180,8 +180,11 @@ const DisplayTags = ({showTags=true, tagz, Chapter, Verse, searchMethod}:{showTa
                                             color: "primary.main",
                                             cursor: "pointer",
                                             transition: "color 0.3s ease",
+                                            zIndex: 1,
                                             "&:hover": {
                                                 color: "primary.dark",
+                                                transform: "scale(1.1)",
+                                                opacity: 0.8,
                                             },
                                         }}
                                         onClick={() => handleOpenEditTagModal(tag as unknown as Tagz)}
@@ -195,8 +198,11 @@ const DisplayTags = ({showTags=true, tagz, Chapter, Verse, searchMethod}:{showTa
                                             color: "error.main",
                                             cursor: "pointer",
                                             transition: "color 0.3s ease",
+                                            zIndex: 1,
                                             "&:hover": {
                                                 color: "error.dark",
+                                                transform: "scale(1.1)",
+                                                opacity: 0.8,
                                             },
                                         }}
                                         onClick={() => {

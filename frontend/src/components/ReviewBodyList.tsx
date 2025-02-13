@@ -13,10 +13,13 @@ import { getAllLanguages } from "../services/Language/getLanguages";
 import { LanguageType } from "../interfaces/Language";
 import LanguageSelect from "./LanguageSelect";
 
-const ReviewBodyList = ({ showTags, searchData, selectedKeywords, currentSearchMethod }: RBL_Params) => {
+const ReviewBodyList = ({ showTags, searchData, selectedKeywords, currentSearchMethod, setSearchParams, searchParam }: RBL_Params) => {
+
+    const currentPapeNumber = searchParam?.get('currentPage') as unknown as number || 1;
+
     const [itemsPerPage, setItemsPerPage] = useState<number>(10);
     const listOfItemsPerPage = [5,10,15,20,25,30];
-    const [currentPage, setCurrentPage] = useState(1);
+    const [currentPage, setCurrentPage] = useState(currentPapeNumber);
     const dividerRef = useRef<HTMLDivElement | null>(null);
     const [verseWords, setVerseWords] = useState<VerseWordsArr[]>([]);
     
@@ -34,7 +37,7 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords, currentSearchM
     }, [])
 
     useEffect(() => {
-        setCurrentPage(1);
+        setCurrentPage(currentPapeNumber);
     }, [searchData]);
 
     const handleGetAyaWordsAPI = async (sura: string | number, aya: string | number) => {
@@ -101,7 +104,14 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords, currentSearchM
     const totalPages = searchData ? Math.ceil(searchData.length / itemsPerPage) : 0;
 
     const handlePageChange = (_event: React.ChangeEvent<unknown>, newPage: number) => {
-        setCurrentPage(newPage);
+        if (setSearchParams) {
+            setSearchParams((prevParams) => {
+                const newParams = new URLSearchParams(prevParams);
+                setCurrentPage(newPage);
+                newParams.set("currentPage", newPage.toString());
+                return newParams;
+            });
+        }
     };
 
     const handleItemsPerPageChange = (event: SelectChangeEvent<number>) => {
@@ -236,7 +246,7 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords, currentSearchM
                     tags={Tags}
                     showTags={showTags}
                     selectedKeywords={selectedKeywords}
-                    selectedLanguage={selectedLanguage?.code || 0}
+                    selectedLanguage={selectedLanguage?.id || 0}
                     searchMethod={currentSearchMethod}
                 />
             ))}

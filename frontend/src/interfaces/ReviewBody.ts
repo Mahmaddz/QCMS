@@ -28,10 +28,7 @@ export interface AyaTranslationWithIds {
     sura: string,
     aya: number,
     text: string,
-    language: {
-        name: string,
-        code: string
-    }
+    translatorId: number;
     tags?: Tagz[];
 } 
 

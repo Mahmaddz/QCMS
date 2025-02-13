@@ -31,6 +31,8 @@ export default function Home() {
         searchData={searchedResult}
       />
       <ReviewBodyList
+        setSearchParams={setSearchParams}
+        searchParam={searchParam}
         currentSearchMethod={currentSearch}
         showTags={showTag}
         searchData={searchedResult}
