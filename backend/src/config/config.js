@@ -27,6 +27,7 @@ const envVarsSchema = Joi.object()
     SMTP_USERNAME: Joi.string().description('username for email server'),
     SMTP_PASSWORD: Joi.string().description('password for email server'),
     EMAIL_FROM: Joi.string().description('the from field in the emails sent by the app'),
+    APP_LINK: Joi.string().description('Frontend app link'),
     FARASA_LEMO_TOKEN: Joi.string().description('Farasa - to lemonize the arabic text'),
     SPHINX_HOST: Joi.string().description('SPHINX - SEARCH ENGINE - HOST'),
     SPHINX_PORT: Joi.string().description('SPHINX - SEARCH ENGINE - PORT'),
@@ -60,8 +61,7 @@ module.exports = {
   },
   email: {
     smtp: {
-      host: envVars.SMTP_HOST,
-      port: envVars.SMTP_PORT,
+      service: envVars.SMTP_HOST,
       auth: {
         user: envVars.SMTP_USERNAME,
         pass: envVars.SMTP_PASSWORD,
@@ -69,6 +69,7 @@ module.exports = {
     },
     from: envVars.EMAIL_FROM,
   },
+  appLink: envVars.APP_LINK,
   external: {
     farasaApiKey: envVars.FARASA_LEMO_TOKEN,
   },

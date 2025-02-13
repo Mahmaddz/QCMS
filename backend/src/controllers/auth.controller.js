@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 const httpStatus = require('http-status');
 const catchAsync = require('../utils/catchAsync');
 const { authService, userService, tokenService, emailService } = require('../services');
@@ -14,7 +13,7 @@ const register = catchAsync(async (req, res) => {
   const user = await userService.createUser(req.body);
   const verifyEmailToken = await tokenService.generateVerifyEmailToken(user);
   logger.info(`${baseUrl}/v1/auth/verify-email?token=${verifyEmailToken}`);
-  // await emailService.sendVerificationEmail(req.user.email, verifyEmailToken);
+  await emailService.sendVerificationEmail(user.dataValues.email, verifyEmailToken);
   return res.status(httpStatus.CREATED).send({ success: true, message: 'User Created' });
 });
 
@@ -43,7 +42,6 @@ const forgotPassword = catchAsync(async (req, res) => {
   }
 
   const newPassword = generateRandomString(13);
-  console.log(newPassword);
   await userService.updatePassword(user.id, newPassword);
   // await emailService.sendEmail(req.body.email, `Forgot Password`, `Your new password is ${newPassword}`);
   res.status(httpStatus.NO_CONTENT).send();

@@ -14,22 +14,17 @@ const Loader = ({ duration = 3000 }) => {
         return () => clearTimeout(timer);
     }, [duration]);
 
-    useEffect(() => {
-        window.scrollTo(0, 0)
-    }, [])
-
     if (loading) {
         return (
             <Box
                 sx={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                height: '100vh',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    height: '100vh',
                 }}
             >
-                {/* <Header/> */}
-                <CircularProgress />
+                <CircularProgress size={80}/>
             </Box>
         );
     }

@@ -212,6 +212,23 @@ function Header() {
                                         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
                                     >
                                         <Box sx={{ px: 2, py: 1 }}>
+                                        <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                                                <Typography variant="subtitle1" fontWeight="bold">
+                                                    Username:
+                                                </Typography>
+                                                <Typography
+                                                    variant="body2"
+                                                    color="gray"
+                                                    sx={{
+                                                        maxWidth: '180px',
+                                                        whiteSpace: 'normal',
+                                                        wordWrap: 'break-word',
+                                                        textAlign: 'right',
+                                                    }}
+                                                >
+                                                    {user?.username}
+                                                </Typography>
+                                            </Box>
                                             <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
                                                 <Typography variant="subtitle1" fontWeight="bold">
                                                     Email:

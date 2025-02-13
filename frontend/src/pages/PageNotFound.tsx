@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Box, Typography, Button, CircularProgress } from '@mui/material';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/Auth/useAuth';
+import { componentRoutes } from '../routes/AllRoutes';
 
 const PageNotFound = () => {
     const [loading, setLoading] = useState(true);
@@ -9,17 +10,12 @@ const PageNotFound = () => {
     const { userRole } = useAuth();
 
     useEffect(() => {
-
-        // if (location.pathname === '/login') {
-        //     // window.location.reload();
-        // }
-
         const timer = setTimeout(() => {
-            setLoading(false);
-            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-            location.pathname === '/login' && window.location.reload();
+            if (!componentRoutes.find(cr => cr.path === '/login' && !cr.allowedRoles?.includes(userRole)) || location.pathname !== '/login')
+                setLoading(false);
+            if (location.pathname === '/login')
+                window.location.reload();
         }, 3000);
-
         return () => clearTimeout(timer);
     }, [location.pathname, userRole]);
 
