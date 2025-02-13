@@ -13,7 +13,7 @@ import { validateEmail } from "../utils/functions/validateEmail";
 
 export default function Register() {
     const [userData, setUserData] = useState<{email: string, password: string; confirmPassword: string; username: string}>({email: "", password: "", confirmPassword: "", username: ""});
-    const [loading, setLoading] = useState(true); 
+    const [loading, setLoading] = useState(false); 
     
     const handleSetUserData = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         e.preventDefault();
