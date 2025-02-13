@@ -50,6 +50,7 @@ export default function SignIn() {
       // NAVIGATE TO THE HOMEPAGE
       setTimeout(() => {
         navigate("/", { replace: true });
+        window.location.reload();
       }, 1000);
     }
     else {

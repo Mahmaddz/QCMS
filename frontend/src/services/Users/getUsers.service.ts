@@ -5,5 +5,6 @@ export const getUsers: GetUserResponse = async () => {
     return await request.get({
         url: '/v1/users/allUsers',
         useToken: true,
+        showToast: false,
     }) as Response;
 };

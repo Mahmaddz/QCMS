@@ -159,7 +159,7 @@ const SurahAyahList = () => {
                 )}
 
                 {
-                    isLoading ? (
+                    isLoading && verses.length === 0 ? (
                         Array.from({ length: 5 }).map(() => (
                             <Box
                                 key={uniqueID()}

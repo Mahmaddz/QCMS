@@ -13,7 +13,7 @@ import { validateEmail } from "../utils/functions/validateEmail";
 
 export default function Register() {
     const [userData, setUserData] = useState<{email: string, password: string; confirmPassword: string; username: string}>({email: "", password: "", confirmPassword: "", username: ""});
-    const [loading, setLoading] = useState(false); 
+    const [loading, setLoading] = useState(true); 
     
     const handleSetUserData = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         e.preventDefault();
@@ -193,31 +193,26 @@ export default function Register() {
                     <Button
                         type="submit"
                         fullWidth
+                        disabled={loading}
                         variant="contained"
                         sx={{
                             mt: 3,
                             mb: 2,
                             py: 1.5,
-                            backgroundColor: "#4285f4",
+                            backgroundColor: "#0083B0",
                             "&:hover": {
-                                backgroundColor: "#2c6adf",
+                                backgroundColor: "#005f6b",
                             },
                             textTransform: "none",
                             fontSize: "1.1rem",
-                            position: "relative",
                             "@media (max-width: 600px)": {
                                 mt: 2,
                                 mb: 1.5,
                                 py: 1,
                             },
                         }}
-                        disabled={loading}
                     >
-                        {loading ? (
-                            <CircularProgress size={24} sx={{ position: "absolute", color: "#fff" }} />
-                        ) : (
-                            "Register"
-                        )}
+                        {loading ? <CircularProgress size={24} sx={{ ml: 2 }} /> : "Register"}
                     </Button>
                     <Grid
                         container
@@ -227,7 +222,7 @@ export default function Register() {
                         <Grid item>
                             <Typography variant="body2">
                                 Already have an account? {' '}
-                                <Link href="/login" sx={{ color: "#4285f4" }}>
+                                <Link href={loading ? "#" : "/login"} sx={{ color: loading ? "gray" : "#4285f4" }}>
                                     Sign in
                                 </Link>
                             </Typography>

@@ -5,6 +5,7 @@ const ApiError = require('../utils/ApiError');
 const { generateRandomString } = require('../utils/utilFunc');
 const { logger } = require('../config/logger');
 const { baseUrl } = require('../constant/baseUrl');
+const config = require('../config/config');
 
 const register = catchAsync(async (req, res) => {
   const { password, confirmPassword } = req.body;
@@ -14,7 +15,9 @@ const register = catchAsync(async (req, res) => {
   const verifyEmailToken = await tokenService.generateVerifyEmailToken(user);
   logger.info(`${baseUrl}/v1/auth/verify-email?token=${verifyEmailToken}`);
   await emailService.sendVerificationEmail(user.dataValues.email, verifyEmailToken);
-  return res.status(httpStatus.CREATED).send({ success: true, message: 'User Created' });
+  return res
+    .status(httpStatus.CREATED)
+    .send({ success: true, message: 'User Created. Check your gmail to verify your email address.' });
 });
 
 const login = catchAsync(async (req, res) => {
@@ -105,7 +108,7 @@ const verifyEmail = catchAsync(async (req, res) => {
         <div class="container">
             <h1>Email Verified Successfully 🎉</h1>
             <p>Your email has been successfully verified. You can now log in.</p>
-            <a href="/">Go to Homepage</a>
+            <a href=${config.appLink}>Go to Homepage</a>
         </div>
     </body>
     </html>
