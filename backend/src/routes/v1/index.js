@@ -10,6 +10,7 @@ const wordsRoute = require('./words.route');
 const tagRoute = require('./tag.route');
 const languageRoute = require('./language.route');
 const commentRoute = require('./comment.route');
+const translationRoute = require('./translation.route');
 const config = require('../../config/config');
 
 const router = express.Router();
@@ -54,6 +55,10 @@ const defaultRoutes = [
   {
     path: '/comments',
     route: commentRoute,
+  },
+  {
+    path: '/translation',
+    route: translationRoute,
   },
 ];
 

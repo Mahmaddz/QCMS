@@ -29,7 +29,7 @@ const storage = multer.diskStorage({
 
 const fileFilterHandler = (req, file, cb) => {
   const ext = path.extname(file.originalname);
-  const allowedFileTypes = ['.xls', '.xlsx'];
+  const allowedFileTypes = ['.xls', '.xlsx', '.json'];
   if (!allowedFileTypes.includes(ext)) {
     return cb(new ApiError(httpStatus.NOT_ACCEPTABLE, `Only [${allowedFileTypes.join(', ')}] files are allowed`), false);
   }

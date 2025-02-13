@@ -1,8 +1,7 @@
 import { Box, Skeleton, TableCell, TableRow } from "@mui/material";
 // import uniqueID from "../utils/helper/UniqueID";
 
-const MatTableSkeleton = ({ rows = 5, columns = 4 }: { rows?: number; columns?: number }) => {
-    console.log(rows, columns);
+const MatTableSkeleton = ({ rows = 5 }: { rows?: number; columns?: number }) => {
     return (
         <Box
             sx={{

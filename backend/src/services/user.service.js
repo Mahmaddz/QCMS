@@ -1,6 +1,6 @@
 const httpStatus = require('http-status');
 const bcrypt = require('bcryptjs');
-const { Users, Roles } = require('../models');
+const { Users, Roles, Op } = require('../models');
 const ApiError = require('../utils/ApiError');
 const rolesServices = require('./roles.service');
 
@@ -115,6 +115,7 @@ const getUsersWithRoles = async () => {
     attributes: {
       exclude: ['createdAt', 'updatedAt', 'password'],
     },
+    where: { id: { [Op.ne]: 2 } }, // SUPER ADMIN
     include: [
       {
         model: Roles,

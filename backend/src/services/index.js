@@ -13,3 +13,4 @@ module.exports.translationServices = require('./translation.service');
 module.exports.khadijaServices = require('./khadija.service');
 module.exports.arabicCustomServices = require('./arabic.service');
 module.exports.commentServices = require('./comment.service');
+module.exports.translatorServices = require('./translator.service');

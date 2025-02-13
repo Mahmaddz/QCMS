@@ -1,5 +1,3 @@
-/* eslint-disable prettier/prettier */
-/* eslint-disable no-console */
 /* eslint-disable no-param-reassign */
 const httpStatus = require('http-status');
 const { ArabicServices } = require('arabic-services');
@@ -8,7 +6,7 @@ const { Sequelize, Op, Verse, sequelize, Mushaf } = require('../models');
 const ApiError = require('../utils/ApiError');
 const wordsServices = require('./words.service');
 const translationServices = require('./translation.service');
-const tagsServices= require('./tags.service');
+const tagsServices = require('./tags.service');
 
 const getAyatInfo = async (ayatText, ayaNo, suraNo) => {
   if (suraNo === 0 || suraNo === null) suraNo = false;
@@ -120,21 +118,19 @@ const getAyaAndSuraUsingWords = async (words, surah, aya) => {
       is_basmalla: 0,
       is_chapter_name: 0,
       ...(surah && { Chapter: surah }),
-      ...(aya ? { Verse: aya } : { Verse: { [Op.ne]: 0 } } ),
+      ...(aya ? { Verse: aya } : { Verse: { [Op.ne]: 0 } }),
     },
     group: ['Chapter', 'Verse'],
     raw: true,
   });
 
-  const sortedResult = (
-    results
-      .map((row) => {
-        const wordsInAya = row.wordsInAya || [];
-        const uniqueMatches = [...new Set(wordsInAya.filter((word) => words.includes(word)))].length;
-        return { ...row, uniqueMatches };
-      })
-      .sort((a, b) => b.uniqueMatches - a.uniqueMatches)
-  );
+  const sortedResult = results
+    .map((row) => {
+      const wordsInAya = row.wordsInAya || [];
+      const uniqueMatches = [...new Set(wordsInAya.filter((word) => words.includes(word)))].length;
+      return { ...row, uniqueMatches };
+    })
+    .sort((a, b) => b.uniqueMatches - a.uniqueMatches);
 
   return { surahAndAyaList: sortedResult || [] };
 };
@@ -143,10 +139,13 @@ const getSuraAndAyaFromMushafUsingTerm = async (term, surah, aya) => {
   const wordsList = await wordsServices.getSuggestedWordsBasedOnTerm(term); // (roots and lemmas) of matched words
   const lemmaList = Object.keys(wordsList.lemmas);
   const otherWords = {
-    lemmasWords: await wordsServices.getWordsByLemma(lemmaList),  
-    rootsWords: (await wordsServices.getWordsByRoot(Object.keys(wordsList.roots), lemmaList)),
+    lemmasWords: await wordsServices.getWordsByLemma(lemmaList),
+    rootsWords: await wordsServices.getWordsByRoot(Object.keys(wordsList.roots), lemmaList),
   };
-  const resultz = lemmaList.length !== 0 ? await getAyaAndSuraUsingWords([...new Set(Object.values(wordsList.lemmas).flat())], surah, aya) : [];
+  const resultz =
+    lemmaList.length !== 0
+      ? await getAyaAndSuraUsingWords([...new Set(Object.values(wordsList.lemmas).flat())], surah, aya)
+      : [];
   return { surahAndAyaList: resultz.surahAndAyaList, wordsList, otherWords };
 };
 
@@ -171,17 +170,19 @@ const getCompleteSurahWithAyaats = async (sura) => {
     const expectedOutPut = verses.map((verse) => {
       return {
         ...verse.dataValues,
-        translation: translate.filter((trans) => trans.aya === verse.ayaNo).map((trans) => ({ text: trans.text, langCode: trans.language.code })),
+        translation: translate
+          .filter((trans) => trans.aya === verse.ayaNo)
+          .map((trans) => ({ text: trans.text, langCode: trans.language.code })),
       };
     });
 
     return expectedOutPut;
   } catch (error) {
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, `getCompleteSurahWithAyaats failed to execute`);
+    throw new ApiError(httpStatus.GATEWAY_TIMEOUT, `getCompleteSurahWithAyaats failed to execute`);
   }
 };
 
-const getVerseWordsBySuraNoAndAyaNo = async (sura, aya=[]) => {
+const getVerseWordsBySuraNoAndAyaNo = async (sura, aya = []) => {
   const results = await Mushaf.findAll({
     attributes: ['Chapter', 'Verse', 'word', 'Stem_pattern', 'PoS_tags', 'wordUndiacritizedNoHamza'],
     where: {
@@ -189,7 +190,7 @@ const getVerseWordsBySuraNoAndAyaNo = async (sura, aya=[]) => {
       Verse: {
         [Op.ne]: 0,
       },
-      ...(aya.length > 0 && { Verse: { [Op.in]: aya } } ),
+      ...(aya.length > 0 && { Verse: { [Op.in]: aya } }),
       is_basmalla: 0,
     },
     order: [['id', 'ASC']],
@@ -251,15 +252,14 @@ const getSuraAndAyaUsingRoots = async (roots) => {
 
     return { surahAndAyaList, conceptArabicList };
   } catch (error) {
-    console.log(error);
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, `dlds`);
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error.message);
   }
 };
 
 const getAyatInfoByTags = async (term, sura, aya) => {
   const ayahList = await tagsServices.suraAndAyaByTagMatch(term, sura, aya);
   return ayahList;
-}
+};
 
 module.exports = {
   getAyatInfo,
