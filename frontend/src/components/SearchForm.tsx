@@ -221,6 +221,11 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
             setChecked((prev) => prev - 1)
             return;
         }
+        setSearchParams(prev => {
+            const newParams = new URLSearchParams(prev);
+            newParams.set('currentPage','1');
+            return newParams;
+        });
         const timeId = setTimeout(() => {
             getResultBasedOnSuggestedWords();
             if (chkbox.isReference) {
@@ -316,16 +321,6 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
                         padding: '20px',
                     },
                 }}
-                onKeyDown={async (e) => {
-                    if (e.key === 'Enter') {
-                        setSearchParams(prev => {
-                            const newParams = new URLSearchParams(prev);
-                            newParams.set('currentPage', '1');
-                            return newParams;
-                        });
-                        await getResult(e);
-                    }
-                }}
             >
                 <Box 
                     sx={{ 
@@ -352,6 +347,16 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
                             '& .MuiInputLabel-root': {
                                 fontSize: { xs: '14px', sm: '16px' },
                             },
+                        }}
+                        onKeyDown={async (e) => {
+                            if (e.key === 'Enter') {
+                                setSearchParams(prev => {
+                                    const newParams = new URLSearchParams(prev);
+                                    newParams.set('currentPage', '1');
+                                    return newParams;
+                                });
+                                await getResult(e);
+                            }
                         }}
                     />
                     <Box 
