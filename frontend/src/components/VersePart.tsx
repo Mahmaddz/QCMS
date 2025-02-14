@@ -12,19 +12,18 @@ const VersePart = ({ verses, selectedKeywords, searchMethod, selectedLanguage, d
 
     const translation = useMemo(() => verses.translation.filter((verse) => verse.translatorId === selectedLanguage)[0]?.text || '', [selectedLanguage, verses.translation]);
 
-    const normalizeText = (str: string[]) => (
-        str.map(singleWord => 
-            singleWord
-                .replace(/[\u06E6\u0670]/g, "")
-                .replace(/ْ/g, "")
-                .replace(/ى[\u064E\u0653]?/g, "ي")
-                .replace(/ا\u0653/g, "ا")
-                .replace(/ا۟/g, "ا")
-                .replace(/[\u06E5\u0653]/g, "")
-                .replace(/^لَ/, "")
-                .replace(/[\u06E5\u0653۠]/g, "")
-        )
-    );
+    const normalizeText = (arabicText: string) => ([
+        arabicText
+            .replace(/[\u06E6\u0670]/g, "")
+            .replace(/ى[\u064E\u0653]?/g, "ي")
+            .replace(/ا\u0653/g, "ا")
+            .replace(/ا۟/g, "ا")
+            .replace(/[\u06E5\u0653]/g, "")
+            .replace(/^لَ/, "")
+            .replace(/[\u06E5\u0653۠]/g, ""),
+        arabicText
+            .replace(/ن/g, "نْ")
+    ]);
 
     const handleShowResultAgainstTerm = (term: string) => {
         const data = {
@@ -181,7 +180,7 @@ const VersePart = ({ verses, selectedKeywords, searchMethod, selectedLanguage, d
                                 }}
                                 onClick={() => handleShowResultAgainstTerm(verse.word)}
                             >
-                                <Marker mark={verses.wordId?.includes(index + 1) ? normalizeText([wordSegmentToHighlight(index+1)]) : undefined}>
+                                <Marker mark={verses.wordId?.includes(index + 1) ? normalizeText(wordSegmentToHighlight(index+1)) : undefined}>
                                     {verse.word}
                                 </Marker>
                             </Typography>

@@ -15,7 +15,7 @@ import LanguageSelect from "./LanguageSelect";
 
 const ReviewBodyList = ({ showTags, searchData, selectedKeywords, currentSearchMethod, setSearchParams, searchParam }: RBL_Params) => {
 
-    const currentPapeNumber = searchParam?.get('currentPage') as unknown as number || 1;
+    const currentPapeNumber = parseInt(searchParam?.get('currentPage') || "1", 10);
 
     const [itemsPerPage, setItemsPerPage] = useState<number>(10);
     const listOfItemsPerPage = [5,10,15,20,25,30];
@@ -25,6 +25,10 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords, currentSearchM
     
     const [listOfLanguages, setListOfLanguages] = useState<LanguageType[]>([]);
     const [selectedLanguage, setSelectedLanguages] = useState<LanguageType>();
+
+    useEffect(() => {
+        setCurrentPage(currentPapeNumber);
+    }, [searchParam]);
 
     useEffect(() => {
         (async () => {

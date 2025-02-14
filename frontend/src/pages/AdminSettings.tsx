@@ -63,7 +63,7 @@ const AdminSettings: React.FC = () => {
             })));
         })()
 
-    }, [])
+    }, [user?.email])
 
     return (
         <React.Fragment>
