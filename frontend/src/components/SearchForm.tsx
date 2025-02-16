@@ -43,14 +43,15 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
     const filteredCheckBoxes =  Object.entries(chkbox).filter(([, value]) => value).map(([key]) => key).join(' ');
 
     useEffect(() => {
-        if (toKeywords.length) {
-            setSelectedKeywords(toKeywords);
-        } else if (toSearch.length) {
-            (async () => {
+        const time = setTimeout(async () => {
+            if (toKeywords.length) {
+                setSelectedKeywords(toKeywords);
+            } else if (toSearch.length) {
                 await getResult(undefined);
-            })()
-        }
-    }, [toSearch])
+            }
+        }, 1000);
+        return () => clearTimeout(time)
+    }, [])
 
     const handleChangeSearch = (value: string) => { 
         setSearch(value);
