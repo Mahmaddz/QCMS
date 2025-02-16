@@ -43,17 +43,15 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
     const filteredCheckBoxes =  Object.entries(chkbox).filter(([, value]) => value).map(([key]) => key).join(' ');
 
     useEffect(() => {
-        // const time = setTimeout(async () => {
+        const time = setTimeout(async () => {
             if (toKeywords.length) {
-                setSelectedKeywords(toKeywords);
+                // setSelectedKeywords(toKeywords);
+                await getResultBasedOnSuggestedWords(toKeywords);
             } else if (toSearch.length) {
-                (async () => {
-                    await getResult(undefined);
-                })()
+                await getResult(undefined);
             }
-            console.log('woke');
-        // }, 1000);
-        // return () => clearTimeout(time)
+        }, 1000);
+        return () => clearTimeout(time)
     }, [])
 
     const handleChangeSearch = (value: string) => { 
@@ -203,15 +201,17 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
         }
     }
 
-    const getResultBasedOnSuggestedWords = async () => {
+    const getResultBasedOnSuggestedWords = async (selectedKeywords2?: string[]) => {
         window.scrollTo({ top: 0, behavior: 'smooth', left: 10 });
         if(!(chkbox.isLemma || chkbox.isQurana || chkbox.isQurany || chkbox.isTag)) {
             setLoading(true);
             setSearchedResult(()=>[]);
             setSearchedCount(0);
-            const response = await searchAyats("", selectedKeywords, filter.surah as string, filter.aya as string);
+            const words = selectedKeywords2?.length ? selectedKeywords2 : selectedKeywords ;
+            const response = await searchAyats("", words, filter.surah as string, filter.aya as string);
             if (response.success) {
                 if (rootLemmaData.length === 0) {
+                    setSelectedKeywords(words);
                     const arrays = [
                         ...Object.values(response.otherWords.rootsWords.map(r => Object.values(r.lemmas)).flat())
                             .flat()
@@ -237,12 +237,12 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
             return;
         }
         const timeId = setTimeout(() => {
-            getResultBasedOnSuggestedWords();
-            if (chkbox.isReference) {
-                (async () => {
+            (async () => {
+                await getResultBasedOnSuggestedWords();
+                if (chkbox.isReference) {
                     await getReferenceData();
-                })()
-            }
+                }
+            })()
         }, 1000);
     
         return () => clearTimeout(timeId);
