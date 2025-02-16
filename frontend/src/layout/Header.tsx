@@ -135,9 +135,11 @@ function Header() {
                                     sx={{ display: { xs: 'block', md: 'none' } }}
                                 >
                                     {pages.map((page) => (
-                                        <MenuItem key={page.path} onClick={() => handleCloseNavMenu(page.path)}>
-                                            <Typography textAlign="center">{page.displayName}</Typography>
-                                        </MenuItem>
+                                        page.displayName !== "" && (
+                                            <MenuItem key={page.path} onClick={() => handleCloseNavMenu(page.path)}>
+                                                <Typography textAlign="center">{page.displayName}</Typography>
+                                            </MenuItem>
+                                        )
                                     ))}
                                 </Menu>
                             </Box>
@@ -164,13 +166,15 @@ function Header() {
                         <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
                             {userRole === USER.ADMIN &&
                                 pages.map((page) => (
-                                    page.displayName !== "" && <Button
-                                        key={page.path}
-                                        onClick={() => handleCloseNavMenu(page.path)}
-                                        sx={{ my: 2, color: 'white', display: 'block' }}
-                                    >
-                                        {page.displayName}
-                                    </Button>
+                                    page.displayName !== "" && (
+                                        <Button
+                                            key={page.path}
+                                            onClick={() => handleCloseNavMenu(page.path)}
+                                            sx={{ my: 2, color: 'white', display: 'block' }}
+                                        >
+                                            {page.displayName}
+                                        </Button>
+                                    )
                                 ))}
                         </Box>
 

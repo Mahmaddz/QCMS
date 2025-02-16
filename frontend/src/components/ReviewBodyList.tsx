@@ -24,7 +24,7 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords, currentSearchM
     const [verseWords, setVerseWords] = useState<VerseWordsArr[]>([]);
     
     const [listOfLanguages, setListOfLanguages] = useState<LanguageType[]>([]);
-    const [selectedLanguage, setSelectedLanguages] = useState<LanguageType>();
+    const [selectedLanguage, setSelectedLanguages] = useState<LanguageType | null>();
 
     useEffect(() => {
         setCurrentPage(currentPapeNumber);
@@ -34,7 +34,7 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords, currentSearchM
         (async () => {
             const resposne = await getAllLanguages();
             if (resposne.success) {
-                setListOfLanguages(resposne.data);
+                setListOfLanguages([ { id: 0, authorName: "none", language: { id: 0, code: "", name: "" } }, ...resposne.data]);
                 setSelectedLanguages(resposne.data[0]);
             }
         })()

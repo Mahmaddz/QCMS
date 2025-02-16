@@ -54,7 +54,7 @@ const LanguageSelect = React.memo(({ listOfLanguages = [], handleChange }: { lis
             <Autocomplete
                 disablePortal
                 key={uniqueID()}
-                options={listOfLanguages?.map((item) => `${item.id} : ${item.language.code} - ${item.authorName} [${item.language.name}]`)}
+                options={listOfLanguages?.map(({ id, authorName, language }) => `${id} : ${id === 0 ? authorName : `${language.code} - ${authorName} [${language.name}]`}`)}
                 value={selectedValue?.slice(4)}
                 onChange={handleLanguageChange}
                 sx={{
