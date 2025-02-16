@@ -21,6 +21,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
     const toChk = searchParam?.get('chkbox') || 'isWord';
     const toSurah = searchParam?.get('surah') || 0;
     const toAya = searchParam?.get('aya') || 0;
+    const toKeywords = searchParam?.get('selectedKeywords')?.split(' ') || [];
 
     const [relatedSearch, setRelatedSearch] = useState<{word: {word: string, count: number | string}, isSelected: boolean}[]>([]);
     const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -42,14 +43,14 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
     const filteredCheckBoxes =  Object.entries(chkbox).filter(([, value]) => value).map(([key]) => key).join(' ');
 
     useEffect(() => {
-        if (toSearch.length === 0) return ;
-
-        const time = setTimeout(async () => {
-            await getResult(undefined);
-        }, 2000);
-
-        return () => clearTimeout(time);
-    }, [])
+        if (toKeywords.length) {
+            setSelectedKeywords(toKeywords);
+        } else if (toSearch.length) {
+            (async () => {
+                await getResult(undefined);
+            })()
+        }
+    }, [toSearch])
 
     const handleChangeSearch = (value: string) => { 
         setSearch(value);
@@ -206,8 +207,18 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
             setSearchedCount(0);
             const response = await searchAyats("", selectedKeywords, filter.surah as string, filter.aya as string);
             if (response.success) {
-                // setLoading(false);
-                // setRelatedSearch(response.searchedFor);
+                if (rootLemmaData.length === 0) {
+                    const arrays = [
+                        ...Object.values(response.otherWords.rootsWords.map(r => Object.values(r.lemmas)).flat())
+                            .flat()
+                            .map(word => ({
+                                word,
+                                isSelected: selectedKeywords.includes(word.word),
+                            })),
+                    ];
+                    setRootLemmaData(response.otherWords.rootsWords);
+                    setRelatedSearch(Array.from(new Map(arrays.map((item) => [item.word.word, item])).values()) || []);
+                }
                 handleResultantResponse(response.data);
             }
             else if (!response.success) {
@@ -221,11 +232,6 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
             setChecked((prev) => prev - 1)
             return;
         }
-        setSearchParams(prev => {
-            const newParams = new URLSearchParams(prev);
-            newParams.set('currentPage','1');
-            return newParams;
-        });
         const timeId = setTimeout(() => {
             getResultBasedOnSuggestedWords();
             if (chkbox.isReference) {
@@ -245,6 +251,11 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
             );
             const newSelectedKeywords = updatedSearch.filter((rs) => rs.isSelected).map((rs) => rs.word.word);
             setSelectedKeywords(newSelectedKeywords);
+            setSearchParams(prev => {
+                const newParams = new URLSearchParams(prev);
+                newParams.set('currentPage','1');
+                return newParams;
+            });
             return updatedSearch;
         });
     };
@@ -290,8 +301,14 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
             newParams.delete('chkbox');
         }
 
+        if (selectedKeywords.length) {
+            newParams.set('selectedKeywords', selectedKeywords.join(' '));
+        } else {
+            newParams.delete('selectedKeywords');
+        }
+
         setSearchParams(newParams);
-    }, [search, chkbox, filter, filteredCheckBoxes])
+    }, [search, chkbox, filter, filteredCheckBoxes, selectedKeywords])
 
     const surahOptions = Object.entries(surahData).map(([key, surah]) => ({
         label: `${key}. ${surah.english} (${surah.arabic})`,
