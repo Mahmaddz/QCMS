@@ -217,7 +217,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
                             .flat()
                             .map(word => ({
                                 word,
-                                isSelected: selectedKeywords.includes(word.word),
+                                isSelected: words.includes(word.word),
                             })),
                     ];
                     setRootLemmaData(response.otherWords.rootsWords);

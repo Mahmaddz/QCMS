@@ -56,7 +56,6 @@ const searchAyat = catchAsync(async (req, res) => {
       rootsWords: await wordsServices.getWordsByRoot(Object.keys(wordsList.roots), Object.keys(wordsList.lemmas)),
     };
   }
-  console.log(result);
   res.status(httpStatus.OK).json({
     success: true,
     message: result.surahAndAyaList && result.surahAndAyaList.length > 0 ? 'Data Received' : 'Nothing Found',
