@@ -149,122 +149,122 @@ const CommentBox = ({ comments = [], setComments, isLoading, setIsLoading, tagId
                                         display: "flex",
                                         flexDirection: isMobile ? "column" : "row",
                                         alignItems: isMobile ? "flex-start" : "center",
+                                        justifyContent: "space-between",
                                         gap: 2,
                                     }}
                                 >
-                                    <Box sx={{ flex: 1 }}>
-                                        <Typography
-                                            variant="h6"
-                                            sx={{
-                                                fontWeight: "bold",
-                                                color: "#444",
-                                            }}
-                                        >
-                                            {comment.username}
-                                        </Typography>
-                                        {selectedComment?.id === comment.id && editText ? (
-                                            <Box sx={{ marginTop: "8px" }}>
-                                                <TextField
-                                                    fullWidth
-                                                    value={editText}
-                                                    onChange={(e) => setEditText(e.target.value)}
-                                                    variant="outlined"
-                                                    size="small"
-                                                    sx={{ marginBottom: "8px" }}
-                                                    multiline
-                                                    minRows={1}
-                                                    maxRows={5}
-                                                />
-                                                <Box sx={{ display: "flex", gap: 2 }}>
-                                                    <Button
-                                                        variant="contained"
-                                                        color="primary"
-                                                        onClick={handleUpdate}
-                                                    >
-                                                        Update
-                                                    </Button>
-                                                    <Button
-                                                        variant="outlined"
-                                                        color="secondary"
-                                                        onClick={handleCancel}
-                                                    >
-                                                        Cancel
-                                                    </Button>
-                                                </Box>
-                                            </Box>
-                                        ) : (
-                                            <>
-                                                <Typography
-                                                    variant="body1"
-                                                    sx={{
-                                                        color: "#555",
-                                                        marginTop: "8px",
-                                                    }}
-                                                >
-                                                    {comment.commentText}
-                                                </Typography>
-                                                {
-                                                    comment.createdAt &&
-                                                    <Typography
-                                                        variant="caption"
+                                    <Typography
+                                        variant="h6"
+                                        sx={{
+                                            fontWeight: "bold",
+                                            color: "#333",
+                                        }}
+                                    >
+                                        {comment.username}
+                                    </Typography>
+                                    {(user?.id === comment.userId || user?.roleID === USER.ADMIN) && (
+                                        <Box sx={{ display: "flex", gap: 1 }}>
+                                            {selectedComment?.id !== comment.id && (
+                                                <>
+                                                    <IconButton
+                                                        onClick={() => onEdit(comment)}
                                                         sx={{
-                                                            color: "gray",
-                                                            marginTop: "10px",
-                                                            display: "block",
+                                                            color: "#FFB74D",
+                                                            "&:hover": { color: "#FF9800" },
                                                         }}
                                                     >
-                                                        posted at {getPostedDate(comment.createdAt, comment.updatedAt)}
-                                                    </Typography>
-                                                }
-                                            </>
-                                        )}
-                                        </Box>
-                                        {
-                                            <Box sx={{ display: "flex", gap: 1 }}>
-                                                {
-                                                    user?.id === comment.userId && selectedComment?.id !== comment.id &&
-                                                    <>
-                                                        <IconButton
-                                                            onClick={() => onEdit(comment)}
-                                                            sx={{
-                                                                color: "#FFB74D",
-                                                                "&:hover": {
-                                                                    color: "#FF9800",
-                                                                },
-                                                            }}
-                                                        >
-                                                            <EditIcon />
-                                                        </IconButton>
-                                                        <IconButton
-                                                            onClick={() => handleDeleteClick(comment)}
-                                                            sx={{
-                                                                color: "#FF6B6B",
-                                                                "&:hover": {
-                                                                    color: "#D32F2F",
-                                                                },
-                                                            }}
-                                                        >
-                                                            <DeleteIcon />
-                                                        </IconButton>
-                                                    </>
-                                                }
-                                                {
-                                                    user?.id === comment.userId || user?.roleID === USER.ADMIN &&
+                                                        <EditIcon />
+                                                    </IconButton>
                                                     <IconButton
                                                         onClick={() => handleDeleteClick(comment)}
                                                         sx={{
                                                             color: "#FF6B6B",
-                                                            "&:hover": {
-                                                                color: "#D32F2F",
-                                                            },
+                                                            "&:hover": { color: "#D32F2F" },
                                                         }}
                                                     >
                                                         <DeleteIcon />
                                                     </IconButton>
-                                                }
+                                                </>
+                                            )}
+                                        </Box>
+                                    )}
+                                </Box>
+                                <Box sx={{ marginTop: "8px" }}>
+                                    {selectedComment?.id === comment.id && editText ? (
+                                        <>
+                                            <TextField
+                                                fullWidth
+                                                value={editText}
+                                                onChange={(e) => setEditText(e.target.value)}
+                                                variant="outlined"
+                                                size="small"
+                                                multiline
+                                                minRows={1}
+                                                maxRows={5}
+                                                sx={{ marginBottom: "8px" }}
+                                            />
+                                            <Box sx={{ display: "flex", gap: 2 }}>
+                                                <Button variant="contained" color="primary" onClick={handleUpdate}>
+                                                    Update
+                                                </Button>
+                                                <Button variant="outlined" color="secondary" onClick={handleCancel}>
+                                                    Cancel
+                                                </Button>
                                             </Box>
-                                        }
-                                    </Box>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Typography
+                                                variant="body1"
+                                                sx={{
+                                                    color: "#555",
+                                                    marginBottom: "6px",
+                                                }}
+                                            >
+                                                {comment.commentText}
+                                            </Typography>
+                                            {comment.createdAt && (
+                                                <Box
+                                                    sx={{
+                                                        display: "flex",
+                                                        alignItems: "center",
+                                                        gap: 1,
+                                                    }}
+                                                >
+                                                    <Typography
+                                                        variant="caption"
+                                                        sx={{ color: "gray" }}
+                                                    >
+                                                        Posted at {getPostedDate(comment.createdAt, comment.updatedAt)}
+                                                    </Typography>
+                                                    <Box
+                                                        sx={{
+                                                            fontSize: "0.75rem",
+                                                            fontWeight: "bold",
+                                                            padding: "4px 8px",
+                                                            borderRadius: "6px",
+                                                            display: "inline-block",
+                                                            backgroundColor:
+                                                                comment.commentType === "SUGGESTION"
+                                                                    ? "#E0F7FA"
+                                                                    : comment.commentType === "QUESTION"
+                                                                    ? "#FFF3E0"
+                                                                    : "#F3E5F5",
+                                                            color:
+                                                                comment.commentType === "SUGGESTION"
+                                                                    ? "#00796B"
+                                                                    : comment.commentType === "QUESTION"
+                                                                    ? "#E65100"
+                                                                    : "#6A1B9A",
+                                                        }}
+                                                    >
+                                                        {comment.commentType}
+                                                    </Box>
+                                                </Box>
+                                            )}
+                                        </>
+                                    )}
+                                </Box>
                                 <Divider sx={{ my: 2 }} />
                             </Box>
                         ))

@@ -23,6 +23,7 @@ module.exports = (sequelize, DataTypes) => {
       suraNo: DataTypes.INTEGER,
       ayaNo: DataTypes.INTEGER,
       commentText: DataTypes.STRING,
+      commentType: DataTypes.ENUM('SUGGESTION', 'QUESTION', 'OTHER'),
       userId: DataTypes.INTEGER,
     },
     {

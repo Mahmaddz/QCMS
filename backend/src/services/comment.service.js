@@ -4,13 +4,14 @@ const { logger } = require('../config/logger');
 const { Comment, Users, Sequelize } = require('../models');
 const ApiError = require('../utils/ApiError');
 
-const insertComment = async (suraNo, ayaNo, commentText, userId, tagId) => {
+const insertComment = async (suraNo, ayaNo, commentText, userId, commentType, tagId) => {
   try {
     const insertedComment = await Comment.create({
       suraNo,
       ayaNo,
       commentText,
       userId,
+      commentType,
       tagId,
     });
     return insertedComment.dataValues.id;
@@ -28,6 +29,7 @@ const getComments = async (suraNo, ayaNo, tagId) => {
         'suraNo',
         'ayaNo',
         'commentText',
+        'commentType',
         'userId',
         'createdAt',
         'updatedAt',

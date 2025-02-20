@@ -5,6 +5,7 @@ const addComment = {
     suraNo: Joi.number().required(),
     ayaNo: Joi.number().required(),
     text: Joi.string().required(),
+    type: Joi.string().required(),
     tagId: Joi.number().required(),
   }),
 };

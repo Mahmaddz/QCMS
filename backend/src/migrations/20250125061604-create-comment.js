@@ -30,6 +30,9 @@ module.exports = {
           key: 'id',
         },
       },
+      commentType: {
+        type: Sequelize.ENUM('SUGGESTION', 'QUESTION', 'OTHER'),
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,

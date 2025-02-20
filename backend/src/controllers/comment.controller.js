@@ -1,15 +1,16 @@
+/* eslint-disable no-console */
 const httpStatus = require('http-status');
 const catchAsync = require('../utils/catchAsync');
 const { commentServices } = require('../services');
 const ApiError = require('../utils/ApiError');
 
 const addComment = catchAsync(async (req, res) => {
-  const { suraNo, ayaNo, text, tagId } = req.body;
+  const { suraNo, ayaNo, text, type, tagId } = req.body;
   const userId = req.user.id;
   if (!userId) {
     throw new ApiError(httpStatus.METHOD_NOT_ALLOWED, `UserId not Found`);
   }
-  const insertedCommentId = await commentServices.insertComment(suraNo, ayaNo, text, userId, tagId);
+  const insertedCommentId = await commentServices.insertComment(suraNo, ayaNo, text, userId, type, tagId);
   return res.status(httpStatus.OK).json({
     success: true,
     insertedCommentId,

@@ -7,7 +7,7 @@ const config = require('./config');
 const namespace = createNamespace('my-namespace');
 Sequelize.useCLS(namespace);
 
-const PG_CONNECTION_URL = config.env === 'development' ? `${config.pgDB.url}` : `${config.pgDB.url}?sslmode=require`;
+const PG_CONNECTION_URL = config.env === 'development' ? `${config.pgDB.url}` : `${config.pgDB.url}`;
 const sequelize = new Sequelize(`${PG_CONNECTION_URL}`, {
   dialect: 'postgres',
   logging: config.env === '1development' ? console.log : false,
