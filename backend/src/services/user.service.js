@@ -115,7 +115,7 @@ const getUsersWithRoles = async () => {
     attributes: {
       exclude: ['createdAt', 'updatedAt', 'password'],
     },
-    where: { id: { [Op.ne]: 2 } }, // SUPER ADMIN
+    where: { id: { [Op.ne]: 1 } }, // SUPER ADMIN
     include: [
       {
         model: Roles,

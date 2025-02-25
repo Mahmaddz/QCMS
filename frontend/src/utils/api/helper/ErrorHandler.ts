@@ -17,7 +17,7 @@ const errorHandler = (error: any) => {
             Toaster(text, "info")
         }
         else if (status>=400 && status<500) {
-            if (status === 401) {
+            if (status === 401 && !response.config.url.includes('/login')) {
                 localStorage.removeItem("accessToken");
                 localStorage.removeItem("refreshToken");
                 window.history.pushState(null, '', '/');
