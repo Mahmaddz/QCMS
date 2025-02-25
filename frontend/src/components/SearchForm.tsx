@@ -603,9 +603,9 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
                     ) : searchedCount > 0 ? (
                         <>
                             <Box component="span" sx={{ fontWeight: 'bold' }}>
-                                {loading ? <CircularProgress size={20} color="inherit" /> : searchedCount}
-                            </Box>{" "}
-                            Search Results
+                                Verses:
+                            </Box>
+                            {" "}{loading ? <CircularProgress size={20} color="inherit" /> : searchedCount}{" "}Match Found
                         </>
                     ) : (
                         "Enter values to search"

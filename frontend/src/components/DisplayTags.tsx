@@ -217,7 +217,7 @@ const DisplayTags = ({showTags=true, tagz, Chapter, Verse, searchMethod}:{showTa
                                 label={
                                     <Marker mark={searchMethod?.method.includes('isTag') ? ArabicServices.removeTashkeel(searchMethod?.search || '') : undefined} options={{className: 'custom-marker'}}>
                                         <span style={{ whiteSpace: "normal", wordBreak: "break-word", display: "block" }}>
-                                            <strong>Arabic:</strong> {tag.ar}, <strong>English:</strong> {tag.en}
+                                            <strong>Arabic:</strong> {tag.ar},<br /> <strong>English:</strong> {tag.en}
                                         </span>
                                     </Marker>
                                 }
@@ -227,17 +227,19 @@ const DisplayTags = ({showTags=true, tagz, Chapter, Verse, searchMethod}:{showTa
                                     ...(userRole !== USER.ADMIN && {
                                         cursor: 'pointer',
                                     }),
-                                    borderRadius: "16px",
+                                    borderRadius: { xs: "12px", sm: "16px" },
                                     backgroundColor: "#f5f5f5",
                                     boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
                                     transition: "transform 0.3s ease",
                                     maxWidth: "100%",
                                     height: 'auto',
-                                    padding: {sm: 1, xs: 0.4},
+                                    fontSize: { xs: "12px", sm: "14px" },
+                                    padding: { xs: "2px 6px", sm: "4px 10px" },
                                     "& .MuiChip-label": {
                                         whiteSpace: "normal",
                                         wordBreak: "break-word",
                                         display: "block",
+                                        fontSize: { xs: "12px", sm: "14px" },
                                     },
                                     "&:hover": {
                                         transform: "scale(1.05)",

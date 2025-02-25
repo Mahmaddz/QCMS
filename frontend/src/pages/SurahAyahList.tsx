@@ -1,8 +1,7 @@
-import { useEffect, useState, useRef, useMemo } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Header from '../layout/Header';
 import { Box, Typography, Skeleton } from '@mui/material';
-// import { getCompleteSura } from '../services/Ayaat/getCompleteSura';
 import { CompleteSurah } from '../interfaces/SurahAyaList';
 import StatusBar from '../components/Statusbar';
 import LanguageSelect from '../components/LanguageSelect';
@@ -67,8 +66,8 @@ const SurahAyahList = () => {
                 engNm: response.suraName.split(' - ')[1] || "Not Such Data Found", 
                 verses: Object.values(groupedByVerse) as VerseWordsArr[]
             })
+            setIsLoading(false);
         })();
-
     }, [searchParam]);
 
     useEffect(() => {
@@ -82,7 +81,6 @@ const SurahAyahList = () => {
             if (response.success) {
                 setListOfLanguages(response.data);
                 setSelectedLanguages(response.data[0]);
-                setIsLoading(false);
             }
         })()
         return () => clearTimeout(time);
@@ -92,7 +90,7 @@ const SurahAyahList = () => {
         setSelectedLanguages(selectedLanguage)
     }
 
-    const verses = useMemo(() => surahInfo?.verses || [], [surahInfo]);
+    const verses = surahInfo?.verses;
 
     return (
         <>
@@ -159,7 +157,7 @@ const SurahAyahList = () => {
                 )}
 
                 {
-                    isLoading && verses.length === 0 ? (
+                    isLoading ? (
                         Array.from({ length: 5 }).map(() => (
                             <Box
                                 key={uniqueID()}
