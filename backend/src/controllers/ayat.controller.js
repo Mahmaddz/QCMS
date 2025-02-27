@@ -63,6 +63,7 @@ const searchAyat = catchAsync(async (req, res) => {
     otherWords: result.otherWords || [],
     data: result.surahAndAyaList || [],
     suggestions: Array.from(suggestions || []),
+    counts: result.counts || { wordCount: 0, verseCount: result.verseCount },
   });
 });
 

@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /* eslint-disable no-param-reassign */
 const httpStatus = require('http-status');
 const { ArabicServices } = require('arabic-services');
@@ -107,11 +108,12 @@ const searchAyatUsingTermAndWords = async (conceptArabicList) => {
 };
 
 const getAyaAndSuraUsingWords = async (words, surah, aya) => {
-  const results = await Mushaf.findAll({
+  const { rows: results, count } = await Mushaf.findAndCountAll({
     attributes: [
       [Sequelize.col('Chapter'), 'suraNo'],
       [Sequelize.col('Verse'), 'ayaNo'],
       [Sequelize.fn('ARRAY_AGG', Sequelize.col('wordLastLetterUndiacritizedWithHamza')), 'wordsInAya'],
+      [Sequelize.fn('COUNT', Sequelize.col('wordLastLetterUndiacritizedWithHamza')), 'wordsCount'],
     ],
     where: {
       wordLastLetterUndiacritizedWithHamza: { [Op.in]: words },
@@ -121,19 +123,23 @@ const getAyaAndSuraUsingWords = async (words, surah, aya) => {
       ...(aya ? { Verse: aya } : { Verse: { [Op.ne]: 0 } }),
     },
     group: ['Chapter', 'Verse'],
+    order: [
+      ['wordsCount', 'DESC'],
+      ['Chapter', 'ASC'],
+      ['Verse', 'ASC'],
+    ],
+    // offset: 0,
+    // limit: 2,
     raw: true,
   });
 
-  const sortedResult = results
-    .map((row) => {
-      const wordsInAya = row.wordsInAya || [];
-      const uniqueMatches = [...new Set(wordsInAya.filter((word) => words.includes(word)))].length;
-      return { ...row, uniqueMatches };
-    })
-    .sort((a, b) => b.uniqueMatches - a.uniqueMatches);
-
-  return { surahAndAyaList: sortedResult || [] };
+  return { surahAndAyaList: results || [], verseCount: count.length };
 };
+
+/**
+ * Verse Count
+ * Words Count
+ */
 
 const getSuraAndAyaFromMushafUsingTerm = async (term, surah, aya) => {
   const wordsList = await wordsServices.getSuggestedWordsBasedOnTerm(term); // (roots and lemmas) of matched words
@@ -142,11 +148,14 @@ const getSuraAndAyaFromMushafUsingTerm = async (term, surah, aya) => {
     lemmasWords: await wordsServices.getWordsByLemma(lemmaList),
     rootsWords: await wordsServices.getWordsByRoot(Object.keys(wordsList.roots), lemmaList),
   };
-  const resultz =
-    lemmaList.length !== 0
-      ? await getAyaAndSuraUsingWords([...new Set(Object.values(wordsList.lemmas).flat())], surah, aya)
-      : [];
-  return { surahAndAyaList: resultz.surahAndAyaList, wordsList, otherWords };
+  const uniqueLemmas = new Set(Object.values(wordsList.lemmas).flat());
+  const resultz = lemmaList.length !== 0 ? await getAyaAndSuraUsingWords(Array.from(uniqueLemmas), surah, aya) : [];
+  return {
+    surahAndAyaList: resultz.surahAndAyaList,
+    wordsList,
+    otherWords,
+    counts: { wordCount: wordsList.wordsCount, verseCount: resultz.verseCount },
+  };
 };
 
 const getCompleteSurahWithAyaats = async (sura) => {

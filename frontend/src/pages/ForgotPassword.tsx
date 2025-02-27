@@ -8,10 +8,15 @@ import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { validateEmail } from "../utils/functions/validateEmail";
 import Toaster from "../utils/helper/Toaster";
+import { CircularProgress } from "@mui/material";
 
 const ForgotPassword = () => {
+
+    const [isLoading, setIsLoading] = React.useState<boolean>(false);
+
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        setIsLoading(true);
         const data = new FormData(e.currentTarget);
         const email = data.get("email") as string;
 
@@ -26,6 +31,9 @@ const ForgotPassword = () => {
         }
 
         console.log("email =>", email);
+        setTimeout(() => {
+            setIsLoading(false);
+        }, 2000);
     };
 
     return (
@@ -135,7 +143,7 @@ const ForgotPassword = () => {
                             },
                         }}
                     >
-                        Reset Password
+                        {isLoading ? <CircularProgress size={24} sx={{ ml: 2, color: 'white' }} /> : "Send Reset Password"}
                     </Button>
                 </Box>
             </Box>

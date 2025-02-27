@@ -14,6 +14,7 @@ import RemoveCircleOutlineOutlinedIcon from '@mui/icons-material/RemoveCircleOut
 import { getKhadijaReference } from '../services/Search/getKhadijaReference.service';
 import { getAyatsByTag } from '../services/Search/getAyatsByTags.service';
 import { surahData } from '../utils/functions/surahData';
+import { Counts } from '../interfaces/service/SimpleSearch';
 
 const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selectedKeywords, setSelectedKeywords, setCurrentSearchMethod, setSearchParams }: SearchFormParam) => {
 
@@ -25,7 +26,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
 
     const [relatedSearch, setRelatedSearch] = useState<{word: {word: string, count: number | string}, isSelected: boolean}[]>([]);
     const [suggestions, setSuggestions] = useState<string[]>([]);
-    const [searchedCount, setSearchedCount] = useState<number>(-1);
+    const [searchedCount, setSearchedCount] = useState<Counts>();
     const [checked, setChecked] = useState(2);
     const [loading, setLoading] = useState(false);
     const [filter, setFilter] = useState<FilterStateParams>({ surah: toSurah, aya: toAya });
@@ -100,8 +101,11 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
     const handleResultantResponse = (data: any[]) => {
         setLoading(false);
         setSearchedResult((prev) => {
-            const tempData =  filterUniqueBySura(prev?.length ? [ ...prev, ...data] : [...data]);
-            setSearchedCount(tempData?.length || 0);
+            const tempData =  filterUniqueBySura(prev?.length ? [...prev, ...data] : [...data]);
+            setSearchedCount((prev) => ({
+                verseCount: tempData?.length ?? 0,
+                wordCount: prev?.wordCount ?? 0,
+            }));
             return filteredCheckBoxes === 'isWord' ? tempData : tempData.sort((a, b) => (a.suraNo - b.suraNo) || (a.ayaNo - b.ayaNo));
         });
     }
@@ -127,7 +131,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
         setLoading(true);
         setSuggestions([]);
         setSearchedResult(()=>[]);
-        setSearchedCount(0);
+        setSearchedCount({ verseCount: 0, wordCount: 0 });
         setSelectedKeywords([]);
         setRelatedSearch([]);
         setRootLemmaData([]);
@@ -150,6 +154,9 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
             if (response.success) {
                 setLoading(false);
                 setRootLemmaData(response.otherWords.rootsWords);
+                console.log(response.counts)
+                setSearchedCount({ verseCount: response.counts?.verseCount || 0, wordCount: response.counts?.wordCount || 0 });
+                console.log(response.counts?.wordCount);
                 setSuggestions(response.suggestions || []);
                 const toFind = Array.from(new Set(Object.values(response.words.lemmas).flat()));
                 setTimeout(() => {
@@ -206,7 +213,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
         if(!(chkbox.isLemma || chkbox.isQurana || chkbox.isQurany || chkbox.isTag)) {
             setLoading(true);
             setSearchedResult(()=>[]);
-            setSearchedCount(0);
+            setSearchedCount(prev => ({ verseCount: 0, wordCount: prev?.wordCount ?? 0 }));
             const words = selectedKeywords2?.length ? selectedKeywords2 : selectedKeywords ;
             const response = await searchAyats("", words, filter.surah as string, filter.aya as string);
             if (response.success) {
@@ -260,6 +267,11 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
                 newParams.set('currentPage','1');
                 return newParams;
             });
+            setSearchedCount((prev) => ({
+                ...prev,
+                wordCount: updatedSearch.filter(e => e.isSelected).map(e => Number.parseInt(e.word.count as string)).reduce((acc, curr) => acc + curr, 0) ?? 0,
+                verseCount: prev?.verseCount ?? 0,
+            }))
             return updatedSearch;
         });
     };
@@ -324,6 +336,8 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
         label: (i + 1).toString(),
         value: (i + 1).toString(),
     }));
+
+    console.log(filteredCheckBoxes);
 
     return (
         <>
@@ -596,21 +610,39 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
                 )
             }
 
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', padding: '10px', width: '85%', gap: 3 }}>
-                <Typography variant="body2" sx={{ color: 'primary.main' }}>
-                    {searchedCount === 0 ? (
-                        "Nothing Found"
-                    ) : searchedCount > 0 ? (
-                        <>
-                            <Box component="span" sx={{ fontWeight: 'bold' }}>
-                                Verses:
-                            </Box>
-                            {" "}{loading ? <CircularProgress size={20} color="inherit" /> : searchedCount}{" "}Match Found
-                        </>
-                    ) : (
-                        "Enter values to search"
-                    )}
-                </Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', padding: '10px', width: '85%' }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                    <Typography variant="body2" sx={{ color: 'primary.main' }}>
+                        {searchedCount?.verseCount === 0 && !loading ? (
+                            "Nothing Found"
+                        ) : searchedCount?.verseCount && searchedCount?.verseCount > 0 || loading ? (
+                            <>
+                                <Box display="flex" alignItems="center">
+                                    <Box component="span" sx={{ fontWeight: 'bold', mr: 0.5, flex: 1 }}>
+                                        Verses:
+                                    </Box>
+                                    {loading ? (
+                                        <CircularProgress size={17} color="inherit" />
+                                    ) : (
+                                        <Box component="span">{searchedCount?.verseCount}</Box>
+                                    )}
+                                </Box>
+                                {
+                                    filteredCheckBoxes.split(' ').includes('isWord') && !!searchedCount?.wordCount && (
+                                        <Box display="flex" alignItems="center">
+                                            <Box component="span" sx={{ fontWeight: 'bold', mr: 0.5, flex: 1 }}>
+                                                Words:
+                                            </Box>
+                                            <Box component="span">{searchedCount?.wordCount}</Box>
+                                        </Box>
+                                    )
+                                }
+                            </>
+                        ) : (
+                            "Enter values to search"
+                        )}
+                    </Typography>
+                </Box>
             </Box>
 
             { relatedSearch?.length > 0 && 

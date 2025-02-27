@@ -121,7 +121,7 @@ const getSuggestedWordsBasedOnTerm = async (termVal) => {
     'wordUndiacritizedNoHamzaNowaw',
   ];
 
-  const results = await Mushaf.findAll({
+  const { rows: results, count } = await Mushaf.findAndCountAll({
     attributes: ['id', 'Chapter', 'Verse', 'Root', 'Lemma', 'word', 'wordLastLetterUndiacritizedWithHamza'],
     where: {
       [Op.and]: [
@@ -146,6 +146,10 @@ const getSuggestedWordsBasedOnTerm = async (termVal) => {
   const lemmaMap = new Map();
   const rootMap = new Map();
 
+  /**
+   * @todo USE GROUP BY
+   */
+
   results.forEach((r) => {
     // ========== LEMMA ==========
     if (lemmaMap.has(r.Lemma)) {
@@ -169,6 +173,7 @@ const getSuggestedWordsBasedOnTerm = async (termVal) => {
   return {
     lemmas: Object.fromEntries(lemmaMap.entries()),
     roots: Object.fromEntries(rootMap.entries()),
+    wordsCount: count,
   };
 };
 

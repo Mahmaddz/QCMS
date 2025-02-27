@@ -4,6 +4,11 @@ import { SuraAyaInfo } from "../SurahAyaInfo";
 import { ErrorResponse } from "./error/error";
 import { STRING } from "./types/ApiRequest";
 
+export interface Counts {
+    wordCount: number;
+    verseCount: number;
+}
+
 export interface SuccessResponse {
     success: true;
     message?: string;
@@ -12,6 +17,7 @@ export interface SuccessResponse {
         lemmas: MAP;
         roots: MAP;
     };
+    counts?: Counts,
     otherWords: { 
         lemmasWords: MAP;
         rootsWords: RootLemmaWords[];
