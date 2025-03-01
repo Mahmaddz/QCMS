@@ -80,7 +80,7 @@ const SurahAyahList = () => {
             const response = await getAllLanguages();
             if (response.success) {
                 setListOfLanguages(response.data);
-                setSelectedLanguages(response.data[0]);
+                setSelectedLanguages(response.data[1]);
             }
         })()
         return () => clearTimeout(time);

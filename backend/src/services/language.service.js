@@ -11,8 +11,10 @@ const getCompleteListOfLanguagesNameOnly = async () => {
         required: true,
       },
     ],
+    raw: true,
+    nest: true,
   });
-  return result.map((item) => item.dataValues);
+  return [{ id: 0, authorName: 'none', language: { id: 0, code: '', name: '' } }].concat(result);
 };
 
 module.exports = {

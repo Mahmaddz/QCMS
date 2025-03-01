@@ -34,8 +34,8 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords, currentSearchM
         (async () => {
             const resposne = await getAllLanguages();
             if (resposne.success) {
-                setListOfLanguages([ { id: 0, authorName: "none", language: { id: 0, code: "", name: "" } }, ...resposne.data]);
-                setSelectedLanguages(resposne.data[0]);
+                setListOfLanguages(resposne.data);
+                setSelectedLanguages(resposne.data[1]);
             }
         })()
     }, [])

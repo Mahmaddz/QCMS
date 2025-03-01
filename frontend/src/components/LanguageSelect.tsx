@@ -14,7 +14,8 @@ const LanguageSelect = React.memo(({ listOfLanguages = [], handleChange }: { lis
 
     const handleButtonClick = useCallback(() => {
         setIsOpen((prevState) => !prevState);
-    }, []);
+        setSelectedValue(`${listOfLanguages[1].language.code} - ${listOfLanguages[1].authorName} [${listOfLanguages[1].language.name}]`);
+    }, [listOfLanguages]);
 
     const handleLanguageChange = useCallback(
         (_event: unknown, value: string | null) => {
@@ -24,6 +25,9 @@ const LanguageSelect = React.memo(({ listOfLanguages = [], handleChange }: { lis
             if (selectedLanguage) {
                 handleChange(selectedLanguage);
                 setSelectedValue(value);
+            }
+            else {
+                setSelectedValue(`${listOfLanguages[1].language.code} - ${listOfLanguages[1].authorName} [${listOfLanguages[1].language.name}]`);
             }
             setTimeout(() => setIsLoading(false), 500);
         },
