@@ -124,7 +124,7 @@ const getAyaAndSuraUsingWords = async (words, surah, aya) => {
     },
     group: ['Chapter', 'Verse'],
     order: [
-      ['wordsCount', 'DESC'],
+      // ['wordsCount', 'DESC'],
       ['Chapter', 'ASC'],
       ['Verse', 'ASC'],
     ],

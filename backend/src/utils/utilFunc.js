@@ -19,8 +19,42 @@ const detectLanguage = (text) => {
   return 'Unknown';
 };
 
+/**
+ * [U+064A, U+06CC, etc] → U+0649
+ * EXAMPLE => [موسی,موسي] to موسى
+ */
+const fixLastYaa = (text) =>
+  text
+    .split(' ')
+    .map((word) => word.replace(/(.*)[يیىﻯﻰ]/, '$1ى'))
+    .join(' ');
+
+/**
+ * "آ" with "ا"
+ * U+0622 → U+0627
+ * EXAMPLE => "الآفلين" and "الافلين"
+ */
+const fixAlif = (text) =>
+  text
+    .split(' ')
+    .map((word) => word.replace(/آ/g, 'ا'))
+    .join(' ');
+
+/**
+ * "ی" (U+06CC) → "ي" (U+064A)
+ * EXAMPLE => "اسماعیل" and "اسماعيل"
+ */
+const fixInnerYaas = (text) =>
+  text
+    .split(' ')
+    .map((word) => word.replace(/ی/g, 'ي'))
+    .join(' ');
+
 module.exports = {
   generateRandomString,
   isObjectEmpty,
   detectLanguage,
+  fixLastYaa,
+  fixAlif,
+  fixInnerYaas,
 };

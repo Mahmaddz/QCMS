@@ -1,9 +1,11 @@
+/* eslint-disable prettier/prettier */
 /* eslint-disable no-console */
 const httpStatus = require('http-status');
 const { ArabicServices } = require('arabic-services');
 const { ayatServices, wordsServices, arabicCustomServices, translationServices, tagsServices } = require('../services');
 const catchAsync = require('../utils/catchAsync');
 const ApiError = require('../utils/ApiError');
+const { fixAlif, fixLastYaa, fixInnerYaas } = require('../utils/utilFunc');
 
 const getVersesByTagsMatch = catchAsync(async (req, res) => {
   const { term, surah, aya } = req.query;
@@ -39,14 +41,11 @@ const searchAyat = catchAsync(async (req, res) => {
   let result;
   let suggestions;
   if (!words) {
-    const updatedTerm = ArabicServices.removeTashkeel(term);
-    result = await ayatServices.getSuraAndAyaFromMushafUsingTerm(
-      `${updatedTerm} ${updatedTerm.replace(/[يیىﻯﻰ]/g, 'ى')}`,
-      surah,
-      aya
-    );
+    const removedDiacriticTerm = ArabicServices.removeTashkeel(term);
+    const possibleMatchTerms = `${removedDiacriticTerm} ${fixLastYaa(removedDiacriticTerm)} ${fixAlif(removedDiacriticTerm)} ${fixInnerYaas(removedDiacriticTerm)}`;
+    result = await ayatServices.getSuraAndAyaFromMushafUsingTerm(possibleMatchTerms, surah, aya);
     if (Object.keys(result.wordsList.lemmas).length === 0) {
-      suggestions = await wordsServices.getSuggestedWords(updatedTerm.split(' '));
+      suggestions = await wordsServices.getSuggestedWords(removedDiacriticTerm.split(' '));
     }
   } else {
     const wordArr = wordsServices.splitCommaSeparated(words);
