@@ -52,6 +52,12 @@ const VersePart = ({ verses, selectedKeywords, searchMethod, selectedLanguage, d
 
     const wordSegmentToHighlight = (position: number) => verses.arabicWord?.[verses.wordId?.indexOf(position) || 0] || '' ;
 
+    const copyHandler = (event: React.ClipboardEvent<HTMLDivElement>) => {
+        event.preventDefault();
+        const selectedText = window.getSelection()?.toString() || "";
+        event.clipboardData.setData("text/plain", `${selectedText.split('\n').join(' ')}`);
+    }
+
     return (
         <React.Fragment>
             <Box
@@ -179,6 +185,7 @@ const VersePart = ({ verses, selectedKeywords, searchMethod, selectedLanguage, d
                                     textDecorationColor: 'red',
                                 }}
                                 onClick={() => handleShowResultAgainstTerm(verse.word)}
+                                onCopy={copyHandler}
                             >
                                 <Marker mark={verses.wordId?.includes(index + 1) ? normalizeText(wordSegmentToHighlight(index+1)) : undefined}>
                                     {verse.word}
