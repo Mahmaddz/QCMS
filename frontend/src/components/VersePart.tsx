@@ -1,16 +1,20 @@
 /* eslint-disable no-misleading-character-class */
-import { Box, Tooltip, Typography } from '@mui/material'
-import React, { memo, useMemo } from 'react'
+import { Box, IconButton, Tooltip, Typography } from '@mui/material'
+import React, { memo, useMemo, useState } from 'react'
 import uniqueID from '../utils/helper/UniqueID'
 import { ArabicServices } from 'arabic-services'
 import { openNewTab } from '../utils/functions/openNewTab'
 import { ReviewBodyProps } from '../interfaces/ReviewBody'
 import { Marker } from "react-mark.js";
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 // import DisplayTags from './DisplayTags'
 
 const VersePart = ({ verses, selectedKeywords, searchMethod, selectedLanguage, displayNumbers=false }: ReviewBodyProps) => {
 
     const translation = useMemo(() => verses.translation.filter((verse) => verse.translatorId === selectedLanguage)[0]?.text || '', [selectedLanguage, verses.translation]);
+
+    const [isCopyClicked, setIsCopyClicked] = useState<boolean>(false);
 
     const normalizeText = (arabicText: string) => ([
         arabicText
@@ -54,8 +58,17 @@ const VersePart = ({ verses, selectedKeywords, searchMethod, selectedLanguage, d
 
     const copyHandler = (event: React.ClipboardEvent<HTMLDivElement>) => {
         event.preventDefault();
-        const selectedText = window.getSelection()?.toString() || "";
-        event.clipboardData.setData("text/plain", `${selectedText.split('\n').join(' ')}`);
+        const selectedText = window.getSelection()?.toString().replace(/\n+/g, ' ') || "";
+        event.clipboardData.setData("text/plain", selectedText);
+    };
+
+    const copyToClipboard = async () => {
+        setIsCopyClicked(true);
+        const text = verses.ayat.map(aya => aya.word).join(' ');
+        await navigator.clipboard.writeText(text);
+        setTimeout(() => {
+            setIsCopyClicked(false);
+        }, 2000);
     }
 
     return (
@@ -102,7 +115,8 @@ const VersePart = ({ verses, selectedKeywords, searchMethod, selectedLanguage, d
                         display: 'flex',
                         flexDirection: 'row-reverse',
                         flexWrap: 'wrap',
-                        justifyContent: 'center',
+                        // justifyContent: 'right',
+                        direction: 'ltr',
                         gap: { xs: 0.5, sm: 1 },
                         width: '100%',
                     }}
@@ -193,6 +207,25 @@ const VersePart = ({ verses, selectedKeywords, searchMethod, selectedLanguage, d
                             </Typography>
                         </Tooltip>
                     ))}
+                    <Tooltip title={isCopyClicked ? "Copied!" : "Copy to clipboard"} arrow>
+                        <IconButton onClick={copyToClipboard} sx={{ p: 0 }}>
+                            {isCopyClicked ? (
+                                <CheckCircleIcon color="success" fontSize="small" />
+                            ) : (
+                                <ContentCopyIcon
+                                    fontSize="small"
+                                    sx={{
+                                        cursor: "pointer",
+                                        transition: "transform 0.2s ease-in-out",
+                                        color: 'green',
+                                        "&:hover": {
+                                            transform: "scale(1.1)",
+                                        },
+                                    }}
+                                />
+                            )}
+                        </IconButton>
+                    </Tooltip>
                 </Box>
     
                 <Typography
@@ -203,7 +236,8 @@ const VersePart = ({ verses, selectedKeywords, searchMethod, selectedLanguage, d
                         marginTop: "4px",
                         fontSize: { xs: "0.75rem", sm: "1rem" },
                         maxWidth: { xs: '90%', sm: 900 },
-                        textAlign: 'center',
+                        textAlign: 'left',
+                        direction: 'ltr',
                         margin: '0 auto',
                     }}
                 >

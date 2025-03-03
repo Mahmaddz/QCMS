@@ -130,7 +130,7 @@ export default function ReviewBody({ verses, showTags, selectedKeywords, selecte
                   fontWeight: "500",
                   color: verseNumber ? 'white' : "gray",
                   textWrap: 'nowrap',
-                  fontSize: { sm: "18px", xs: "10px" },
+                  fontSize: { sm: "15px", xs: "10px" },
                 }}
               >
                 Jump To Verse
