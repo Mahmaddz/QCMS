@@ -115,8 +115,7 @@ const VersePart = ({ verses, selectedKeywords, searchMethod, selectedLanguage, d
                         display: 'flex',
                         flexDirection: 'row-reverse',
                         flexWrap: 'wrap',
-                        // justifyContent: 'right',
-                        direction: 'ltr',
+                        justifyContent: 'center',
                         gap: { xs: 0.5, sm: 1 },
                         width: '100%',
                     }}
@@ -236,8 +235,7 @@ const VersePart = ({ verses, selectedKeywords, searchMethod, selectedLanguage, d
                         marginTop: "4px",
                         fontSize: { xs: "0.75rem", sm: "1rem" },
                         maxWidth: { xs: '90%', sm: 900 },
-                        textAlign: 'left',
-                        direction: 'ltr',
+                        textAlign: 'center',
                         margin: '0 auto',
                     }}
                 >
