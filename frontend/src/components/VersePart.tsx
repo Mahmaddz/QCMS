@@ -63,13 +63,30 @@ const VersePart = ({ verses, selectedKeywords, searchMethod, selectedLanguage, d
     };
 
     const copyToClipboard = async () => {
-        setIsCopyClicked(true);
-        const text = verses.ayat.map(aya => aya.word).join(' ');
-        await navigator.clipboard.writeText(text);
-        setTimeout(() => {
+        try {
+            const text = verses.ayat.map(aya => aya.word).join(' ');
+    
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                await navigator.clipboard.writeText(text);
+                console.log('navigator works!')
+            } else {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                console.log('else works');
+            }
+    
+            setIsCopyClicked(true);
+            setTimeout(() => setIsCopyClicked(false), 2000);
+        } catch (error) {
+            console.error('Failed to copy text:', error);
             setIsCopyClicked(false);
-        }, 2000);
-    }
+            alert('Copying to clipboard is not supported in this browser.');
+        }
+    };
 
     return (
         <React.Fragment>
