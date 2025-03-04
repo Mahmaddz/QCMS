@@ -228,7 +228,7 @@ const DisplayTags = ({showTags=true, tagz, Chapter, Verse, searchMethod}:{showTa
                                         cursor: 'pointer',
                                     }),
                                     borderRadius: { xs: "12px", sm: "16px" },
-                                    backgroundColor: "#f5f5f5",
+                                    backgroundColor: "#f5f5f5 !important",
                                     boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
                                     transition: "transform 0.3s ease",
                                     maxWidth: "100%",
@@ -243,6 +243,7 @@ const DisplayTags = ({showTags=true, tagz, Chapter, Verse, searchMethod}:{showTa
                                     },
                                     "&:hover": {
                                         transform: "scale(1.05)",
+                                        backgroundColor: "#f5f5f5 !important",
                                     },
                                 }}
                             />

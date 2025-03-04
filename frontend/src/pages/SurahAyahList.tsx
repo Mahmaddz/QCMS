@@ -13,6 +13,7 @@ import { AyaTranslationWithIds, VerseWords, VerseWordsArr } from '../interfaces/
 import { Tagz } from '../interfaces/SurahAyaInfo';
 import uniqueID from '../utils/helper/UniqueID';
 import ReviewBody from '../components/ReviewBody';
+import CheckboxMenu from '../components/CheckboxMenu';
 
 const SurahAyahList = () => {
     const [searchParam] = useSearchParams();
@@ -21,6 +22,10 @@ const SurahAyahList = () => {
     const [surahInfo, setSurahInfo] = useState<CompleteSurah>({ araNm: '', aya: '', engNm: '', sura: ""  });
     const [listOfLanguages, setListOfLanguages] = useState<LanguageType[]>([]);
     const [selectedLanguage, setSelectedLanguages] = useState<LanguageType | undefined>();
+
+    const [menuItems, setMenuItems] = useState<{[key: string]: boolean}>({
+        'Display Tags': true,
+    });
 
     useEffect(() => {
         // EXTRACTING VALUES
@@ -98,6 +103,8 @@ const SurahAyahList = () => {
             <StatusBar/>
 
             <LanguageSelect listOfLanguages={listOfLanguages} handleChange={handleLanguageChange}/>
+
+            <CheckboxMenu checkedItems={menuItems} setCheckedItems={setMenuItems} />        
 
             <Box
                 key={uniqueID()}
@@ -233,7 +240,7 @@ const SurahAyahList = () => {
                                         verseNumber={index+1}
                                         verses={verse}
                                         tags={verse.tags || []}
-                                        showTags={true}
+                                        showTags={menuItems['Display Tags']}
                                         selectedKeywords={[]}
                                         selectedLanguage={selectedLanguage?.id || 0}
                                         isSelectedAya={isTarget}

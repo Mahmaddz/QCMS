@@ -31,7 +31,9 @@ export default function ReviewBody({ verses, showTags, selectedKeywords, selecte
         borderRadius: "8px",
         padding: "20px",
         margin: "auto",
-        backgroundColor: isSelectedAya ? "lightgray" : "#ffffff",
+        background: isSelectedAya
+          ? "linear-gradient(135deg, #e0e0e0 60%, whitesmoke 100%)"
+          : "#ffffff",
         width: { xs: "90%", sm: "75%" },
         marginBottom: 2,
         ...(verseNumber && {
@@ -55,21 +57,6 @@ export default function ReviewBody({ verses, showTags, selectedKeywords, selecte
           borderRadius: 2,
         }}
       >
-        {/* {userRole !== USER.PUBLIC && (
-          <InsertCommentTwoToneIcon
-            sx={{
-              color: "primary.main",
-              cursor: "pointer",
-              transition: 'all ease 0.1s',
-              "&:hover": {
-                color: "primary.dark",
-                transform: "scale(1.1)",
-              },
-            }}
-            onClick={handleOpenCommentDialog}
-          />
-        )} */}
-
         <Typography
           variant="body2"
           sx={{

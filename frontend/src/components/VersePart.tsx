@@ -107,7 +107,7 @@ const VersePart = ({ verses, selectedKeywords, searchMethod, selectedLanguage, d
                                 position: "absolute",
                                 top: 5,
                                 right: { xs: -19, sm: 5 },
-                                width: { xs: 30, sm: 50 },
+                                width: { xs: 40, sm: 50 },
                                 height: { xs: 30, sm: 50 },
                                 borderRadius: "50%",
                                 backgroundColor: "#1976d2",
@@ -201,7 +201,7 @@ const VersePart = ({ verses, selectedKeywords, searchMethod, selectedLanguage, d
                                 sx={{
                                     fontWeight: 500,
                                     color: getColor(verse.word),
-                                    fontSize: { xs: '1.2rem', sm: '2.125rem' },
+                                    fontSize: { xs: '1.5rem', sm: '2.125rem' },
                                     cursor: 'pointer',
                                     textAlign: 'center',
                                     direction: 'rtl',
