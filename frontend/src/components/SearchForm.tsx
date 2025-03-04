@@ -154,9 +154,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
             if (response.success) {
                 setLoading(false);
                 setRootLemmaData(response.otherWords.rootsWords);
-                console.log(response.counts)
-                setSearchedCount({ verseCount: response.counts?.verseCount || 0, wordCount: response.counts?.wordCount || 0 });
-                console.log(response.counts?.wordCount);
+                setSearchedCount(response.counts);
                 setSuggestions(response.suggestions || []);
                 const toFind = Array.from(new Set(Object.values(response.words.lemmas).flat()));
                 setTimeout(() => {
@@ -217,6 +215,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
             const words = selectedKeywords2?.length ? selectedKeywords2 : selectedKeywords ;
             const response = await searchAyats("", words, filter.surah as string, filter.aya as string);
             if (response.success) {
+                setSearchedCount(response.counts);
                 if (rootLemmaData.length === 0) {
                     setSelectedKeywords(words);
                     const arrays = [
@@ -336,8 +335,6 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
         label: (i + 1).toString(),
         value: (i + 1).toString(),
     }));
-
-    console.log(filteredCheckBoxes);
 
     return (
         <>

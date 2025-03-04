@@ -51,6 +51,7 @@ const searchAyat = catchAsync(async (req, res) => {
     const wordArr = wordsServices.splitCommaSeparated(words);
     result = await ayatServices.getAyaAndSuraUsingWords(wordArr, surah, aya);
     const wordsList = await wordsServices.getSuggestedWordsBasedOnTerm(wordArr.join(' '));
+    result.counts = { wordCount: wordsList.wordsCount, verseCount: result.verseCount }
     result.otherWords = {
       rootsWords: await wordsServices.getWordsByRoot(Object.keys(wordsList.roots), Object.keys(wordsList.lemmas)),
     };
@@ -62,7 +63,7 @@ const searchAyat = catchAsync(async (req, res) => {
     otherWords: result.otherWords || [],
     data: result.surahAndAyaList || [],
     suggestions: Array.from(suggestions || []),
-    counts: result.counts || { wordCount: 0, verseCount: result.verseCount },
+    counts: result.counts,
   });
 });
 

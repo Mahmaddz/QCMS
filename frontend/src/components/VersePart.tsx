@@ -49,7 +49,7 @@ const VersePart = ({ verses, selectedKeywords, searchMethod, selectedLanguage, d
         //     return 'text.primary';
         // }
         if (searchMethod?.method.split(' ').includes('isWord')) {
-            return selectedKeywords?.filter(select => matchArabicWord(select, word))[0] && 'red' || 'text.primary';
+            return selectedKeywords?.some(select => matchArabicWord(select, word)) && 'red' || 'text.primary';
         }
         return 'text.primary';
     };
@@ -65,7 +65,7 @@ const VersePart = ({ verses, selectedKeywords, searchMethod, selectedLanguage, d
     const copyToClipboard = async () => {
         try {
             const text = verses.ayat.map(aya => aya.word).join(' ');
-    
+            
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 await navigator.clipboard.writeText(text);
                 console.log('navigator works!')
