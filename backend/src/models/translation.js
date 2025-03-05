@@ -35,6 +35,10 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'translatorId',
       as: 'translator',
     });
+    Translation.belongsTo(models.Mushaf, {
+      foreignKey: 'sura',
+      targetKey: 'Chapter',
+    });
   };
 
   return Translation;

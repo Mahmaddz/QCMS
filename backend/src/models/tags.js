@@ -38,6 +38,11 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'tagId',
         as: 'tag',
       });
+
+      Tag.belongsTo(models.Mushaf, {
+        foreignKey: 'suraNo',
+        targetKey: 'Chapter',
+      });
     }
   }
   Tag.init(

@@ -8,7 +8,7 @@ module.exports = (sequelize, DataTypes) => {
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
-    static associate() {
+    static associate(model) {
       // Mushaf.belongsTo(models.Verse, {
       //   foreignKey: 'Chapter', // Refers to suraNo in Verse
       //   otherKey: 'Verse', // Refers to ayaNo in Verse
@@ -16,6 +16,14 @@ module.exports = (sequelize, DataTypes) => {
       //   onDelete: 'CASCADE',
       //   onUpdate: 'CASCADE',
       // });
+      Mushaf.hasMany(model.Translation, {
+        foreignKey: 'sura', // Should match the column in Translation
+        sourceKey: 'Chapter',
+      });
+      Mushaf.hasMany(model.Tag, {
+        foreignKey: 'suraNo', // Should match the column in Tag
+        sourceKey: 'Chapter',
+      });
     }
   }
   Mushaf.init(
