@@ -103,18 +103,26 @@ const getVerseInWords = catchAsync(async (req, res) => {
   const { suraNo, ayaNo } = req.query;
   const verseArr = ayaNo ? wordsServices.splitCommaSeparated(ayaNo) : [];
   const result = await ayatServices.getVerseWordsBySuraNoAndAyaNo(suraNo, verseArr);
-  const name = await ayatServices.getSurahNameBySuraNo(suraNo);
   const ayat = ayaNo ? result[0].Verse : undefined;
   const translation = await translationServices.getSuraTranslations(suraNo, ayat);
   const tags = await tagsServices.tagsRelatedToSurahAndAyah([{ suraNo, ayaNo }]);
   return res.status(httpStatus.OK).json({
     success: true,
-    suraName: name,
     ayat: result,
     translation,
     tags,
   });
 });
+
+const getVerseInWordsArray = catchAsync(async (req, res) => {
+  const { surahAyaList } = req.body;
+  const result = await ayatServices.getCompleteVerseData(surahAyaList);
+  return res.status(httpStatus.OK).json({
+    success: true,
+    result,
+    message: result.length > 0 && 'Data Received' || 'Empty',
+  })
+}) 
 
 module.exports = {
   getAyatInfo,
@@ -123,4 +131,5 @@ module.exports = {
   getCompleteSurah,
   getVerseInWords,
   getVersesByTagsMatch,
+  getVerseInWordsArray,
 };

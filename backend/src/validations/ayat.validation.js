@@ -24,8 +24,22 @@ const surahAPIvalidation = {
   }),
 };
 
+const ayahList = {
+  body: Joi.object().keys({
+    surahAyaList: Joi.array()
+      .items(
+        Joi.object({
+          suraNo: Joi.number().required(),
+          ayaNo: Joi.number().required(),
+        })
+      )
+      .required(),
+  }),
+};
+
 module.exports = {
   getAyaInfo,
   searchAya,
   surahAPIvalidation,
+  ayahList,
 };

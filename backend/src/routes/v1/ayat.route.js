@@ -12,5 +12,6 @@ router.route('/surah').get(validate(ayatValidation.surahAPIvalidation), ayatCont
 router.route('/verse-words').get(validate(ayatValidation.surahAPIvalidation), ayatController.getVerseInWords);
 router.route('/tags-search').get(validate(ayatValidation.searchAya), ayatController.getVersesByTagsMatch);
 router.route('/reference').get(validate(ayatValidation.searchAya), khadijaController.getSuraAndAyaListByConceptArabic);
+router.route('/ayah-list').post(validate(ayatValidation.ayahList), ayatController.getVerseInWordsArray);
 
 module.exports = router;

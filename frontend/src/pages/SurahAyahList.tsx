@@ -14,6 +14,7 @@ import { Tagz } from '../interfaces/SurahAyaInfo';
 import uniqueID from '../utils/helper/UniqueID';
 import ReviewBody from '../components/ReviewBody';
 import CheckboxMenu from '../components/CheckboxMenu';
+import { surahData } from '../utils/functions/surahData';
 
 const SurahAyahList = () => {
     const [searchParam] = useSearchParams();
@@ -34,7 +35,10 @@ const SurahAyahList = () => {
 
         const suraNum = Number.parseInt(sura);
         const ayaNum = Number.parseInt(aya);
-        if ((suraNum < 1 || suraNum > 114) || (ayaNum < 1 || ayaNum > 286)) {
+
+        const chapterInfo = surahData[sura];
+
+        if ((suraNum < 1 || suraNum > 114) || (ayaNum < 1 || ayaNum > chapterInfo.ayahs)) {
             Toaster("INVALID Search Params", 'error');
             return;
         }
@@ -67,8 +71,8 @@ const SurahAyahList = () => {
             setSurahInfo({
                 aya, 
                 sura, 
-                araNm: response.suraName.split(' - ')[0] || "404", 
-                engNm: response.suraName.split(' - ')[1] || "Not Such Data Found", 
+                araNm: chapterInfo.arabic || "404", 
+                engNm: chapterInfo.english || "Not Such Data Found", 
                 verses: Object.values(groupedByVerse) as VerseWordsArr[]
             })
             setIsLoading(false);

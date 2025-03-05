@@ -5,13 +5,13 @@ import { RBL_Params } from "../interfaces/ReviewBodyList";
 import uniqueID from "../utils/helper/UniqueID";
 import { Tags } from "../utils/Table/ReviewTabs/Tags";
 import ReviewBody from "./ReviewBody";
-import { getAyaWords } from "../services/Ayaat/getAyaWords";
-import { VerseWordsArr } from "../interfaces/ReviewBody";
+import { VerseWords, VerseWordsArr } from "../interfaces/ReviewBody";
 import { ArrowBack, ArrowForward, FirstPage, LastPage } from "@mui/icons-material";
-// import { UniqueColorGenerator } from "../utils/functions/UniqueColorGenerator";
 import { getAllLanguages } from "../services/Language/getLanguages";
 import { LanguageType } from "../interfaces/Language";
 import LanguageSelect from "./LanguageSelect";
+import { surahData } from "../utils/functions/surahData";
+import { getCompleteVerses } from "../services/Ayaat/getCompleteVerses.service";
 
 const ReviewBodyList = ({ showTags, searchData, selectedKeywords, currentSearchMethod, setSearchParams, searchParam }: RBL_Params) => {
 
@@ -44,11 +44,6 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords, currentSearchM
         setCurrentPage(currentPapeNumber);
     }, [searchData]);
 
-    const handleGetAyaWordsAPI = async (sura: string | number, aya: string | number) => {
-        const response = await getAyaWords(sura as string, [aya as string]);
-        return response;
-    }
-
     useEffect(() => {
         const time = setTimeout(() => {
             // eslint-disable-next-line @typescript-eslint/no-unused-expressions
@@ -60,35 +55,33 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords, currentSearchM
     useEffect(() => {
         setVerseWords([]);
         const fetchResolvedData = async () => {
-            if (!paginatedData) {
+            if (!paginatedData.length) {
                 setVerseWords([]);
                 return;
             }
             const verses: VerseWordsArr[] = [];
-            const responses = await Promise.all(
-                paginatedData.map((p) => handleGetAyaWordsAPI(p.suraNo, p.ayaNo))
-            );
+            const response = await getCompleteVerses(paginatedData.map(({ suraNo, ayaNo }) => ({ suraNo, ayaNo })));
             for (let i = 0; i < paginatedData.length; i++) {
                 const p = paginatedData[i];
-                const response = responses[i];
+                const res = response.result[i];
                 if (!response.success) continue;
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const transformedAya = response.ayat.map((aya: any) => ({
-                    Chapter: aya.Chapter,
-                    Verse: aya.Verse,
+                const transformedAya: VerseWords[] = res.verses.map((aya) => ({
+                    Chapter: res.suraNo,
+                    Verse: res.ayaNo,
                     PoS_tags: aya.PoS_tags,
                     Stem_pattern: aya.Stem_pattern,
                     word: aya.word,
                     wordUndiacritizedNoHamza: aya.wordUndiacritizedNoHamza,
-                }));
+                }));                
+                const chapterInfo = surahData[res.suraNo];
                 verses.push({
                     ayat: transformedAya,
-                    suraName: `${transformedAya[0].Chapter}:${transformedAya[0].Verse} - ${response.suraName}`,
-                    translation: response.translation,
+                    suraName: `${res.suraNo}:${res.ayaNo} - ${chapterInfo.arabic} - ${chapterInfo.english}`,
+                    translation: res.translations,
                     arabicWord: p.arabicWords,
                     conceptArabic: p.conceptArabic,
                     wordId: p.wordIds,
-                    tags: response.tags,
+                    tags: res.tags,
                 });
             }
             setVerseWords(verses);

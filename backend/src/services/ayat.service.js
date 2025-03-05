@@ -3,7 +3,7 @@
 const httpStatus = require('http-status');
 const { ArabicServices } = require('arabic-services');
 const { logger } = require('../config/logger');
-const { Sequelize, Op, Verse, sequelize, Mushaf } = require('../models');
+const { Sequelize, Op, Verse, sequelize, Mushaf, Tag, Translation } = require('../models');
 const ApiError = require('../utils/ApiError');
 const wordsServices = require('./words.service');
 const translationServices = require('./translation.service');
@@ -207,6 +207,21 @@ const getVerseWordsBySuraNoAndAyaNo = async (sura, aya = []) => {
   return results;
 };
 
+const getVerseWordsBySuraNoAndAyaNoArr = async (suraAyaList) => {
+  const results = await Mushaf.findAll({
+    attributes: ['Chapter', 'Verse', 'word', 'Stem_pattern', 'PoS_tags', 'wordUndiacritizedNoHamza'],
+    where: {
+      [Op.or]: suraAyaList.map(({ suraNo, ayaNo }) => ({
+        Chapter: suraNo,
+        Verse: ayaNo,
+      })),
+      is_basmalla: 0,
+    },
+    order: [['id', 'ASC']],
+  });
+  return results;
+};
+
 const getSurahNameBySuraNo = async (sura) => {
   const result = await Verse.findAll({
     attributes: [[Sequelize.fn('CONCAT', Sequelize.col('suraNameAr'), ' - ', Sequelize.col('suraNameEn')), 'suraAyaInfo']],
@@ -270,6 +285,81 @@ const getAyatInfoByTags = async (term, sura, aya) => {
   return ayahList;
 };
 
+const getCompleteVerseData = async (suraAyaList) => {
+  try {
+    const results = await Mushaf.findAll({
+      attributes: [
+        ['Chapter', 'suraNo'],
+        ['Verse', 'ayaNo'],
+        [
+          Sequelize.literal(`ARRAY_AGG(DISTINCT jsonb_build_object(
+            'id', "Mushaf"."id",
+            'word', "Mushaf"."word",
+            'Stem_pattern', "Mushaf"."Stem_pattern",
+            'PoS_tags', "Mushaf"."PoS_tags",
+            'wordUndiacritizedNoHamza', "Mushaf"."wordUndiacritizedNoHamza"
+          ))`),
+          'verses',
+        ],
+        [
+          Sequelize.literal(`ARRAY_AGG(DISTINCT jsonb_build_object(
+            'text', "Translations"."text",
+            'translatorId', "Translations"."translatorId"
+          ))`),
+          'translations',
+        ],
+        [
+          Sequelize.literal(`ARRAY_AGG(DISTINCT jsonb_build_object(
+            'id', "Tags"."id",
+            'en', "Tags"."category",
+            'ar', "Tags"."arabic"
+          ))`),
+          'tags',
+        ],
+      ],
+      include: [
+        {
+          model: Tag,
+          required: false,
+          attributes: [],
+          on: {
+            suraNo: { [Op.col]: 'Mushaf.Chapter' },
+            ayaNo: { [Op.col]: 'Mushaf.Verse' },
+            statusId: 2,
+          },
+        },
+        {
+          model: Translation,
+          required: false,
+          attributes: [],
+          on: {
+            sura: { [Op.col]: 'Mushaf.Chapter' },
+            aya: { [Op.col]: 'Mushaf.Verse' },
+          },
+        },
+      ],
+      where: {
+        [Op.or]: suraAyaList.map(({ suraNo, ayaNo }) => ({
+          Chapter: suraNo,
+          Verse: ayaNo,
+        })),
+        is_basmalla: 0,
+      },
+      group: ['Chapter', 'Verse'],
+      order: [
+        ['Chapter', 'ASC'],
+        ['Verse', 'ASC'],
+      ],
+      raw: true,
+    });
+
+    return results;
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    throw new ApiError(httpStatus.BAD_GATEWAY, error.message);
+  }
+};
+
 module.exports = {
   getAyatInfo,
   searchAyatUsingTerm,
@@ -279,6 +369,8 @@ module.exports = {
   getSuraAndAyaUsingRoots,
   getCompleteSurahWithAyaats,
   getVerseWordsBySuraNoAndAyaNo,
+  getVerseWordsBySuraNoAndAyaNoArr,
+  getCompleteVerseData,
   getSurahNameBySuraNo,
   getAyaAndSuraUsingWords,
   getAyatInfoByTags,
