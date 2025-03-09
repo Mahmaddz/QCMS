@@ -1,11 +1,11 @@
-import { AyaTranslationWithIds } from "../ReviewBody";
+import { AyaTranslationWithIds, VerseWordsArr } from "../ReviewBody";
 import { Tagz } from "../SurahAyaInfo";
 import { ErrorResponse } from "./error/error";
 
 export interface GetAyaWordsResponse extends ErrorResponse {
     tags?: Tagz[];
     suraName: string; 
-    ayat: string[];
+    ayat: VerseWordsArr[];
     translation: AyaTranslationWithIds[];
 }
 

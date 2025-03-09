@@ -120,13 +120,15 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
         }
     }
 
-    const getResult = async (e: React.FormEvent<HTMLFormElement> | React.KeyboardEvent<HTMLDivElement> | React.MouseEvent<HTMLButtonElement, MouseEvent> | undefined) => {
+    const getResult = async (e: React.FormEvent<HTMLFormElement> | React.KeyboardEvent<HTMLDivElement> | React.MouseEvent<HTMLButtonElement, MouseEvent> | undefined, searchValue?: string | undefined) => {
         e?.preventDefault();
 
-        if (!search) {
+        if (!searchValue && !search) {
             Toaster("Search is Empty", 'warn')
             return;
         }
+
+        if (searchValue) setSearch(searchValue);
 
         setLoading(true);
         setSuggestions([]);
@@ -141,6 +143,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
         if (!(chkbox.isLemma || chkbox.isQurana || chkbox.isQurany || chkbox.isTag || chkbox.isWord || chkbox.isReference)) {
             Toaster("Click on Checkbox", "info")
             setLoading(false);
+            return;
             // const response = await getAyatInfo(search || toSearch as string, filter.aya as string || null, filter.surah as string || null);
             // if (response.success) {
             //     handleResultantResponse(response.data);
@@ -150,7 +153,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
             // }
         }
         if(chkbox.isWord) {
-            const response = await searchAyats(search, [], filter.surah as string, filter.aya as string);
+            const response = await searchAyats(searchValue || search, [], filter.surah as string, filter.aya as string);
             if (response.success) {
                 setLoading(false);
                 setRootLemmaData(response.otherWords.rootsWords);
@@ -176,7 +179,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
             }
         }
         if (chkbox.isQurana) {
-            const resposne = await getQuranaInfo(search, filter.aya as string || '0', filter.surah as string || '0');
+            const resposne = await getQuranaInfo(searchValue || search, filter.aya as string || '0', filter.surah as string || '0');
             if (resposne.success) {
                 handleResultantResponse(resposne.data);
             }
@@ -188,7 +191,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
             await getReferenceData()
         }
         if (chkbox.isTag) {
-            const response = await getAyatsByTag(search, filter.surah as string || '0', filter.aya as string || '0');
+            const response = await getAyatsByTag(searchValue || search, filter.surah as string || '0', filter.aya as string || '0');
             if (response.success) {
                 handleResultantResponse(response.data);
             }
@@ -261,7 +264,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
             );
             const newSelectedKeywords = updatedSearch.filter((rs) => rs.isSelected).map((rs) => rs.word.word);
             setSelectedKeywords(newSelectedKeywords);
-            setSearchParams(prev => {
+            setSearchParams((prev) => {
                 const newParams = new URLSearchParams(prev);
                 newParams.set('currentPage','1');
                 return newParams;
@@ -276,16 +279,16 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
     };
 
     const isWordSelected = (word: string) => {
-        return relatedSearch.some(rs => rs.word.word === word && rs.isSelected);
+        return relatedSearch.some((rs) => rs.word.word === word && rs.isSelected);
     }
 
     const selectAllLemmaWords = (root: string, lemma: string) => {
         const lemmaWords = rootLemmaData.find((r) => r.root === root)?.lemmas[lemma] || [];
         const areAllSelected = lemmaWords.every((word) => isWordSelected(word.word));
         if (areAllSelected) {
-            handleToggle(lemmaWords.map(w => w.word));
+            handleToggle(lemmaWords.map((w) => w.word));
         } else {
-            handleToggle(lemmaWords.map(w => w.word).filter((word) => !isWordSelected(word)));
+            handleToggle(lemmaWords.map((w) => w.word).filter((word) => !isWordSelected(word)));
         }
     }
 
@@ -575,7 +578,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
                                 suggestions.map((sug) =>
                                     <Button
                                         key={uniqueID()}
-                                        onClick={() => setSearch(sug)}
+                                        onClick={() => getResult(undefined, sug)}
                                         sx={{
                                             textTransform: 'none',
                                             padding: '6px 12px',

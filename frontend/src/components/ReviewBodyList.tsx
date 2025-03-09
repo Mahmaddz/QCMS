@@ -15,11 +15,12 @@ import { getCompleteVerses } from "../services/Ayaat/getCompleteVerses.service";
 
 const ReviewBodyList = ({ showTags, searchData, selectedKeywords, currentSearchMethod, setSearchParams, searchParam }: RBL_Params) => {
 
-    const currentPapeNumber = parseInt(searchParam?.get('currentPage') || "1", 10);
+    const currentPageNumber = parseInt(searchParam?.get('currentPage') || "1", 10);
+    const itemsCount = parseInt(searchParam?.get('itemsPerPage') || "10", 10);
 
-    const [itemsPerPage, setItemsPerPage] = useState<number>(10);
+    const [itemsPerPage, setItemsPerPage] = useState<number>(itemsCount);
     const listOfItemsPerPage = [5,10,15,20,25,30];
-    const [currentPage, setCurrentPage] = useState(currentPapeNumber);
+    const [currentPage, setCurrentPage] = useState(currentPageNumber);
     const dividerRef = useRef<HTMLDivElement | null>(null);
     const [verseWords, setVerseWords] = useState<VerseWordsArr[]>([]);
     
@@ -27,7 +28,7 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords, currentSearchM
     const [selectedLanguage, setSelectedLanguages] = useState<LanguageType | null>();
 
     useEffect(() => {
-        setCurrentPage(currentPapeNumber);
+        setCurrentPage(currentPageNumber);
     }, [searchParam]);
 
     useEffect(() => {
@@ -41,7 +42,7 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords, currentSearchM
     }, [])
 
     useEffect(() => {
-        setCurrentPage(currentPapeNumber);
+        setCurrentPage(currentPageNumber);
     }, [searchData]);
 
     useEffect(() => {
@@ -112,7 +113,15 @@ const ReviewBodyList = ({ showTags, searchData, selectedKeywords, currentSearchM
     };
 
     const handleItemsPerPageChange = (event: SelectChangeEvent<number>) => {
-        setItemsPerPage(event.target.value as number);
+        if (setSearchParams) {
+            setSearchParams((prevParams) => {
+                const itemsCount = event.target.value;
+                const newParams = new URLSearchParams(prevParams);
+                setItemsPerPage(itemsCount as number);
+                newParams.set("itemsPerPage", itemsCount.toString());
+                return newParams;
+            });
+        }
     };
     
 
