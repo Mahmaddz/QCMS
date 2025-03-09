@@ -339,10 +339,8 @@ const getCompleteVerseData = async (suraAyaList) => {
         },
       ],
       where: {
-        [Op.or]: suraAyaList.map(({ suraNo, ayaNo }) => ({
-          Chapter: suraNo,
-          Verse: ayaNo,
-        })),
+        [Op.or]: suraAyaList.map(({ suraNo, ayaNo }) => (ayaNo ? { Chapter: suraNo, Verse: ayaNo } : { Chapter: suraNo })),
+        ayaNo: { [Op.ne]: 0 },
         is_basmalla: 0,
       },
       group: ['Chapter', 'Verse'],

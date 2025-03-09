@@ -1,10 +1,11 @@
-import { SurahWithAyaatRequest, SurahWithAyaatResponse } from "../../interfaces/service/GetCompleteSurah"
+import { ErrorResponse } from "../../interfaces/service/error/error"
 import { request } from "../../utils/api/Request"
+import { AyahCompleteData } from "./getCompleteVerses.service"
 
-export const getCompleteSura: SurahWithAyaatRequest = async (suraNo) => {
+export const getCompleteSura = async (suraNo: number) => {
     return await request.get({
-        url: '/v1/ayat/surah',
+        url: '/v1/ayat/surah-words',
         data: { suraNo },
         showToast: false
-    }) as SurahWithAyaatResponse
+    }) as ErrorResponse & { result: AyahCompleteData[] }
 }

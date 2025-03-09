@@ -2,7 +2,7 @@ import { AyaTranslationWithIds } from "../../interfaces/ReviewBody";
 import { ErrorResponse } from "../../interfaces/service/error/error";
 import { request } from "../../utils/api/Request"
 
-interface AyahCompleteData {
+export interface AyahCompleteData {
     suraNo: number;
     ayaNo: number;
     translations: AyaTranslationWithIds[];
