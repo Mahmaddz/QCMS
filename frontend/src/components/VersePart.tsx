@@ -62,20 +62,40 @@ const VersePart = ({ verses, selectedKeywords, searchMethod, selectedLanguage, d
             div.innerHTML = textArray
                 .map((word, index) => {
                     const highlightedSegment = wordSegmentToHighlight(index + 1);
-                    const underline = verses.wordId?.includes(index + 1) ? "text-decoration: 10px underline; text-decoration-color: red;" : "";
-
+                    const underline = verses.wordId?.includes(index + 1)
+                        ? "text-decoration: underline; text-decoration-thickness: 2px; text-decoration-color: red;"
+                        : "";
+    
                     const wordWithHighlight = highlightedSegment
                         ? word.replace(highlightedSegment, `<span style="background-color: yellow;">${highlightedSegment}</span>`)
                         : word;
-
+    
                     return `<span style="color: ${getColor(word)}; ${underline}">${wordWithHighlight}</span>`;
                 })
                 .join(" ")
                 .trim();
-
-            const clipboardItem = new ClipboardItem({ "text/html": new Blob([div.innerHTML], { type: "text/html" }) }); 
-            await navigator.clipboard.write([clipboardItem]);
-            console.log("Copied with formatting, underline, and highlights!");
+    
+            if (navigator.clipboard && window.ClipboardItem) {
+                // Preferred method (Modern Browsers)
+                const clipboardItem = new ClipboardItem({
+                    "text/html": new Blob([div.innerHTML], { type: "text/html" }),
+                    "text/plain": new Blob([textArray.join(" ")], { type: "text/plain" })
+                });
+                await navigator.clipboard.write([clipboardItem]);
+                console.log("Copied with formatting (modern method)!");
+            } else {
+                // Fallback for older browsers using execCommand
+                document.body.appendChild(div); // Append to DOM
+                const range = document.createRange();
+                range.selectNodeContents(div);
+                const selection = window.getSelection();
+                selection?.removeAllRanges();
+                selection?.addRange(range);
+    
+                document.execCommand("copy"); // Copy to clipboard
+                document.body.removeChild(div); // Remove from DOM after copying
+                console.log("Copied using execCommand (fallback method)!");
+            }
         } catch (error) {
             console.error("Failed to copy text:", error);
             alert("Copying to clipboard is not supported in this browser.");
