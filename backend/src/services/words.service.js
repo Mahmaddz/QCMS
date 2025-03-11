@@ -146,10 +146,6 @@ const getSuggestedWordsBasedOnTerm = async (termVal) => {
   const lemmaMap = new Map();
   const rootMap = new Map();
 
-  /**
-   * @todo USE GROUP BY
-   */
-
   results.forEach((r) => {
     // ========== LEMMA ==========
     if (lemmaMap.has(r.Lemma)) {
@@ -203,27 +199,18 @@ const getSuggestedWords = async (keywords) => {
 
 const getWordsByLemma = async (wordsArray) => {
   const words = await Mushaf.findAll({
-    attributes: [[Sequelize.fn('DISTINCT', Sequelize.col('wordLastLetterUndiacritizedWithHamza')), 'word'], 'Lemma'],
+    attributes: [
+      'Lemma',
+      [Sequelize.fn('ARRAY_AGG', Sequelize.fn('DISTINCT', Sequelize.col('wordLastLetterUndiacritizedWithHamza'))), 'words'],
+    ],
     where: {
-      Lemma: {
-        [Op.in]: wordsArray,
-      },
+      Lemma: { [Op.in]: wordsArray },
     },
+    group: ['Lemma'],
+    raw: true,
   });
 
-  const map = new Map();
-  words.forEach((r) => {
-    if (map.has(r.Lemma)) {
-      const wordTemp = map.get(r.Lemma) || [];
-      if (!wordTemp.includes(r.word)) {
-        map.get(r.Lemma).push(r.word);
-      }
-    } else {
-      map.set(r.Lemma, [r.word]);
-    }
-  });
-
-  return Object.fromEntries(map.entries());
+  return Object.fromEntries(words.map(({ Lemma, word }) => [Lemma, word]));
 };
 
 const getWordsByRoot = async (wordsArray, prefferedLemmas = []) => {

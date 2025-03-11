@@ -50,6 +50,10 @@ const fixInnerYaas = (text) =>
     .map((word) => word.replace(/ی/g, 'ي'))
     .join(' ');
 
+const getUnicodeValues = (str) => {
+  return [...str].map((char) => `U+${char.codePointAt(0).toString(16).toUpperCase()}`).join(' ');
+};
+
 module.exports = {
   generateRandomString,
   isObjectEmpty,
@@ -57,4 +61,5 @@ module.exports = {
   fixLastYaa,
   fixAlif,
   fixInnerYaas,
+  getUnicodeValues,
 };

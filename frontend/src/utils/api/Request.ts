@@ -55,12 +55,15 @@ const options = {
 
 export const request = {
 
-    post: async ({ url, data, showToast = true, useToken = true }: RequestParams): Promise<unknown> => {
+    post: async ({ url, data, showToast = true, useToken = true, abortRef }: RequestParams): Promise<unknown> => {
         try {
             const response = await axios.post(
                 `${baseUrl}${url}`, 
                 data, 
-                useToken ? options['withToken'] : options['default']
+                {
+                    ...useToken ? options['withToken'] : options['default'],
+                    signal: abortRef?.signal,
+                }
             );
             if (showToast) successHandler({ response });
             return response.data;
@@ -69,19 +72,22 @@ export const request = {
         }
     },
 
-    get: async ({ url, data = {}, useToken = true, showToast = true }: RequestParams): Promise<unknown> => {
+    get: async ({ url, data = {}, useToken = true, showToast = true, abortRef }: RequestParams): Promise<unknown> => {
         try {
-            const queryParams = createQueryParams(data); 
+            const queryParams = createQueryParams(data);
             const response = await axios.get(
                 `${baseUrl}${url}${queryParams}`, 
-                useToken ? options['withToken'] : options['default'],
+                {
+                    ...useToken ? options['withToken'] : options['default'],
+                    signal: abortRef?.signal,
+                }
             );
             if (showToast) successHandler({ response });
             return response.data;
         } catch (error) {
             return errorHandler(error);
         }
-    },
+    },    
 
     patch: async ({ url, data, showToast = true, useToken = true }: RequestParams): Promise<unknown> => {
         try {

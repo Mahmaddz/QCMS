@@ -18,6 +18,10 @@ import { Counts } from '../interfaces/service/SimpleSearch';
 
 const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selectedKeywords, setSelectedKeywords, setCurrentSearchMethod, setSearchParams }: SearchFormParam) => {
 
+    const [ayatAbortController, setAyatAbortController] = useState<AbortController | null>(null);
+    const [khadijaAbortController, setKhadijaAbortController] = useState<AbortController | null>(null);
+    const [tagAbortController, setTagAbortController] = useState<AbortController | null>(null);
+
     const toSearch = searchParam?.get('search') || "";
     const toChk = searchParam?.get('chkbox') || 'isWord';
     const toSurah = searchParam?.get('surah') || 0;
@@ -51,7 +55,7 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
             } else if (toSearch.length) {
                 await getResult(undefined);
             }
-        }, 1000);
+        }, 500);
         return () => clearTimeout(time)
     }, [])
 
@@ -111,6 +115,11 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
     }
 
     const getReferenceData = async () => {
+        if (khadijaAbortController) {
+            khadijaAbortController.abort();
+        }
+        const abortController = new AbortController();
+        setKhadijaAbortController(abortController);
         const response = await getKhadijaReference(search, filter.surah as string || null, filter.aya as string || null);
         if (response.success) {
             handleResultantResponse(response.data);
@@ -153,7 +162,12 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
             // }
         }
         if(chkbox.isWord) {
-            const response = await searchAyats(searchValue || search, [], filter.surah as string, filter.aya as string);
+            if (ayatAbortController) {
+                ayatAbortController.abort();
+            }
+            const abortController = new AbortController();
+            setAyatAbortController(abortController);
+            const response = await searchAyats(searchValue || search, [], filter.surah as string, filter.aya as string, abortController);
             if (response.success) {
                 setLoading(false);
                 setRootLemmaData(response.otherWords.rootsWords);
@@ -173,9 +187,11 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
                 ];
                 setRelatedSearch(Array.from(new Map(arrays.map((item) => [item.word.word, item])).values()) || []);
                 handleResultantResponse(response.data);
+                // setAyatAbortController(null);
             }
             else if (!response.success) {
                 setLoading(false);
+                // setAyatAbortController(null);
             }
         }
         if (chkbox.isQurana) {
@@ -191,7 +207,12 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
             await getReferenceData()
         }
         if (chkbox.isTag) {
-            const response = await getAyatsByTag(searchValue || search, filter.surah as string || '0', filter.aya as string || '0');
+            if (tagAbortController) {
+                tagAbortController.abort();
+            }
+            const abortController = new AbortController();
+            setTagAbortController(abortController);
+            const response = await getAyatsByTag(searchValue || search, filter.surah as string || '0', filter.aya as string || '0', abortController);
             if (response.success) {
                 handleResultantResponse(response.data);
             }
@@ -216,7 +237,12 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
             setSearchedResult(()=>[]);
             setSearchedCount(prev => ({ verseCount: 0, wordCount: prev?.wordCount ?? 0 }));
             const words = selectedKeywords2?.length ? selectedKeywords2 : selectedKeywords ;
-            const response = await searchAyats("", words, filter.surah as string, filter.aya as string);
+            if (ayatAbortController) {
+                ayatAbortController.abort();
+            }
+            const abortController = new AbortController();
+            setAyatAbortController(abortController);
+            const response = await searchAyats("", words, filter.surah as string, filter.aya as string, abortController);
             if (response.success) {
                 setSearchedCount(response.counts);
                 if (rootLemmaData.length === 0) {
@@ -612,36 +638,40 @@ const SearchForm = ({ showTag, setShowTag, setSearchedResult, searchParam, selec
 
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', padding: '10px', width: '85%' }}>
                 <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                    <Typography variant="body2" sx={{ color: 'primary.main' }}>
-                        {searchedCount?.verseCount === 0 && !loading ? (
-                            "Nothing Found"
-                        ) : searchedCount?.verseCount && searchedCount?.verseCount > 0 || loading ? (
-                            <>
+                    {searchedCount?.verseCount === 0 && !loading ? (
+                        <Typography variant="body2" sx={{ color: 'primary.main' }}>
+                            Nothing Found
+                        </Typography>
+                    ) : searchedCount?.verseCount && searchedCount?.verseCount > 0 || loading ? (
+                        <Box>
+                            <Box display="flex" alignItems="center">
+                                <Typography variant="body2" sx={{ fontWeight: 'bold', mr: 0.5, color: 'primary.main', flex: 1 }}>
+                                    Verses:
+                                </Typography>
+                                {loading ? (
+                                    <CircularProgress size={17} color="info" />
+                                ) : (
+                                    <Typography variant="body2" color='info'>{searchedCount?.verseCount}</Typography>
+                                )}
+                            </Box>
+                            {filteredCheckBoxes.split(' ').includes('isWord') && !!searchedCount?.wordCount && (
                                 <Box display="flex" alignItems="center">
-                                    <Box component="span" sx={{ fontWeight: 'bold', mr: 0.5, flex: 1 }}>
-                                        Verses:
-                                    </Box>
+                                    <Typography variant="body2" sx={{ fontWeight: 'bold', mr: 0.5, color: 'primary.main', flex: 1 }}>
+                                        Words:
+                                    </Typography>
                                     {loading ? (
-                                        <CircularProgress size={17} color="inherit" />
+                                        <CircularProgress size={17} color="info" />
                                     ) : (
-                                        <Box component="span">{searchedCount?.verseCount}</Box>
+                                        <Typography variant="body2" color='info'>{searchedCount?.wordCount}</Typography>
                                     )}
                                 </Box>
-                                {
-                                    filteredCheckBoxes.split(' ').includes('isWord') && !!searchedCount?.wordCount && (
-                                        <Box display="flex" alignItems="center">
-                                            <Box component="span" sx={{ fontWeight: 'bold', mr: 0.5, flex: 1 }}>
-                                                Words:
-                                            </Box>
-                                            <Box component="span">{searchedCount?.wordCount}</Box>
-                                        </Box>
-                                    )
-                                }
-                            </>
-                        ) : (
-                            "Enter values to search"
-                        )}
-                    </Typography>
+                            )}
+                        </Box>
+                    ) : (
+                        <Typography variant="body2" sx={{ color: 'primary.main' }}>
+                            Enter values to search
+                        </Typography>
+                    )}
                 </Box>
             </Box>
 

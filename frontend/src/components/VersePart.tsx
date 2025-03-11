@@ -56,36 +56,44 @@ const VersePart = ({ verses, selectedKeywords, searchMethod, selectedLanguage, d
 
     const wordSegmentToHighlight = (position: number) => verses.arabicWord?.[verses.wordId?.indexOf(position) || 0] || '' ;
 
-    const copyHandler = (event: React.ClipboardEvent<HTMLDivElement>) => {
+    const copyTextToClipboard = async (textArray: string[]) => {
+        try {
+            const div = document.createElement("div");
+            div.innerHTML = textArray
+                .map((word, index) => {
+                    const highlightedSegment = wordSegmentToHighlight(index + 1);
+                    const underline = verses.wordId?.includes(index + 1) ? "text-decoration: 10px underline; text-decoration-color: red;" : "";
+
+                    const wordWithHighlight = highlightedSegment
+                        ? word.replace(highlightedSegment, `<span style="background-color: yellow;">${highlightedSegment}</span>`)
+                        : word;
+
+                    return `<span style="color: ${getColor(word)}; ${underline}">${wordWithHighlight}</span>`;
+                })
+                .join(" ")
+                .trim();
+
+            const clipboardItem = new ClipboardItem({ "text/html": new Blob([div.innerHTML], { type: "text/html" }) }); 
+            await navigator.clipboard.write([clipboardItem]);
+            console.log("Copied with formatting, underline, and highlights!");
+        } catch (error) {
+            console.error("Failed to copy text:", error);
+            alert("Copying to clipboard is not supported in this browser.");
+        }
+    };    
+
+    const copyHandler = async (event: React.ClipboardEvent<HTMLDivElement>) => {
         event.preventDefault();
-        const selectedText = window.getSelection()?.toString().replace(/\n+/g, ' ') || "";
-        event.clipboardData.setData("text/plain", selectedText);
+        const selectedText = window.getSelection()?.toString().replace(/\n+/g, " ") || "";
+        if (selectedText) {
+            await copyTextToClipboard(selectedText.split(" "));
+        }
     };
 
     const copyToClipboard = async () => {
-        try {
-            const text = verses.ayat.map(aya => aya.word).join(' ');
-            
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                await navigator.clipboard.writeText(text);
-                console.log('navigator works!')
-            } else {
-                const textarea = document.createElement('textarea');
-                textarea.value = text;
-                document.body.appendChild(textarea);
-                textarea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textarea);
-                console.log('else works');
-            }
-    
-            setIsCopyClicked(true);
-            setTimeout(() => setIsCopyClicked(false), 2000);
-        } catch (error) {
-            console.error('Failed to copy text:', error);
-            setIsCopyClicked(false);
-            alert('Copying to clipboard is not supported in this browser.');
-        }
+        await copyTextToClipboard(verses.ayat.map((aya) => aya.word));
+        setIsCopyClicked(true);
+        setTimeout(() => setIsCopyClicked(false), 2000);
     };
 
     return (

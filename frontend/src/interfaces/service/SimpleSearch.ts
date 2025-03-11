@@ -32,5 +32,5 @@ export interface FailureResponse extends ErrorResponse {
 export type SimpleSearchResponse = SuccessResponse | FailureResponse;
 
 export interface SimpleSearchRequest {
-    (term: string, words?: string[], surah?: STRING, aya?: STRING): Promise<SimpleSearchResponse>;
+    (term: string, words?: string[], surah?: STRING, aya?: STRING, abortRef?: AbortController): Promise<SimpleSearchResponse>;
 }
