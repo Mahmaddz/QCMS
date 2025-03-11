@@ -85,16 +85,13 @@ const VersePart = ({ verses, selectedKeywords, searchMethod, selectedLanguage, d
                 console.log("Copied with formatting (modern method)!");
             } else {
                 // Fallback for older browsers using execCommand
-                document.body.appendChild(div); // Append to DOM
-                const range = document.createRange();
-                range.selectNodeContents(div);
-                const selection = window.getSelection();
-                selection?.removeAllRanges();
-                selection?.addRange(range);
-    
-                document.execCommand("copy"); // Copy to clipboard
-                document.body.removeChild(div); // Remove from DOM after copying
-                console.log("Copied using execCommand (fallback method)!");
+                const textarea = document.createElement('textarea');
+                textarea.value = textArray.join(' ');
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                console.log('else works');
             }
         } catch (error) {
             console.error("Failed to copy text:", error);
