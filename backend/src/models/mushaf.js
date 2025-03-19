@@ -37,6 +37,7 @@ module.exports = (sequelize, DataTypes) => {
       Stem_pattern: DataTypes.STRING,
       PoS_tags: DataTypes.STRING,
       Lemma: DataTypes.STRING,
+      LemmaUndiacritized: DataTypes.STRING,
       lemma_pattern: DataTypes.STRING,
       Root: DataTypes.STRING,
       firstRoot: DataTypes.STRING,

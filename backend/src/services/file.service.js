@@ -2,9 +2,11 @@
 /* eslint-disable no-await-in-loop */
 const xlsx = require('xlsx');
 const httpStatus = require('http-status');
+const { ArabicServices } = require('arabic-services');
 const ApiError = require('../utils/ApiError');
 const { logger } = require('../config/logger');
 const { Qurana, Verse, Word, Khadija, Mushaf, Tag } = require('../models');
+const { fixAllALifVariants } = require('../utils/utilFunc');
 
 const BATCH_SIZE = 1000;
 
@@ -126,6 +128,7 @@ const mushafInsertBulk = async (data) => {
     Stem_pattern: d['Stem pattern'],
     PoS_tags: d['PoS tags'],
     Lemma: d.Lemma,
+    LemmaUndiacritized: fixAllALifVariants(ArabicServices.removeTashkeel(d.Lemma)),
     lemma_pattern: d['lemma pattern'],
     Root: d.Root,
     firstRoot: d.first_root,

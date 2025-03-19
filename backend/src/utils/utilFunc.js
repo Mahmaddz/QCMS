@@ -50,6 +50,25 @@ const fixInnerYaas = (text) =>
     .map((word) => word.replace(/ی/g, 'ي'))
     .join(' ');
 
+// ی
+const fixInnerYaaz = (text) =>
+  text
+    .split(' ')
+    .map((word) => word.replace(/ی/g, 'ي'))
+    .join(' ');
+
+// إأٱآ => ا
+const fixAllALifVariants = (text) =>
+  text
+    .split(' ')
+    .map((word) =>
+      word
+        .normalize('NFC')
+        .replace(/[\u064B-\u0652]/g, '')
+        .replace(/[إأٱآ]/g, 'ا')
+    )
+    .join(' ');
+
 const getUnicodeValues = (str) => {
   return [...str].map((char) => `U+${char.codePointAt(0).toString(16).toUpperCase()}`).join(' ');
 };
@@ -62,4 +81,6 @@ module.exports = {
   fixAlif,
   fixInnerYaas,
   getUnicodeValues,
+  fixInnerYaaz,
+  fixAllALifVariants,
 };
