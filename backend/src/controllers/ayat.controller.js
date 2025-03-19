@@ -5,7 +5,7 @@ const { ArabicServices } = require('arabic-services');
 const { ayatServices, wordsServices, arabicCustomServices, translationServices, tagsServices } = require('../services');
 const catchAsync = require('../utils/catchAsync');
 const ApiError = require('../utils/ApiError');
-const { fixAlif, fixLastYaa, fixInnerYaas, getUnicodeValues } = require('../utils/utilFunc');
+const { fixAlif, fixLastYaa, fixInnerYaas, getUnicodeValues, fixInnerYaaz } = require('../utils/utilFunc');
 
 const getVersesByTagsMatch = catchAsync(async (req, res) => {
   const { term, surah, aya } = req.query;
@@ -42,7 +42,7 @@ const searchAyat = catchAsync(async (req, res) => {
   let suggestions;
   if (!words) {
     const removedDiacriticTerm = ArabicServices.removeTashkeel(term);
-    const possibleMatchTerms = `${removedDiacriticTerm} ${fixLastYaa(removedDiacriticTerm)} ${fixAlif(removedDiacriticTerm)} ${fixInnerYaas(removedDiacriticTerm)}`;
+    const possibleMatchTerms = `${removedDiacriticTerm} ${fixLastYaa(removedDiacriticTerm)} ${fixInnerYaaz(removedDiacriticTerm)} ${fixAlif(removedDiacriticTerm)} ${fixInnerYaas(removedDiacriticTerm)}`;
     possibleMatchTerms.split(' ').forEach((item) => console.log(item, getUnicodeValues(item)));
     result = await ayatServices.getSuraAndAyaFromMushafUsingTerm(possibleMatchTerms, surah, aya);
     if (Object.keys(result.wordsList.lemmas).length === 0) {
@@ -54,7 +54,7 @@ const searchAyat = catchAsync(async (req, res) => {
     const wordsList = await wordsServices.getSuggestedWordsBasedOnTerm(wordArr.join(' '));
     result.counts = { wordCount: wordsList.wordsCount, verseCount: result.verseCount }
     result.otherWords = {
-      rootsWords: await wordsServices.getWordsByRoot(Object.keys(wordsList.roots), Object.keys(wordsList.lemmas)),
+      rootsWords: await wordsServices.getWordsByRoot(Object.keys(wordsList.roots), Object.keys(wordsList.LemmaUndiacritized)),
     };
   }
   res.status(httpStatus.OK).json({

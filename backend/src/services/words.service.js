@@ -122,7 +122,16 @@ const getSuggestedWordsBasedOnTerm = async (termVal) => {
   ];
 
   const { rows: results, count } = await Mushaf.findAndCountAll({
-    attributes: ['id', 'Chapter', 'Verse', 'Root', 'Lemma', 'word', 'wordLastLetterUndiacritizedWithHamza'],
+    attributes: [
+      'id',
+      'Chapter',
+      'Verse',
+      'Root',
+      'Lemma',
+      'LemmaUndiacritized',
+      'word',
+      'wordLastLetterUndiacritizedWithHamza',
+    ],
     where: {
       [Op.and]: [
         // { Root: { [Op.ne]: '#' } },
@@ -144,6 +153,7 @@ const getSuggestedWordsBasedOnTerm = async (termVal) => {
   });
 
   const lemmaMap = new Map();
+  const undiaLemmaMap = new Map();
   const rootMap = new Map();
 
   results.forEach((r) => {
@@ -165,10 +175,20 @@ const getSuggestedWordsBasedOnTerm = async (termVal) => {
     } else {
       rootMap.set(r.Root, [r.wordLastLetterUndiacritizedWithHamza]);
     }
+    // ========== ROOT ==========
+    if (undiaLemmaMap.has(r.LemmaUndiacritized)) {
+      const words = lemmaMap.get(r.LemmaUndiacritized) || [];
+      if (!words.includes(r.wordLastLetterUndiacritizedWithHamza)) {
+        undiaLemmaMap.set(r.LemmaUndiacritized, [...words, r.wordLastLetterUndiacritizedWithHamza]);
+      }
+    } else {
+      undiaLemmaMap.set(r.LemmaUndiacritized, [r.wordLastLetterUndiacritizedWithHamza]);
+    }
   });
   return {
     lemmas: Object.fromEntries(lemmaMap.entries()),
     roots: Object.fromEntries(rootMap.entries()),
+    LemmaUndiacritized: Object.fromEntries(undiaLemmaMap.entries()),
     wordsCount: count,
   };
 };
@@ -204,7 +224,7 @@ const getWordsByLemma = async (wordsArray) => {
       [Sequelize.fn('ARRAY_AGG', Sequelize.fn('DISTINCT', Sequelize.col('wordLastLetterUndiacritizedWithHamza'))), 'words'],
     ],
     where: {
-      Lemma: { [Op.in]: wordsArray },
+      LemmaUndiacritized: { [Op.in]: wordsArray },
     },
     group: ['Lemma'],
     raw: true,
@@ -219,6 +239,7 @@ const getWordsByRoot = async (wordsArray, prefferedLemmas = []) => {
       [Sequelize.col('wordLastLetterUndiacritizedWithHamza'), 'word'],
       'Lemma',
       'Root',
+      'LemmaUndiacritized',
       [Sequelize.fn('COUNT', Sequelize.col('wordLastLetterUndiacritizedWithHamza')), 'count'],
     ],
     where: {
@@ -231,10 +252,10 @@ const getWordsByRoot = async (wordsArray, prefferedLemmas = []) => {
         [Op.ne]: 0,
       },
       ...(prefferedLemmas.length && {
-        [Op.or]: [{ Root: { [Op.ne]: '#' } }, { Root: '#', Lemma: { [Op.in]: prefferedLemmas } }],
+        [Op.or]: [{ Root: { [Op.ne]: '#' } }, { Root: '#', LemmaUndiacritized: { [Op.in]: prefferedLemmas } }],
       }),
     },
-    group: ['wordLastLetterUndiacritizedWithHamza', 'Lemma', 'Root'],
+    group: ['wordLastLetterUndiacritizedWithHamza', 'Lemma', 'Root', 'LemmaUndiacritized'],
   });
 
   const map = new Map();
