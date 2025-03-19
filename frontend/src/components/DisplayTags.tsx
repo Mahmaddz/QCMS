@@ -161,93 +161,95 @@ const DisplayTags = ({showTags=true, tagz, Chapter, Verse, searchMethod}:{showTa
                 {showTags && (
                     tags && tags?.length > 0 ? (
                         tags.map((tag) => (
-                        <Box
-                            key={uniqueID()}
-                            sx={{
-                                position: "relative",
-                                display: "flex",
-                                marginLeft: { xs: 4, sm: 0 },
-                            }}
-                        >
-                            {userRole !== USER.PUBLIC && (
-                                <>
-                                    <EditTwoToneIcon
-                                        sx={{
-                                            position: "absolute",
-                                            top: "-8px",
-                                            left: "-8px",
-                                            fontSize: "20px",
-                                            color: "primary.main",
-                                            cursor: "pointer",
-                                            transition: "color 0.3s ease",
-                                            zIndex: 1,
-                                            "&:hover": {
-                                                color: "primary.dark",
-                                                transform: "scale(1.1)",
-                                                opacity: 0.8,
-                                            },
-                                        }}
-                                        onClick={() => handleOpenEditTagModal(tag as unknown as Tagz)}
-                                    />
-                                    <CancelTwoToneIcon
-                                        sx={{
-                                            position: "absolute",
-                                            top: "-8px",
-                                            right: "-8px",
-                                            fontSize: "20px",
-                                            color: "error.main",
-                                            cursor: "pointer",
-                                            transition: "color 0.3s ease",
-                                            zIndex: 1,
-                                            "&:hover": {
-                                                color: "error.dark",
-                                                transform: "scale(1.1)",
-                                                opacity: 0.8,
-                                            },
-                                        }}
-                                        onClick={() => {
-                                            setSelectedTag(tag as Tagz);
-                                            handleOpenDeleteModal();
-                                        }}
-                                    />
-                                </>
-                            )} 
+                            tag.ar && tag.en && (
+                                <Box
+                                    key={uniqueID()}
+                                    sx={{
+                                        position: "relative",
+                                        display: "flex",
+                                        marginLeft: { xs: 4, sm: 0 },
+                                    }}
+                                >
+                                    {userRole !== USER.PUBLIC && (
+                                        <>
+                                            <EditTwoToneIcon
+                                                sx={{
+                                                    position: "absolute",
+                                                    top: "-8px",
+                                                    left: "-8px",
+                                                    fontSize: "20px",
+                                                    color: "primary.main",
+                                                    cursor: "pointer",
+                                                    transition: "color 0.3s ease",
+                                                    zIndex: 1,
+                                                    "&:hover": {
+                                                        color: "primary.dark",
+                                                        transform: "scale(1.1)",
+                                                        opacity: 0.8,
+                                                    },
+                                                }}
+                                                onClick={() => handleOpenEditTagModal(tag as unknown as Tagz)}
+                                            />
+                                            <CancelTwoToneIcon
+                                                sx={{
+                                                    position: "absolute",
+                                                    top: "-8px",
+                                                    right: "-8px",
+                                                    fontSize: "20px",
+                                                    color: "error.main",
+                                                    cursor: "pointer",
+                                                    transition: "color 0.3s ease",
+                                                    zIndex: 1,
+                                                    "&:hover": {
+                                                        color: "error.dark",
+                                                        transform: "scale(1.1)",
+                                                        opacity: 0.8,
+                                                    },
+                                                }}
+                                                onClick={() => {
+                                                    setSelectedTag(tag as Tagz);
+                                                    handleOpenDeleteModal();
+                                                }}
+                                            />
+                                        </>
+                                    )} 
 
-                            <Chip
-                                label={
-                                    <Marker mark={searchMethod?.method.includes('isTag') ? ArabicServices.removeTashkeel(searchMethod?.search || '') : undefined} options={{className: 'custom-marker'}}>
-                                        <span style={{ whiteSpace: "normal", wordBreak: "break-word", display: "block" }}>
-                                            <strong>Arabic:</strong> {tag.ar},<br /> <strong>English:</strong> {tag.en}
-                                        </span>
-                                    </Marker>
-                                }
-                                variant="outlined"
-                                onClick={()=>handleOpenCommentDialog(tag)}
-                                sx={{
-                                    ...(userRole !== USER.ADMIN && {
-                                        cursor: 'pointer',
-                                    }),
-                                    borderRadius: { xs: "12px", sm: "16px" },
-                                    backgroundColor: "#f5f5f5 !important",
-                                    boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
-                                    transition: "transform 0.3s ease",
-                                    maxWidth: "100%",
-                                    height: 'auto',
-                                    fontSize: { xs: "12px", sm: "14px" },
-                                    padding: { xs: "2px 6px", sm: "4px 10px" },
-                                    "& .MuiChip-label": {
-                                        whiteSpace: "normal",
-                                        wordBreak: "break-word",
-                                        display: "block",
-                                        fontSize: { xs: "12px", sm: "14px" },
-                                    },
-                                    "&:hover": {
-                                        transform: "scale(1.05)",
-                                        backgroundColor: "#f5f5f5 !important",
-                                    },
-                                }}
-                            />
-                        </Box>
+                                    <Chip
+                                        label={
+                                            <Marker mark={searchMethod?.method.includes('isTag') ? ArabicServices.removeTashkeel(searchMethod?.search || '') : undefined} options={{className: 'custom-marker'}}>
+                                                <span style={{ whiteSpace: "normal", wordBreak: "break-word", display: "block" }}>
+                                                    <strong>Arabic:</strong> {tag.ar},<br /> <strong>English:</strong> {tag.en}
+                                                </span>
+                                            </Marker>
+                                        }
+                                        variant="outlined"
+                                        onClick={()=>handleOpenCommentDialog(tag)}
+                                        sx={{
+                                            ...(userRole !== USER.ADMIN && {
+                                                cursor: 'pointer',
+                                            }),
+                                            borderRadius: { xs: "12px", sm: "16px" },
+                                            backgroundColor: "#f5f5f5 !important",
+                                            boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+                                            transition: "transform 0.3s ease",
+                                            maxWidth: "100%",
+                                            height: 'auto',
+                                            fontSize: { xs: "12px", sm: "14px" },
+                                            padding: { xs: "2px 6px", sm: "4px 10px" },
+                                            "& .MuiChip-label": {
+                                                whiteSpace: "normal",
+                                                wordBreak: "break-word",
+                                                display: "block",
+                                                fontSize: { xs: "12px", sm: "14px" },
+                                            },
+                                            "&:hover": {
+                                                transform: "scale(1.05)",
+                                                backgroundColor: "#f5f5f5 !important",
+                                            },
+                                        }}
+                                    />
+                                </Box>
+                            )
                         ))
                     ) : (
                         <Typography variant="body2" color="text.secondary">
