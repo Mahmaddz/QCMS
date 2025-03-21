@@ -106,7 +106,7 @@ const getSurahAndAyaByCncptArabicWords = async (conceptArabicList) => {
   return result;
 };
 
-const getSuggestedWordsBasedOnTerm = async (termVal) => {
+const getSuggestedWordsBasedOnTerm = async (termVal, Chapter = undefined, Verse = undefined) => {
   const searchValue = [...new Set(termVal.split(' '))];
 
   const fields = [
@@ -133,9 +133,10 @@ const getSuggestedWordsBasedOnTerm = async (termVal) => {
       'wordLastLetterUndiacritizedWithHamza',
     ],
     where: {
+      ...(Chapter && { Chapter }),
+      ...(Verse ? { Verse } : { Verse: { [Op.ne]: 0 } }),
       [Op.and]: [
         // { Root: { [Op.ne]: '#' } },
-        { Verse: { [Op.ne]: 0 } },
         {
           [Op.or]: fields.map((field) => ({
             [field]: {
