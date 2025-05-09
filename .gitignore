@@ -6,3 +6,5 @@ sphinx/data/
 nginx
 .github/
 qcms.sh
+postgres/data/
+postgres/backup/

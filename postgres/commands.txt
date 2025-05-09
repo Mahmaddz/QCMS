@@ -1,0 +1,3 @@
+docker exec -it postgres psql -U postgres -d QCMS -f /backup/qcms_server_backup.sql
+
+docker compose run --rm postgres psql -U postgres -d QCMS -f /backup/qcms_server_backup.sql

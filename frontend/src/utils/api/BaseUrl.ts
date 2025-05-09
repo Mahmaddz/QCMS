@@ -1,6 +1,6 @@
 const baseUrlArray = [
     'http://localhost:3000',
-    'http://localhost',
+    'http://backend:3000',
 ] 
 
-export const baseUrl = baseUrlArray[2];
+export const baseUrl = baseUrlArray[0];

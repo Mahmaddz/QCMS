@@ -13,11 +13,11 @@ services:
       - CHOKIDAR_USEPOLLING=true
     volumes:
       - "./backend:/app"
-      - "/app/node_modules"
     networks:
       - app-network
     depends_on:
       - sphinx
+      - postgres
 
   frontend:
     build:
@@ -30,7 +30,6 @@ services:
     environment:
       - CHOKIDAR_USEPOLLING=true
     volumes:
-      - /app/node_modules
       - ./frontend:/app
     networks:
       - app-network
@@ -52,7 +51,26 @@ services:
       - ./sphinx/stopwords.txt:/opt/sphinx/conf/stopwords.txt
     networks:
       - app-network
-  
+
+  postgres:
+    build:
+      context: ./postgres
+      dockerfile: Dockerfile
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: qcms-password-k3y
+      POSTGRES_DB: QCMS
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres/data:/var/lib/postgresql/data
+      - ./postgres/backup/qcms_server_backup.sql:/backup/qcms_server_backup.sql
+    networks:
+      - app-network
+    depends_on:
+      - sphinx
+
 networks:
   app-network:
     driver: bridge
