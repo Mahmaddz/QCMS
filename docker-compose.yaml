@@ -1,6 +1,26 @@
 # version: '3.8'
 
 services:
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      retries: 5
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: qcms-password-k3y
+      POSTGRES_DB: QCMS
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./postgres/data:/var/lib/postgresql/data
+      - ./postgres/restore:/docker-entrypoint-initdb.d
+      - ./postgres/backup:/backup
+    networks:
+      - app-network
+
   backend:
     build:
       context: ./backend
@@ -10,7 +30,6 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=production
-      - CHOKIDAR_USEPOLLING=true
     volumes:
       - "./backend:/app"
     networks:
@@ -27,8 +46,6 @@ services:
     stdin_open: true
     ports:
       - "5173:5173"
-    environment:
-      - CHOKIDAR_USEPOLLING=true
     volumes:
       - ./frontend:/app
     networks:
@@ -51,25 +68,9 @@ services:
       - ./sphinx/stopwords.txt:/opt/sphinx/conf/stopwords.txt
     networks:
       - app-network
-
-  postgres:
-    build:
-      context: ./postgres
-      dockerfile: Dockerfile
-    container_name: postgres
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: qcms-password-k3y
-      POSTGRES_DB: QCMS
-    ports:
-      - "5432:5432"
-    volumes:
-      - ./postgres/data:/var/lib/postgresql/data
-      - ./postgres/backup/qcms_server_backup.sql:/backup/qcms_server_backup.sql
-    networks:
-      - app-network
     depends_on:
-      - sphinx
+      postgres:
+        condition: service_healthy
 
 networks:
   app-network:
