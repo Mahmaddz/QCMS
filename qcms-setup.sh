@@ -17,7 +17,7 @@ function show_menu() {
 
 function initialize_postgresql() {
     echo "Restoring PostgreSQL backup and starting DB for the first time..."
-    docker compose up -d postgres
+    docker compose up postgres
     docker compose wait --timeout=60 postgres
     sleep 10  # Extra time for init scripts
     docker compose down
@@ -69,20 +69,28 @@ function create_backup() {
     if ! docker compose ps postgres | grep -q "running"; then
         echo "Starting PostgreSQL container temporarily..."
         docker compose up -d postgres
-        docker compose wait --timeout=30 postgres
-        started_temp=true
+        
+        # Wait for PostgreSQL to become ready (alternative method)
+        echo "Waiting for PostgreSQL to become ready..."
+        for i in {1..30}; do
+            if docker compose exec postgres pg_isready -U postgres >/dev/null 2>&1; then
+                break
+            fi
+            sleep 2
+            echo -n "."
+        done
     fi
 
-    # Perform backup (only if PostgreSQL is reachable)
-    if docker compose ps postgres | grep -q "running"; then
-        if docker exec -i postgres pg_isready -U postgres && docker exec -i postgres pg_dump -U postgres -d QCMS > "$backup_path"; then
+    # Perform backup
+    if docker compose exec postgres pg_isready -U postgres >/dev/null 2>&1; then
+        if docker compose exec postgres pg_dump -U postgres -d QCMS > "$backup_path"; then
             echo "✅ Backup saved to $backup_path"
         else
-            echo "❌ Failed to create backup (PostgreSQL not ready or dump failed)"
-            rm -f "$backup_path" 2>/dev/null  # Cleanup partial backup
+            echo "❌ Failed to create backup (dump failed)"
+            rm -f "$backup_path" 2>/dev/null
         fi
     else
-        echo "❌ PostgreSQL container is not running and could not be started."
+        echo "❌ PostgreSQL is not ready after 60 seconds"
     fi
 
     # Stop temporary container if we started it
@@ -90,7 +98,7 @@ function create_backup() {
         docker compose stop postgres
     fi
 
-    read -p "Press Enter to continue..."
+    read -p "Press Enter to continue..." -r
 }
 
 function clean_container() {
