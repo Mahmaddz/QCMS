@@ -129,7 +129,7 @@ while true; do
     show_menu
     read -p "Select an option (0-5): " choice
     case $choice in
-        0) echo "Exiting..."; exit 0 ;;
+        0) echo "Exiting..."; clean_container; exit 0 ;;
         1) build_all ;;
         2) start_app_foreground ;;
         3) create_backup ;;

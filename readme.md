@@ -30,7 +30,7 @@ This project comes with a management script to perform the following actions eas
   ```
 
 ### 🏗️ Step 1: Build the Project (Option 1)
-This step prepares the system for first-time setup:
+This step prepares the system for first-time (only one time) setup:
 ```
 ./qcms-setup.sh
 ```
@@ -99,6 +99,8 @@ Option 5: 🧹 Clean Docker Containers
 | Reindex after Sphinx config change | `docker compose run --rm sphinx indexer build -c /opt/sphinx/conf/sphinx_mushaf.conf --rotate --all` |
 | Create latest backup               | `docker exec -i postgres pg_dump -U postgres -d QCMS > ./postgres/backup/qcms_backup.sql`            |
 | Clean Docker environment           | `docker compose down --remove-orphans -v`                                                            |
+
+Press `CTRL+C` to terminate a action.
 
 ### ✅ macOS Compatibility:
 
