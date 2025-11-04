@@ -3,7 +3,7 @@
 # Dockerfile
 .husky/
 sphinx/data/
-nginx
+# nginx
 .github/
 qcms.sh
 postgres/data/

@@ -26,8 +26,6 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: backend
-    ports:
-      - "3000:3000"
     environment:
       - NODE_ENV=production
     volumes:
@@ -45,8 +43,6 @@ services:
       dockerfile: Dockerfile
     container_name: frontend
     stdin_open: true
-    ports:
-      - "5173:5173"
     volumes:
       - ./frontend:/app
     networks:
@@ -72,6 +68,20 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: nginx
+    ports:
+      - "80:80"
+    networks:
+      - app-network
+    depends_on:
+      - backend
+      - frontend
+    restart: unless-stopped
 
 networks:
   app-network:
