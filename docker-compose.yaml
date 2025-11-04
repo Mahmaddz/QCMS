@@ -32,6 +32,7 @@ services:
       - NODE_ENV=production
     volumes:
       - "./backend:/app"
+      - /app/node_modules
     networks:
       - app-network
     depends_on:
