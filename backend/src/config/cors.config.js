@@ -4,6 +4,7 @@ const ApiError = require('../utils/ApiError');
 const allowedOrigins = {
   'http://localhost:5173': ['POST', 'PATCH', 'DELETE', 'PUT', 'OPTIONS'],
   'http://localhost': ['GET'],
+  'http://46.101.10.215': ['POST', 'PATCH', 'DELETE', 'PUT', 'OPTIONS'],
 };
 
 const allowedHeaders = ['Content-Type', 'Authorization'];
